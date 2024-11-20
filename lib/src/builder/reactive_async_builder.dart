@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/src/viewmodel/async_viewmodel_impl.dart';
 
-
 class ReactiveAsyncBuilder<T> extends StatelessWidget {
   final AsyncViewModelImpl<T> viewModel;
   final Widget Function(T data) buildSuccess;

@@ -13,7 +13,6 @@ export 'package:reactive_notifier/src/reactive_notifier.dart';
 /// itself whenever the value changes.
 export 'package:reactive_notifier/src/builder/reactive_builder.dart';
 
-
 /// Export the [AsyncState]
 export 'package:reactive_notifier/src/handler/async_state.dart';
 

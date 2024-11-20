@@ -248,8 +248,10 @@ void main() {
 
     test('Validates parallel dependency chains', () {
       // Arrange
-      final stateA1 = ReactiveNotifier<String>(() => 'A1', key: const Key('A1'));
-      final stateA2 = ReactiveNotifier<String>(() => 'A2', key: const Key('A2'));
+      final stateA1 =
+          ReactiveNotifier<String>(() => 'A1', key: const Key('A1'));
+      final stateA2 =
+          ReactiveNotifier<String>(() => 'A2', key: const Key('A2'));
 
       final stateB1 = ReactiveNotifier<String>(
         () => 'B1',

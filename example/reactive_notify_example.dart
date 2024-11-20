@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
-
 enum ConnectionState {
   connected,
   unconnected,
@@ -17,7 +16,8 @@ enum ConnectionState {
 }
 
 /// Test for current state [ReactiveNotifier].
-final ReactiveNotifier<ConnectionState> reactiveConnectionState = ReactiveNotifier<ConnectionState>(() {
+final ReactiveNotifier<ConnectionState> reactiveConnectionState =
+    ReactiveNotifier<ConnectionState>(() {
   /// You can put any code for initial value.
   return ConnectionState.signalOff;
 });
