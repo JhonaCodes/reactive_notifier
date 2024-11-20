@@ -54,7 +54,7 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
 
     // Start a new timer. After 100 milliseconds, update the state and rebuild the widget.
     if (!isTesting) {
-      debounceTimer = Timer(Duration(milliseconds: 100), () {
+      debounceTimer = Timer(const Duration(milliseconds: 100), () {
         setState(() {
           value = widget.valueListenable.value;
         });

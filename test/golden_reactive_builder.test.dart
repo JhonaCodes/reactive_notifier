@@ -23,7 +23,7 @@ void main() {
                   return Column(
                     children: [
                       Text("Widget que se recontruye $value"),
-                      child(Text("Mi widget que no se recontruye")),
+                      child(const Text("Mi widget que no se recontruye")),
                       Text("Widget que se recontruye $value"),
                     ],
                   );
@@ -72,12 +72,12 @@ void main() {
             builder: (context, value, noRebuildable) {
               rebuildCount++; // Contador para verificar reconstrucciones
               log("Widget que se reconstruye: $value");
-              print("Widget que se reconstruye: $value");
+              log("Widget que se reconstruye: $value");
               return Column(
                 children: [
                   Text("Widget que se reconstruye: $value"),
                   noRebuildable(
-                    NonRebuildWidget(),
+                    const NonRebuildWidget(),
                   ),
                 ],
               );
@@ -107,9 +107,9 @@ void main() {
 final ReactiveNotifier<int> valueNotifier = ReactiveNotifier(() => 0);
 
 class NonRebuildWidget extends StatelessWidget {
-  NonRebuildWidget({super.key});
+  const NonRebuildWidget({super.key});
   @override
   Widget build(BuildContext context) {
-    return Text("Widget que no se reconstruye");
+    return const Text("Widget que no se reconstruye");
   }
 }

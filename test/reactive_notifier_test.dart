@@ -274,20 +274,20 @@ void main() {
       test('should handle async state updates', () async {
         final asyncState = ReactiveNotifier<String>(() => 'initial');
         Future<void> updateStateAsync() async {
-          await Future.delayed(Duration(milliseconds: 100));
+          await Future.delayed(const Duration(milliseconds: 100));
           asyncState.updateState('updated');
         }
 
         updateStateAsync();
         expect(asyncState.value, 'initial');
-        await Future.delayed(Duration(milliseconds: 150));
+        await Future.delayed(const Duration(milliseconds: 150));
         expect(asyncState.value, 'updated');
       });
 
       test('should manage concurrent async updates', () async {
         final concurrentState = ReactiveNotifier<int>(() => 0);
         Future<void> incrementAsync() async {
-          await Future.delayed(Duration(milliseconds: 50));
+          await Future.delayed(const Duration(milliseconds: 50));
           concurrentState.updateState(concurrentState.value + 1);
         }
 
@@ -372,7 +372,7 @@ void main() {
         // Iniciar un isolate
         await Isolate.spawn((SendPort sendPort) {
           // Aquí estamos en el nuevo isolate
-          final updatedState = 42;
+          const updatedState = 42;
           sendPort.send(
               updatedState); // Enviar el estado actualizado al isolate principal
         }, receivePort.sendPort);
@@ -402,7 +402,7 @@ void main() {
 
     group('Dependency Injection', () {
       test('should support dependency injection', () {
-        final injectedDependency = 'Injected Value';
+        const injectedDependency = 'Injected Value';
         final dependentState = ReactiveNotifier<String>(() => 'Initial');
         expect(dependentState.value, 'Initial');
         dependentState.updateState('Updated with $injectedDependency');

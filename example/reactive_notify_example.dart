@@ -60,13 +60,13 @@ class MyApp extends StatelessWidget {
                   children: [
                     /// Prevents the widget from rebuilding.
                     /// Useful when you want to reuse it in another ReactiveBuilder.
-                    keep(Text("No state update")),
+                    keep(const Text("No state update")),
 
                     Chip(
                       label: Text(
                         state.name,
                       ),
-                      deleteIcon: Icon(Icons.remove_circle),
+                      deleteIcon: const Icon(Icons.remove_circle),
                       avatar: Icon(
                         Icons.wifi,
                         color: isConnected ? Colors.green : Colors.red,
