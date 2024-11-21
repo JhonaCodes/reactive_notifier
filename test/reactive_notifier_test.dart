@@ -199,7 +199,6 @@ void main() {
     });
 
     group('Performance and Memory', () {
-
       test('should handle a large number of instances', () {
         final iterations = Platform.environment['CI'] == 'true' ? 3000 : 10000;
 
