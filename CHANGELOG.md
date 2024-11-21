@@ -1,5 +1,6 @@
 ## 2.2.0
-- Update Readme.
+- Update documentations and images.
+- Implement Ci for actions.
 
 ## 2.1.1
 - Update Readme.
