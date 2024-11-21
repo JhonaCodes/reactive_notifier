@@ -24,7 +24,7 @@ A powerful, elegant, and type-safe state management solution for Flutter that se
 - 📡 Built-in Async and Stream support
 - 🔗 Smart related states system
 - 🛠️ Repository/Service layer integration
-- ⚡ High performance with minimal rebuilds
+- ⚡  High performance with minimal rebuilds
 - 🐛 Powerful debugging tools
 - 📊 Detailed error reporting
 
@@ -34,7 +34,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  reactive_notifier: ^2.2.0
+  reactive_notifier: ^2.2.1
 ```
 
 ## Quick Start
@@ -129,6 +129,15 @@ class UserViewModel extends ViewModelImpl<UserState> {
   }
 }
 
+// Without Repository If you need to handle other types of logic or use external Notifiers too.
+class SimpleViewModel extends ViewModelStateImpl<UserState> {
+  SimpleViewModel(): super(UserState());
+
+  void updateUser(String name) {
+    updateState(UserState(name: name));
+  }
+}
+
 // 4. Create ViewModel Notifier
 final userNotifier = ReactiveNotifier<UserViewModel>(() {
   final repository = UserRepository(apiNotifier);
@@ -177,9 +186,11 @@ class AppDashboard extends StatelessWidget {
     return ReactiveBuilder<AppState>(
       valueListenable: appState,
       builder: (context, state, keep) {
+        
         // Access related states directly
         final user = appState.from<UserState>();
         final cart = appState.from<CartState>(cartState.keyNotifier);
+        // or use userState, cartState directly, [ Text('Welcome ${userState.name}')]
         
         return Column(
           children: [

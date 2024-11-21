@@ -1,3 +1,6 @@
+## 2.2.1
+- Update example and doc on readme.
+
 ## 2.2.0
 - Update documentations and images.
 - Implement Ci for actions.
