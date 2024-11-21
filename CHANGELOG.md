@@ -1,3 +1,6 @@
+## 2.2.0
+- Update Readme.
+
 ## 2.1.1
 - Update Readme.
 
