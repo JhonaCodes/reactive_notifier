@@ -36,20 +36,17 @@ void main() {
   );
 }
 
-
-class ConnectionStateVM extends ViewModelStateImpl<String>{
-  ConnectionStateVM():super(ConnectionState.waiting.name);
+class ConnectionStateVM extends ViewModelStateImpl<String> {
+  ConnectionStateVM() : super(ConnectionState.waiting.name);
 
   @override
   void init() {
     // TODO: implement init
   }
-
 }
 
-
-final stateConnection = ReactiveNotifier<ConnectionStateVM>(() => ConnectionStateVM());
-
+final stateConnection =
+    ReactiveNotifier<ConnectionStateVM>(() => ConnectionStateVM());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

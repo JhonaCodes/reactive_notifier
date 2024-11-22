@@ -417,8 +417,6 @@ Available types: ${related!.map((r) => '${r.value.runtimeType}(${r.keyNotifier})
   String toString() => '${describeIdentity(this)}($value)';
 }
 
-
-
 class ReactiveListenableNotifier<T> extends NotifierImpl<T> {
   // Singleton management
   static final Map<Key, dynamic> _instances = {};
@@ -435,7 +433,8 @@ class ReactiveListenableNotifier<T> extends NotifierImpl<T> {
   DateTime? _firstNotificationTime;
   int _notificationCount = 0;
 
-  ReactiveListenableNotifier._(T Function() create, this.related, this.keyNotifier)
+  ReactiveListenableNotifier._(
+      T Function() create, this.related, this.keyNotifier)
       : super(create()) {
     if (related != null) {
       assert(() {
@@ -607,7 +606,7 @@ $_notificationCount notifications in ${_thresholdTimeWindow.inMilliseconds}ms
 
       // We look for the first frame that is not from reactive_notifier.dart
       final relevantFrame = frames.firstWhere(
-            (frame) => !frame.contains('reactive_notifier.dart'),
+        (frame) => !frame.contains('reactive_notifier.dart'),
         orElse: () => frames.first,
       );
 
@@ -640,7 +639,8 @@ $_notificationCount notifications in ${_thresholdTimeWindow.inMilliseconds}ms
    Key: ${notifier.keyNotifier}''';
   }
 
-  void _collectAncestors(ReactiveListenableNotifier node, Set<Key> ancestorKeys) {
+  void _collectAncestors(
+      ReactiveListenableNotifier node, Set<Key> ancestorKeys) {
     if (node.related == null) return;
     for (final related in node.related!) {
       ancestorKeys.add(related.keyNotifier);
@@ -649,10 +649,10 @@ $_notificationCount notifications in ${_thresholdTimeWindow.inMilliseconds}ms
   }
 
   void _validateNodeReferences(
-      ReactiveListenableNotifier node,
-      Set<Key> pathKeys,
-      Set<Key> ancestorKeys,
-      ) {
+    ReactiveListenableNotifier node,
+    Set<Key> pathKeys,
+    Set<Key> ancestorKeys,
+  ) {
     if (node.related == null) return;
 
     for (final child in node.related!) {
@@ -671,10 +671,10 @@ $_notificationCount notifications in ${_thresholdTimeWindow.inMilliseconds}ms
   }
 
   Never _throwCircularReferenceError(
-      ReactiveListenableNotifier node,
-      ReactiveListenableNotifier child,
-      Set<Key> pathKeys,
-      ) {
+    ReactiveListenableNotifier node,
+    ReactiveListenableNotifier child,
+    Set<Key> pathKeys,
+  ) {
     final cycle = [...pathKeys, child.keyNotifier]
         .map((key) => '${_instances[key]?.value.runtimeType}($key)')
         .join(' -> ');
@@ -714,11 +714,11 @@ ${_formatNotifierInfo(child)}
   }
 
   Never _throwAncestorReferenceError(
-      ReactiveListenableNotifier node,
-      ReactiveListenableNotifier child,
-      Set<Key> pathKeys,
-      Set<Key> ancestorKeys,
-      ) {
+    ReactiveListenableNotifier node,
+    ReactiveListenableNotifier child,
+    Set<Key> pathKeys,
+    Set<Key> ancestorKeys,
+  ) {
     throw StateError('''
 ⚠️ Invalid Reference Structure Detected!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -787,8 +787,8 @@ Requested type: $R${key != null ? '\nRequested key: $key' : ''}
 
     final result = key != null
         ? related!.firstWhere(
-          (n) => n.value is R && n.keyNotifier == key,
-      orElse: () => throw StateError('''
+            (n) => n.value is R && n.keyNotifier == key,
+            orElse: () => throw StateError('''
 ❌ Related State Not Found
 ━━━━━━━━━━━━━━━━━━━━━
 Looking for: $R with key: $key
@@ -796,10 +796,10 @@ Parent type: $T
 Available types: ${related!.map((r) => '${r.value.runtimeType}(${r.keyNotifier})').join(', ')}
 ━━━━━━━━━━━━━━━━━━━━━
 '''),
-    )
+          )
         : related!.firstWhere(
-          (n) => n.value is R,
-      orElse: () => throw StateError('''
+            (n) => n.value is R,
+            orElse: () => throw StateError('''
 ❌ Related State Not Found
 ━━━━━━━━━━━━━━━━━━━━━
 Looking for: $R
@@ -807,7 +807,7 @@ Parent type: $T
 Available types: ${related!.map((r) => '${r.value.runtimeType}(${r.keyNotifier})').join(', ')}
 ━━━━━━━━━━━━━━━━━━━━━
 '''),
-    );
+          );
 
     return result.value as R;
   }

@@ -36,7 +36,6 @@ abstract class NotifierImpl<T> extends ChangeNotifier
   String toString() => '${describeIdentity(this)}($value)';
 }
 
-
 // abstract class ValueListenable<T> extends Listenable {
 //   /// Abstract const constructor. This constructor enables subclasses to provide
 //   /// const constructors so that they can be used in const expressions.

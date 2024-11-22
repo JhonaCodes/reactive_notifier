@@ -149,7 +149,7 @@ class UserScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ReactiveBuilder<UserViewModel>(
-      valueListenable: userNotifier,
+      valueListenable: userNotifier.value,
       builder: (_, viewModel, keep) {
         return Column(
           children: [
@@ -162,6 +162,39 @@ class UserScreen extends StatelessWidget {
   }
 }
 ```
+
+
+## State Management Patterns
+
+### Simple State Management
+
+```dart
+// Simple connection state management
+final connectionState = ReactiveNotifier<ConnectionState>(() => ConnectionState.none);
+
+class ConnectionIndicator extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ReactiveBuilder.notifier(
+      notifier: connectionState,
+      builder: (context, state, keep) {
+        return Icon(
+          state == ConnectionState.done 
+            ? Icons.wifi 
+            : Icons.wifi_off,
+        );
+      },
+    );
+  }
+}
+
+// Update state anywhere
+void updateConnection(ConnectionState newState) {
+  connectionState.updateState(newState);
+}
+```
+
+
 
 ## Related States System
 
