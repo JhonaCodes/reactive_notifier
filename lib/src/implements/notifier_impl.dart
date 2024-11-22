@@ -54,7 +54,7 @@ abstract class StateNotifierImpl<T> extends ChangeNotifier implements ValueListe
 
   /// [updateState]
   /// Updates the state and notifies listeners if the value has changed.
-  ///
+  @protected
   void updateState(T newState) {
     if (_value == newState) {
       return;
@@ -66,7 +66,7 @@ abstract class StateNotifierImpl<T> extends ChangeNotifier implements ValueListe
 
   /// [updateSilently]
   /// Updates the value silently without notifying listeners.
-  ///
+  @protected
   void updateSilently(T newState) {
     _value = newState;
   }
