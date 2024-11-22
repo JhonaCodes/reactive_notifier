@@ -1,19 +1,37 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/src/reactive_notifier.dart';
 
 class ReactiveBuilder<T> extends StatefulWidget {
-  final ReactiveNotifier<T> valueListenable;
+  final ValueListenable<T> valueListenable;
   final Widget Function(
-          BuildContext context, T value, Widget Function(Widget child) keep)
-      builder;
+      BuildContext context,
+      T value,
+      Widget Function(Widget child) keep,
+      ) builder;
 
   const ReactiveBuilder({
     super.key,
     required this.valueListenable,
     required this.builder,
   });
+
+  /// Recommended constructor for handling simple states.
+  const ReactiveBuilder.notifier({
+    Key? key,
+    required ReactiveNotifier<T> notifier,
+    required Widget Function(
+        BuildContext context,
+        T value,
+        Widget Function(Widget child) keep,
+        ) builder,
+  }) : this(
+    key: key,
+    valueListenable: notifier,
+    builder: builder,
+  );
 
   @override
   State<ReactiveBuilder<T>> createState() => _ReactiveBuilderState<T>();
@@ -59,6 +77,10 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
           value = widget.valueListenable.value;
         });
       });
+    } else {
+      setState(() {
+        value = widget.valueListenable.value;
+      });
     }
   }
 
@@ -84,7 +106,6 @@ class _NoRebuildWrapper extends StatefulWidget {
   @override
   _NoRebuildWrapperState createState() => _NoRebuildWrapperState();
 }
-
 class _NoRebuildWrapperState extends State<_NoRebuildWrapper> {
   late Widget child;
 
@@ -97,7 +118,4 @@ class _NoRebuildWrapperState extends State<_NoRebuildWrapper> {
   @override
   Widget build(BuildContext context) => child;
 }
-
-bool get isTesting {
-  return const bool.fromEnvironment('dart.vm.product') == true;
-}
+bool get isTesting => const bool.fromEnvironment('dart.vm.product') == true;

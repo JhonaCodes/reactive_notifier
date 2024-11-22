@@ -1,3 +1,49 @@
+
+# 2.3.0
+
+## What's Changed
+### 🚀 Enhancements
+* Added support for direct access to ReactiveNotifier value and simple state management
+* New constructor `ReactiveBuilder.notifier` for simpler state cases
+* Improved type safety and handling of ViewModelState implementations
+
+### 🔨 Usage Changes
+* For ViewModels/Complex States:
+  ```dart
+  ReactiveBuilder(
+    valueListenable: stateConnection.value,
+    builder: (context, state, keep) => YourWidget()
+  )
+  ```
+* For Simple States:
+  ```dart
+  ReactiveBuilder.notifier(
+    notifier: simpleNotifier,
+    builder: (context, value, keep) => YourWidget()
+  )
+  ```
+
+### 🐛 Bug Fixes
+* Fixed state propagation in complex ViewModelState scenarios
+* Improved debouncing mechanism for state updates
+* Better memory management for kept widgets
+
+### 📝 Documentation
+* Added examples for both ViewModelState and simple state usage
+* Updated documentation to reflect new constructor patterns
+* Improved comments and code documentation
+
+### 🏗️ Internal Changes
+* Refactored internal state handling for better performance
+* Optimized rebuilding patterns for kept widgets
+* Enhanced type safety across the implementation
+
+## 📦 Dependencies
+* No changes in dependencies
+
+## 🔄 Migration Guide
+No breaking changes. Existing code will continue to work as expected. The new `.notifier` constructor is additive and optional for simpler state management cases.
+
 ## 2.2.1
 - Update example and doc on readme.
 

@@ -36,6 +36,21 @@ void main() {
   );
 }
 
+
+class ConnectionStateVM extends ViewModelStateImpl<String>{
+  ConnectionStateVM():super(ConnectionState.waiting.name);
+
+  @override
+  void init() {
+    // TODO: implement init
+  }
+
+}
+
+
+final stateConnection = ReactiveNotifier<ConnectionStateVM>(() => ConnectionStateVM());
+
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -52,10 +67,10 @@ class MyApp extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             /// 1. [ReactiveNotifier] Current connection state
-            ReactiveBuilder<ConnectionState>(
-              valueListenable: reactiveConnectionState,
+            ReactiveBuilder(
+              valueListenable: stateConnection.value,
               builder: (context, state, keep) {
-                bool isConnected = state == ConnectionState.connected;
+                bool isConnected = state == ConnectionState.connected.name;
                 return Column(
                   children: [
                     /// Prevents the widget from rebuilding.
@@ -64,7 +79,7 @@ class MyApp extends StatelessWidget {
 
                     Chip(
                       label: Text(
-                        state.name,
+                        state,
                       ),
                       deleteIcon: const Icon(Icons.remove_circle),
                       avatar: Icon(
