@@ -182,27 +182,6 @@ class MyApp extends StatelessWidget {
 }
 ```
 
-
-### **Example Explanation**
-
-1. **Model (`MyClass`)**:
-    - `MyClass` is a class containing two properties: `name` (of type `String`) and `value` (of type `int`).
-    - It includes an `empty` constructor to create an instance with default values.
-    - The `copyWith` method allows creating a new instance with updated values, ensuring the state remains immutable.
-
-2. **`ReactiveNotifier`**:
-    - We use `ReactiveNotifier<MyClass>(() => MyClass.empty())` to initialize the state with an empty `MyClass` object.
-    - The `ReactiveNotifier` manages the state and notifies widgets when the state changes.
-
-3. **`ReactiveBuilder.notifier`**:
-    - `ReactiveBuilder.notifier` listens to the `ReactiveNotifier` and rebuilds the widget whenever the state changes.
-    - Inside the `builder` function, the current state (in this case, the `MyClass` object) is accessed via the `state` parameter.
-    - The button calls `updateState` to update the state with new values using the `copyWith` method.
-
-4. **State Update**:
-    - When the user presses the button, the state of `MyClass` is updated using `myReactive.updateState(state.copyWith(name: "New Name", value: 42))`. This triggers the UI to automatically refresh and reflect the updated values.
-
-
 ### **Advantages of This Approach**
 
 - **Simplicity**: This example is straightforward and easy to understand, making it ideal for handling simple states without requiring a `ViewModel` or repository.
@@ -342,14 +321,6 @@ class CartScreen extends StatelessWidget {
     - The `keep` function is used to prevent unnecessary button rebuilds, improving performance.
 
 ---
-
-### **Advantages of this Structure**
-
-- **Separation of Concerns**: The model only contains data, while the `ViewModel` handles business logic.
-- **Immutability**: The model is immutable, making state management easier and avoiding side effects.
-- **Scalability**: If additional logic or features are needed for the cart (e.g., product quantities, discounts), modifications can be made solely in the `ViewModel`.
-
-
 
 ### **Using the Library Repository with `ViewModelImpl`**
 
