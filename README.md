@@ -512,12 +512,6 @@ class CartScreen extends StatelessWidget {
 - `keep` is used to avoid unnecessary button rebuilds.
 
 
-### **Advantages of Using `ViewModelImpl` with Repository**
-
-- **Decoupling**: Data access logic is separated in the repository, while the `ViewModel` handles business logic and UI interaction.
-- **Scalability**: You can easily change the repository implementation, for example to use a real API or a local database, without modifying the `ViewModel`.
-- **Error Handling**: The `ViewModel` handles errors centrally and updates the state in case of failures.
-
 ---
 
 ## **Documentation for `related` in `ReactiveNotifier`**
@@ -604,8 +598,6 @@ class UserInfo {
     );
   }
 }
-
-final userInfoNotifier = ReactiveNotifier<UserInfo>(() => UserInfo.empty());
 
 // Complementary notifiers for configurations
 final settingsNotifier = ReactiveNotifier<String>(() => 'Dark Mode');
