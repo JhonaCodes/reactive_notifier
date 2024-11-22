@@ -39,7 +39,7 @@ dependencies:
 
 ## Quick Start
 
-### **Basic Usage with ReactiveNotifier and ReactiveBuilder.notifier**
+### **Basic Usage with ReactiveNotifier and `ReactiveBuilder.notifier`**
 
 #### **Example: Handling a Simple State**
 
@@ -103,17 +103,6 @@ class SimpleExample extends StatelessWidget {
     - The `updateState` method is used to change the state value.
     - Whenever the state is updated, the UI dependent on it automatically rebuilds.
 
-
-### **Advantages of ReactiveBuilder.notifier**
-
-- **Simplicity:** Ideal for managing basic states without additional logic.
-- **Compatibility:** Works with any primitive type (`int`, `String`, `double`, etc.).
-- **Efficiency:** Uses `keep` to prevent unnecessary redraws, optimizing performance.
-
-### **Direct Example with `ReactiveNotifier`**
-
-In this example, we will create a `MyClass` with a constructor to initialize its values. We will use `ReactiveNotifier` to manage the state of this class and `ReactiveBuilder.notifier` to display and update the state directly.
-
 ## **1. Model Class Definition**
 
 We'll create a `MyClass` model with some properties such as `String` and `int`.
@@ -138,7 +127,6 @@ class MyClass {
 }
 ```
 
----
 
 ## **2. Create and Update State with `ReactiveNotifier`**
 
