@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/src/handler/async_state.dart';
+import 'package:reactive_notifier/src/implements/notifier_impl.dart';
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
 ///
 /// Provides a standardized way to handle loading, success, and error states for async data.
-abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
+abstract class AsyncViewModelImpl<T> extends StateNotifierImpl<T> {
   AsyncState<T> _state = AsyncState.initial();
   AsyncState<T> get state => _state;
   Object? get error => _state.error;
   StackTrace? get stackTrace => _state.stackTrace;
 
-  AsyncViewModelImpl({bool loadOnInit = true}) {
+  AsyncViewModelImpl(super._value, {bool loadOnInit = true}) {
     if (loadOnInit) {
       reload();
     }

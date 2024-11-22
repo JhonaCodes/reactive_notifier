@@ -45,6 +45,7 @@ abstract class StateNotifierImpl<T> extends ChangeNotifier implements ValueListe
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
+
   }
 
 
@@ -71,6 +72,36 @@ abstract class StateNotifierImpl<T> extends ChangeNotifier implements ValueListe
     _value = newState;
   }
 
+  @protected
   @override
   String toString() => '${describeIdentity(this)}($value)';
+
+  @protected
+  @override
+  void addListener(VoidCallback listener) {
+    super.addListener(listener);
+  }
+
+
+  @protected
+  @override
+  void removeListener(VoidCallback listener) => super.removeListener(listener);
+
+
+  @protected
+  @override
+  void dispose() => super.dispose();
+
+
+  @immutable
+  @protected
+  @override
+  void notifyListeners()  => super.notifyListeners();
+
+
+  @immutable
+  @protected
+  @override
+  bool get hasListeners => super.hasListeners;
+
 }
