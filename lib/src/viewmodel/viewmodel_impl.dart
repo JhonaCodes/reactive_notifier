@@ -11,7 +11,7 @@ import '../implements/notifier_impl.dart';
 /// Use this when you need to interact with repositories and manage business logic.
 /// For simple state management without repository, use [ViewModelStateImpl] instead.
 ///
-abstract class ViewModelImpl<T> extends NotifierImpl<T> {
+abstract class ViewModelImpl<T> extends StateNotifierImpl<T> {
   final String? _id;
   final String? _location;
 
@@ -57,7 +57,7 @@ abstract class ViewModelImpl<T> extends NotifierImpl<T> {
 /// Use this when you only need to handle UI state without domain logic or data layer interactions.
 /// For cases requiring repository access, use [ViewModelImpl] instead.
 ///
-abstract class ViewModelStateImpl<T> extends NotifierImpl<T> {
+abstract class ViewModelStateImpl<T> extends StateNotifierImpl<T> {
   final String? _id;
   final String? _location;
 
