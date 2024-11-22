@@ -1,7 +1,4 @@
-
 # 2.3.0
-
-## What's Changed
 ### 🚀 Enhancements
 * Added support for direct access to ReactiveNotifier value and simple state management
 * New constructor `ReactiveBuilder.notifier` for simpler state cases
