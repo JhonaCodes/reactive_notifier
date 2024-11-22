@@ -1,107 +1,181 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
 enum ConnectionState {
   connected,
-  unconnected,
+  disconnected,
   connecting,
   error,
   uploading,
   waiting,
-  signalOff,
-  errorOnSynchronized,
-  synchronizing,
-  synchronized,
-  waitingForSynchronization
+  offline,
+  syncError,
+  syncing,
+  synced,
+  pendingSync
 }
 
-/// Test for current state [ReactiveNotifier].
-final ReactiveNotifier<ConnectionState> reactiveConnectionState =
-    ReactiveNotifier<ConnectionState>(() {
-  /// You can put any code for initial value.
-  return ConnectionState.signalOff;
-});
+extension ConnectionStateX on ConnectionState {
+  bool get isConnected => this == ConnectionState.connected;
+  bool get isError =>
+      this == ConnectionState.error || this == ConnectionState.syncError;
+  bool get isSyncing =>
+      this == ConnectionState.syncing || this == ConnectionState.pendingSync;
 
-void main() {
-  /// Ensure flutter initialized.
-  WidgetsFlutterBinding.ensureInitialized();
+  IconData get icon {
+    return switch (this) {
+      ConnectionState.connected => Icons.cloud_done,
+      ConnectionState.disconnected => Icons.cloud_off,
+      ConnectionState.connecting => Icons.cloud_sync,
+      ConnectionState.error => Icons.error_outline,
+      ConnectionState.uploading => Icons.upload,
+      ConnectionState.waiting => Icons.hourglass_empty,
+      ConnectionState.offline => Icons.signal_wifi_off,
+      ConnectionState.syncError => Icons.sync_problem,
+      ConnectionState.syncing => Icons.sync,
+      ConnectionState.synced => Icons.sync_alt,
+      ConnectionState.pendingSync => Icons.pending,
+    };
+  }
 
-  runApp(
-    MaterialApp(
-      initialRoute: '/',
-      routes: {
-        '/': (BuildContext context) => const MyApp(),
-      },
-    ),
-  );
-}
+  Color get color {
+    return switch (this) {
+      ConnectionState.connected => Colors.green,
+      ConnectionState.synced => Colors.lightGreen,
+      ConnectionState.uploading ||
+      ConnectionState.syncing ||
+      ConnectionState.connecting =>
+        Colors.blue,
+      ConnectionState.waiting || ConnectionState.pendingSync => Colors.orange,
+      _ => Colors.red,
+    };
+  }
 
-class ConnectionStateVM extends ViewModelStateImpl<String> {
-  ConnectionStateVM() : super(ConnectionState.waiting.name);
-
-  @override
-  void init() {
-    // TODO: implement init
+  String get message {
+    return switch (this) {
+      ConnectionState.connected => 'Connected to server',
+      ConnectionState.disconnected => 'Connection lost',
+      ConnectionState.connecting => 'Establishing connection...',
+      ConnectionState.error => 'Connection error',
+      ConnectionState.uploading => 'Uploading data...',
+      ConnectionState.waiting => 'Waiting for connection',
+      ConnectionState.offline => 'Device offline',
+      ConnectionState.syncError => 'Sync failed',
+      ConnectionState.syncing => 'Syncing data...',
+      ConnectionState.synced => 'Data synchronized',
+      ConnectionState.pendingSync => 'Pending sync',
+    };
   }
 }
 
-final stateConnection =
-    ReactiveNotifier<ConnectionStateVM>(() => ConnectionStateVM());
+class ConnectionManager extends ViewModelStateImpl<ConnectionState> {
+  ConnectionManager() : super(ConnectionState.offline);
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  Timer? _reconnectTimer;
+  bool _isReconnecting = false;
+
+  @override
+  void init() {
+    simulateNetworkConditions();
+  }
+
+  void simulateNetworkConditions() {
+    _reconnectTimer?.cancel();
+    _reconnectTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (_isReconnecting) return;
+      _simulateStateChange();
+    });
+  }
+
+  Future<void> _simulateStateChange() async {
+    _isReconnecting = true;
+
+    try {
+      updateState(ConnectionState.connecting);
+      await Future.delayed(const Duration(seconds: 1));
+
+      if (Random().nextDouble() < 0.7) {
+        updateState(ConnectionState.connected);
+        await Future.delayed(const Duration(seconds: 1));
+        updateState(ConnectionState.syncing);
+        await Future.delayed(const Duration(seconds: 1));
+        updateState(ConnectionState.synced);
+      } else {
+        if (Random().nextBool()) {
+          updateState(ConnectionState.error);
+        } else {
+          updateState(ConnectionState.syncError);
+        }
+      }
+    } finally {
+      _isReconnecting = false;
+    }
+  }
+
+  void manualReconnect() {
+    if (!_isReconnecting) _simulateStateChange();
+  }
+
+  @override
+  void dispose() {
+    _reconnectTimer?.cancel();
+    super.dispose();
+  }
+}
+
+final connectionManager =
+    ReactiveNotifier<ConnectionManager>(() => ConnectionManager());
+
+class ConnectionStateWidget extends StatelessWidget {
+  const ConnectionStateWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('ReactiveNotifier'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// 1. [ReactiveNotifier] Current connection state
-            ReactiveBuilder(
-              valueListenable: stateConnection.value,
-              builder: (context, state, keep) {
-                bool isConnected = state == ConnectionState.connected.name;
-                return Column(
-                  children: [
-                    /// Prevents the widget from rebuilding.
-                    /// Useful when you want to reuse it in another ReactiveBuilder.
-                    keep(const Text("No state update")),
+    return ReactiveBuilder(
+      valueListenable: connectionManager.value,
+      builder: (context, manager, keep) {
+        final state = manager;
 
-                    Chip(
-                      label: Text(
-                        state,
-                      ),
-                      deleteIcon: const Icon(Icons.remove_circle),
-                      avatar: Icon(
-                        Icons.wifi,
-                        color: isConnected ? Colors.green : Colors.red,
-                      ),
+        return Card(
+          elevation: 4,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundColor: state.color.withOpacity(0.2),
+                  child: Icon(
+                    state.icon,
+                    color: state.color,
+                    size: 35,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  state.message,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 16),
+                if (state.isError || state == ConnectionState.disconnected)
+                  keep(
+                    ElevatedButton.icon(
+                      onPressed: () =>
+                          connectionManager.value.manualReconnect(),
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Retry Connection'),
                     ),
-                  ],
-                );
-              },
+                  ),
+                if (state.isSyncing) const LinearProgressIndicator(),
+              ],
             ),
-          ],
-        ),
-      ),
-      floatingActionButton: OutlinedButton(
-        onPressed: () {
-          /// Variation unconnected and connected.
-          reactiveConnectionState.updateState(
-              reactiveConnectionState.value == ConnectionState.connected
-                  ? ConnectionState.unconnected
-                  : ConnectionState.connected);
-        },
-        child: const Text('ReactiveNotifier'),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+          ),
+        );
+      },
     );
   }
 }

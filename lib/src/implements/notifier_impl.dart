@@ -1,15 +1,16 @@
 import 'package:flutter/foundation.dart';
 
 @protected
+
 /// value return.
-abstract class NotifierImpl<T> extends ChangeNotifier implements ValueListenable<T> {
+abstract class NotifierImpl<T> extends ChangeNotifier
+    implements ValueListenable<T> {
   T _value;
   NotifierImpl(this._value) {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
   }
-
 
   @override
   T get value => _value;
@@ -37,17 +38,15 @@ abstract class NotifierImpl<T> extends ChangeNotifier implements ValueListenable
   String toString() => '${describeIdentity(this)}($value)';
 }
 
-
 @protected
-abstract class StateNotifierImpl<T> extends ChangeNotifier implements ValueListenable<T> {
+abstract class StateNotifierImpl<T> extends ChangeNotifier
+    implements ValueListenable<T> {
   T _value;
   StateNotifierImpl(this._value) {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
-
   }
-
 
   @protected
   @override
@@ -82,26 +81,21 @@ abstract class StateNotifierImpl<T> extends ChangeNotifier implements ValueListe
     super.addListener(listener);
   }
 
-
   @protected
   @override
   void removeListener(VoidCallback listener) => super.removeListener(listener);
-
 
   @protected
   @override
   void dispose() => super.dispose();
 
-
   @immutable
   @protected
   @override
-  void notifyListeners()  => super.notifyListeners();
-
+  void notifyListeners() => super.notifyListeners();
 
   @immutable
   @protected
   @override
   bool get hasListeners => super.hasListeners;
-
 }

@@ -1,3 +1,7 @@
+# 2.3.1
+* Update documentation.
+* Protected value for NotifierImpl.
+
 # 2.3.0
 ### 🚀 Enhancements
 * Added support for direct access to ReactiveNotifier value and simple state management
