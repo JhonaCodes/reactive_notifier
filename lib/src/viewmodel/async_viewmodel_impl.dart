@@ -5,26 +5,37 @@ import 'package:reactive_notifier/src/implements/notifier_impl.dart';
 /// Base ViewModel implementation for handling asynchronous operations with state management.
 ///
 /// Provides a standardized way to handle loading, success, and error states for async data.
-abstract class AsyncViewModelImpl<T> extends StateNotifierImpl<T> {
-  AsyncState<T> _state = AsyncState.initial();
-  AsyncState<T> get state => _state;
-  Object? get error => _state.error;
-  StackTrace? get stackTrace => _state.stackTrace;
+import 'package:flutter/foundation.dart';
 
-  AsyncViewModelImpl(super._value, {bool loadOnInit = true}) {
+/// Base ViewModel implementation for handling asynchronous operations with state management.
+abstract class AsyncViewModelImpl<T> extends NotifierImpl<AsyncState<T>> {
+  AsyncViewModelImpl({
+    bool loadOnInit = true,
+    T? initialData,
+  }) : super(initialData != null ? AsyncState.success(initialData) : AsyncState.initial()) {
     if (loadOnInit) {
-      reload();
+      _initializeAsync();
     }
   }
 
+  /// Internal initialization method that properly handles async initialization
+  Future<void> _initializeAsync() async {
+    try {
+      await reload();
+    } catch (error, stackTrace) {
+      setError(error, stackTrace);
+    }
+  }
+
+  /// Public method to reload data
   @protected
   Future<void> reload() async {
-    if (_state.isLoading) return;
+    if (value.isLoading) return;
 
-    _setState(AsyncState.loading());
+    updateState(AsyncState.loading());
     try {
       final result = await loadData();
-      _setState(AsyncState.success(result));
+      updateState(AsyncState.success(result));
     } catch (error, stackTrace) {
       setError(error, stackTrace);
     }
@@ -34,18 +45,30 @@ abstract class AsyncViewModelImpl<T> extends StateNotifierImpl<T> {
   @protected
   Future<T> loadData();
 
+  /// Update data directly
   @protected
   void updateData(T data) {
-    _setState(AsyncState.success(data));
+    updateState(AsyncState.success(data));
   }
 
+  /// Set error state
   @protected
   void setError(Object error, [StackTrace? stackTrace]) {
-    _setState(AsyncState.error(error, stackTrace));
+    updateState(AsyncState.error(error, stackTrace));
   }
 
-  void _setState(AsyncState<T> newState) {
-    _state = newState;
-    notifyListeners();
-  }
+  /// Check if any operation is in progress
+  bool get isLoading => value.isLoading;
+
+  /// Get current error if any
+  Object? get error => value.error;
+
+  /// Get current stack trace if there's an error
+  StackTrace? get stackTrace => value.stackTrace;
+
+  /// Check if the state contains valid data
+  bool get hasData => value.isSuccess;
+
+  /// Get the current data (may be null if not in success state)
+  T? get data => value.isSuccess ? value.data : null;
 }

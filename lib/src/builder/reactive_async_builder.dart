@@ -22,7 +22,7 @@ class ReactiveAsyncBuilder<T> extends StatelessWidget {
     return AnimatedBuilder(
       animation: viewModel,
       builder: (context, _) {
-        return viewModel.state.when(
+        return viewModel.value.when(
           initial: () => buildInitial?.call() ?? const SizedBox.shrink(),
           loading: () =>
               buildLoading?.call() ??
