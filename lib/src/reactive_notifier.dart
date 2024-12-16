@@ -115,7 +115,7 @@ Location: $trace
       _checkNotificationOverflow();
 
       assert(() {
-        log('📝 Updating state for $T: $value -> $newState', level: 10);
+        log('📝 Updating state for $T: $value -> ${newState.runtimeType}', level: 10);
         return true;
       }());
 
