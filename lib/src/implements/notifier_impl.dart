@@ -18,6 +18,7 @@ abstract class NotifierImpl<T> extends ChangeNotifier
   /// [updateState]
   /// Updates the state and notifies listeners if the value has changed.
   ///
+  @protected
   void updateState(T newState) {
     if (_value == newState) {
       return;
@@ -30,12 +31,37 @@ abstract class NotifierImpl<T> extends ChangeNotifier
   /// [updateSilently]
   /// Updates the value silently without notifying listeners.
   ///
+  @protected
   void updateSilently(T newState) {
     _value = newState;
   }
-
+  @protected
   @override
   String toString() => '${describeIdentity(this)}($value)';
+
+  @protected
+  @override
+  void addListener(VoidCallback listener) {
+    super.addListener(listener);
+  }
+
+  @protected
+  @override
+  void removeListener(VoidCallback listener) => super.removeListener(listener);
+
+  @protected
+  @override
+  void dispose() => super.dispose();
+
+  @immutable
+  @protected
+  @override
+  void notifyListeners() => super.notifyListeners();
+
+  @immutable
+  @protected
+  @override
+  bool get hasListeners => super.hasListeners;
 }
 
 @protected
