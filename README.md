@@ -1,6 +1,6 @@
 # ReactiveNotifier
 
-A flexible, elegant, and secure tool for state management in Flutter. Designed to easily integrate with architectural patterns like MVVM, it guarantees full independence from BuildContext and is suitable for projects of any scale.
+A flexible, elegant, and secure tool for state management in Flutter. Designed with fine-grained state control in mind, it easily integrates with architectural patterns like MVVM, guarantees full independence from BuildContext, and is suitable for projects of any scale.
 
 ![reactive_notifier](https://github.com/user-attachments/assets/ca97c7e6-a254-4b19-b58d-fd07206ff6ee)
 
@@ -34,291 +34,138 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  reactive_notifier: ^2.3.1
+  reactive_notifier: ^2.4.0
 ```
 
 ## Quick Start
 
-### **Basic Usage with ReactiveNotifier and `ReactiveBuilder.notifier`**
+### **Usage with ReactiveNotifier
 
-#### **Example: Handling a Simple State**
+Learn how to implement ReactiveNotifier across different use cases - from basic data types (`String`, `bool`) to complex classes (`ViewModels`). These examples showcase global state management patterns that maintain accessibility across your application.
 
-This example demonstrates how to manage a basic state that stores a `String`. It shows how to declare the state, create a widget to display it, and update its value:
+#### With Classes, Viewmodel, etc.
+```dart
+
+/// It is recommended to use mixin to save your notifiers, from a static variable.
+/// 
+mixin ConnectionService{
+  static final ReactiveNotifier<ConnectionManager> instance = ReactiveNotifier<ConnectionManager>(() => ConnectionManager());
+}
+
+class ConnectionStateWidget extends StatelessWidget {
+  const ConnectionStateWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    
+    /// It is recommended to set the data type in the builder.
+    return ReactiveBuilder<ConnectionManager>(
+
+      notifier: ConnectionService.instance,
+      
+      builder: ( service, keep) {
+
+        /// Notifier is used to access your model's data.
+        final state = service.notifier;
+
+        return Card(
+          elevation: 4,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 10,
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundColor: state.color.withValues(alpha: 255 * 0.2),
+                  child: Icon(
+                    state.icon,
+                    color: state.color,
+                    size: 35,
+                  ),
+                ),
+                
+                Text(
+                  state.message,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                
+                if (state.isError || state == ConnectionState.disconnected)
+                  keep(
+                    ElevatedButton.icon(
+                      
+                      /// If you don't use notifier, access the functions of your Viewmodel that contains your model.
+                      onPressed: () => service.manualReconnect(), 
+                      
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Retry Connection'),
+                    ),
+                  ),
+                if (state.isSyncing) const LinearProgressIndicator(),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+```
+
+#### With simple values.
 
 ```dart
+
+mixin ConnectionService{
+  static final ReactiveNotifier<String> instance = ReactiveNotifier<String>(() => "N/A");
+}
+
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
 // Declare a simple state
-final messageState = ReactiveNotifier<String>(() => "Hello, world!");
+class ConnectionStateWidget extends StatelessWidget {
+  const ConnectionStateWidget({super.key});
 
-class SimpleExample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("ReactiveNotifier Example")),
-      body: Center(
-        child: ReactiveBuilder.notifier(
-          notifier: messageState,
-          builder: (context, value, keep) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  value, // Display the current state
-                  style: TextStyle(fontSize: 20),
-                ),
-                SizedBox(height: 20),
-                keep(
-                  ElevatedButton(
-                    onPressed: () => messageState.updateState("New message!"),
-                    child: Text("Update Message"),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
+    return ReactiveBuilder<ConnectionManager>(
+      notifier: ConnectionService.instance,
+      builder: ( state, keep) => Text(state),
     );
   }
 }
-```
----
-
-### **Example Description**
-
-1. **State Declaration:**
-    - `ReactiveNotifier<String>` is used to manage a state of type `String`.
-    - You can use other primitive types such as `int`, `double`, `bool`, `enum`, etc.
-
-2. **ReactiveBuilder.notifier:**
-    - Observes the state and automatically updates the UI when its value changes.
-    - Accepts three parameters in the `builder` method:
-        - `context`: The widget's context.
-        - `value`: The current value of the state.
-        - `keep`: Prevents uncontrolled widget rebuilds.
-
-3. **State Update:**
-    - The `updateState` method is used to change the state value.
-    - Whenever the state is updated, the UI dependent on it automatically rebuilds.
-
-## **1. Model Class Definition**
-
-We'll create a `MyClass` model with some properties such as `String` and `int`.
-
-```dart
-class MyClass {
-  final String name;
-  final int value;
-
-  MyClass({required this.name, required this.value});
-
-  // Method to create an empty instance
-  MyClass.empty() : name = '', value = 0;
-
-  // Method to clone and update values
-  MyClass copyWith({String? name, int? value}) {
-    return MyClass(
-      name: name ?? this.name,
-      value: value ?? this.value,
-    );
-  }
-}
-```
 
 
-## **2. Create and Update State with `ReactiveNotifier`**
+class OtherWidget extends StatelessWidget {
+  const OtherWidget({super.key});
 
-Now, we'll use `ReactiveNotifier` to manage the state of `MyClass`. We'll start with an empty state and later update it using the `updateState` method.
-
-```dart
-final myReactive = ReactiveNotifier<MyClass>(() => MyClass.empty());
-```
-
-Here, `myReactive` is a `ReactiveNotifier` managing the state of `MyClass`.
-
----
-
-## **3. Display and Update State with `ReactiveBuilder.notifier`**
-
-We'll use `ReactiveBuilder.notifier` to display the current state of `MyClass` and update it when needed.
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:reactive_notifier/reactive_notifier.dart';
-
-class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: Text("Direct ReactiveNotifier")),
-        body: Center(
-          child: ReactiveBuilder.notifier(
-            notifier: myReactive,
-            builder: (context, state, keep) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Name: ${state.name}"),
-                  Text("Value: ${state.value}"),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Update the state with new values
-                      myReactive.updateState(state.copyWith(name: "New Name", value: 42));
-                    },
-                    child: Text("Update State"),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-      ),
+    return Column(
+      children: [
+        OutlinedButton(onPressed: (){
+          ConnectionService.instance.updateState("New value");
+        }, child: Text('Edit String'))
+      ],
     );
   }
 }
-```
 
-### **Advantages of This Approach**
+class OtherViewModel{
 
-- **Simplicity**: This example is straightforward and easy to understand, making it ideal for handling simple states without requiring a `ViewModel` or repository.
-- **Reactivity**: With `ReactiveNotifier` and `ReactiveBuilder.notifier`, the UI automatically updates whenever the state changes.
-- **Immutability**: `MyClass` follows the immutability pattern, simplifying state management and preventing unexpected side effects.
+  void otherFunction(){
+    ///Come code.....
 
-
-## **Shopping Cart with `ViewModelStateImpl`**
-
-### **1. Defining the Model**
-
-The `CartModel` class represents the shopping cart's state. It contains the data and includes a `copyWith` method for creating a new instance with updated values.
-
-```dart
-class CartModel {
-  final List<String> items;
-  final double total;
-
-  CartModel({this.items = const [], this.total = 0.0});
-
-  // Method to clone the model with updated values
-  CartModel copyWith({List<String>? items, double? total}) {
-    return CartModel(
-      items: items ?? this.items,
-      total: total ?? this.total,
-    );
+    ConnectionService.instance.updateState("Value from other viewmodel");
   }
 }
+
+/// This example above applies to any Reactive Notifier, no matter how complex, it can be used from anywhere without the need for a reference or handler.
 ```
-
-### **2. ViewModel for Managing Cart Logic**
-
-The `ViewModel` contains the logic for modifying the cart's state. Instead of using `state.copyWith`, use `value.copyWith` to access the current state and update it.
-
-```dart
-class CartViewModel extends ViewModelStateImpl<CartModel> {
-  CartViewModel() : super(CartModel());
-
-  // Function to add a product to the cart and update the total
-  void addProduct(String item, double price) {
-    final updatedItems = List<String>.from(value.items)..add(item);
-    final updatedTotal = value.total + price;
-    updateState(value.copyWith(items: updatedItems, total: updatedTotal));
-  }
-
-  // Function to empty the cart
-  void clearCart() {
-    updateState(CartModel());
-  }
-}
-```
-
----
-
-### **3. Creating the ViewModel Instance**
-
-Create the `ViewModel` instance that will manage the cart's state.
-
-```dart
-final cartViewModel = ReactiveNotifier<CartViewModel>(() => CartViewModel());
-```
-
----
-
-### **4. Widget to Display Cart State**
-
-Finally, create a widget that observes the cart's state and updates the UI whenever necessary.
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:reactive_notifier/reactive_notifier.dart';
-
-class CartScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Shopping Cart")),
-      body: Center(
-        child: ReactiveBuilder<CartViewModel>(
-          valueListenable: cartViewModel.value,
-          builder: (context, viewModel, keep) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("Products in Cart:"),
-                ...viewModel.items.map((item) => Text(item)).toList(),
-                SizedBox(height: 20),
-                Text("Total: \$${viewModel.total.toStringAsFixed(2)}"),
-                SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    keep(
-                      ElevatedButton(
-                        onPressed: () {
-                          // Add a new product
-                          cartViewModel.value.addProduct("Product A", 19.99);
-                        },
-                        child: Text("Add Product A"),
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    keep(
-                      ElevatedButton(
-                        onPressed: () {
-                          // Clear the cart
-                          cartViewModel.value.clearCart();
-                        },
-                        child: Text("Clear Cart"),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-```
-
-### **Explanation**
-
-1. **Model (`CartModel`)**:
-    - `CartModel` is a class that holds the shopping cart data (`items` and `total`).
-    - The `copyWith` method allows creating a new instance of the model with modified values while maintaining immutability.
-
-2. **ViewModel (`CartViewModel`)**:
-    - `CartViewModel` extends `ViewModelStateImpl<CartModel>` and handles business logic.
-    - Instead of `state.copyWith`, `value.copyWith` is used to access and update the current state.
-    - The methods `addProduct` and `clearCart` update the state using `updateState`.
-
-3. **UI with `ReactiveBuilder`**:
-    - `ReactiveBuilder` observes the `ViewModel` state and rebuilds the UI when the state changes.
-    - The `keep` function is used to prevent unnecessary button rebuilds, improving performance.
+Both simple and complex values can be modified from anywhere in the application without modifying the structure of your widget.
+You also don't need to instantiate variables in your widget build, you just call the mixin directly where you want to use it, this helps with less coupling, being able to replace all functions from the mixin and not fight with extensive migrations.
 
 ---
 
@@ -337,44 +184,16 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 
 class CartRepository extends RepositoryImpl<CartModel> {
 	// We simulate the loading of a shopping cart
-  
   Future<CartModel> fetchData() async {
     await Future.delayed(Duration(seconds: 2));
     return CartModel(
-      items: ['Producto A', 'Producto B'],
+      items: ['Product A', 'Product B'],
       total: 39.98,
     );
   }
+  
+  /// More functions .....
 
-  // Method to add a product to the cart
-  Future<void> agregarProducto(CartModel carrito, String item, double price) async {
-    await Future.delayed(Duration(seconds: 1));
-    carrito.items.add(item);
-    carrito.total += price;
-  }
-}
-```
-
----
-
-## **2. Cart Model (`CartModel`)**
-
-The model remains the same:
-
-```dart
-class CartModel {
-  final List<String> items;
-  final double total;
-
-  CartModel({this.items = const [], this.total = 0.0});
-
-  // Method to clone the model with new values
-  CartModel copyWith({List<String>? items, double? total}) {
-    return CartModel(
-      items: items ?? this.items,
-      total: total ?? this.total,
-    );
-  }
 }
 ```
 
@@ -391,26 +210,38 @@ class CartViewModel extends ViewModelImpl<CartModel> {
   CartViewModel(this.repository) : super(CartModel());
 
   // Function to load the cart from the repository
-  Future<void> cargarCarrito() async {
+  Future<void> loadShoppingCart() async {
     try {
     	// We get the cart from the repository
-      final carrito = await repository.fetchData();
-      setState(carrito); // We update the status with the cart loaded
+      final shoppingCart = await repository.fetchData();
+      updateState(carrito); // We update the status with the cart loaded
     } catch (e) {
     // Error handling
-      print("Error al cargar el carrito: $e");
+      print("Error: $e");
     }
   }
 
   // Function to add a product to the cart
-  Future<void> agregarProducto(String item, double price) async {
+  Future<void> addProduct(String item, double price) async {
     try {
-      await repository.agregarProducto(value, item, price);
+      
+      await repository.addProduct(value, item, price);
+      
       // We update the status after adding the product
-      updateState(value.copyWith(items: value.items, total: value.total));
+      updateState(notifier.copyWith(items: value.items, total: value.total));
+      
+      // Or
+      transformState((state) => state.copyWith(items: value.items, total: value.total));
+      
+      // Or
+      updateState(yourModelWithData);
+      
     } catch (e) {
+      
     // Error handling
-      print("Error al agregar el producto: $e");
+      print("Error $e");
+      
+      
     }
   }
 }
@@ -435,100 +266,69 @@ final cartViewModel = ReactiveNotifier<CartViewModel>((){
 Finally, we are going to display the cart status in the UI using `ReactiveBuilder`, which will automatically update when the status changes.
 
 ```dart
-class CartScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Carrito de Compras")),
-      body: Center(
-        child: ReactiveBuilder<CartViewModel>(
-          valueListenable: cartViewModel.value,
-          builder: (context, viewModel, keep) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (viewModel.items.isEmpty)
-                  keep(Text("Loading cart...")),
-                if (viewModel.items.isNotEmpty) ...[
-                  keep(Text("Products in cart:")),
-                  ...viewModel.items.map((item) => Text(item)).toList(),
-                  keep(const SizedBox(height: 20)),
-                  Text("Total: \$${viewModel.total.toStringAsFixed(2)}"),
-                  keep(const SizedBox(height: 20)),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      keep(
-                        ElevatedButton(
-                          onPressed: () {
-                          // Add a new product
-                            cartViewModel.value.agregarProducto("Producto C", 29.99);
-                          },
-                          child: Text("Agregar Producto C"),
-                        ),
-                      ),
-                      keep(const SizedBox(width: 10)),
-                      keep(
-                        ElevatedButton(
-                          onPressed: () {
-                          // Empty cart
-                            cartViewModel.value.setState(CartModel());
-                          },
-                          child: Text("Vaciar Carrito"),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
-            );
-          },
-        ),
-      ),
+ReactiveBuilder<CartViewModel>(
+  notifier: cartViewModel,
+  builder: ( viewModel, keep) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (viewModel.data.isEmpty)
+          keep(Text("Loading cart...")),
+        if (viewModel.data.isNotEmpty) ...[
+          keep(Text("Products in cart:")),
+          ...viewModel.data.map((item) => Text(item)).toList(),
+          keep(const SizedBox(height: 20)),
+          Text("Total: \$${viewModel.total.toStringAsFixed(2)}"),
+          keep(const SizedBox(height: 20)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              keep(
+                ElevatedButton(
+                  onPressed: () {
+                    // Add a new product
+                    cartViewModel.notifier.agregarProducto("Producto C", 29.99);
+                  },
+                  child: Text("Agregar Producto C"),
+                ),
+              ),
+              keep(const SizedBox(width: 10)),
+              keep(
+                ElevatedButton(
+                  onPressed: () {
+                    // Empty cart
+                    cartViewModel.notifier.myCleaningCarFunction();
+                    
+                  },
+                  child: Text("Vaciar Carrito"),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
     );
-  }
-}
-
+  },
+)
 
 ```
 
 
-### **Explanation of the Example**
-
-1. **Repository (`CartRepository`)**:
-- The repository extends `RepositoryImpl<CartModel>`, allowing you to interact with the cart data model.
-- The `fetchData` function simulates fetching the cart data, and `addProduct` simulates adding products to the cart.
-
-2. **Model (`CartModel`)**:
-- `CartModel` contains the cart data (items and total).
-- The `copyWith` method is used to create a new instance with modified values, maintaining immutability.
-
-3. **`ViewModelImpl` (`CartViewModel`)**:
-- `CartViewModel` extends `ViewModelImpl<CartModel>`, allowing you to handle the cart business logic.
-- The `loadCart` and `addProduct` methods interact with the repository and update the state of the cart.
-
-4. **UI with `ReactiveBuilder`**:
-- `ReactiveBuilder` observes the state of the `ViewModel` and updates the UI automatically when the state changes.
-- `keep` is used to avoid unnecessary button rebuilds.
-
-
----
-
+# ⚡️ **Essential: `ReactiveNotifier` Core Concepts**
 ## **Documentation for `related` in `ReactiveNotifier`**
 
 The `related` attribute in `ReactiveNotifier` allows you to efficiently manage interdependent states. They can be used in different ways depending on the structure and complexity of the state you need to handle.
 
-### **Types of `related` Usage**
+### **Using `related` in ReactiveNotifier**
 
-1. **Direct Relationship between Simple Notifiers**
-- This is the case where you have multiple independent `ReactiveNotifier`s (of simple type like `int`, `String`, `bool`, etc.) and you want any change in one of these notifiers to trigger an update in a `ReactiveBuilder` that is watched by a combined `ReactiveNotifier`.
+**Establishing Relationships Between Notifiers**
+- `ReactiveNotifier` can manage any type of data (simple or complex). Through the `related` property, you can establish connections between different notifiers, where changes in any related notifier will trigger updates in the `ReactiveBuilder` that's watching them.
 
-2. **Relationship between a Main `ReactiveNotifier` and Other Complementary Notifiers**
-- In this approach, a main `ReactiveNotifier` handles a complex class (e.g. `UserInfo`), and other notifiers complement this state, such as `Settings`. The companion states are managed separately, but are related to the main state via `related`. Changes to any of the related notifiers cause the `ReactiveBuilder` to be updated.
-
+**Example Scenario: Managing Connected States**
+- A primary notifier might handle a complex `UserInfo` class, while other notifiers manage related states like `Settings` or `Preferences`. Using `related`, any changes in these interconnected states will trigger the appropriate UI updates through `ReactiveBuilder`.
 ---
 
-### **1. Direct Relationship between Simple Notifiers**
+### **Direct Relationship between Simple Notifiers**
 
 In this approach, you have several simple `ReactiveNotifier`s, and you use them together to notify state changes when any of these notifiers changes. The `ReactiveNotifier`s are related to each other using the `related` attribute, and you see a combined `ReactiveBuilder`.
 
@@ -550,17 +350,15 @@ final combinedNotifier = ReactiveNotifier(
 - **Explanation**:
   Here, `combinedNotifier` is a `ReactiveNotifier` that updates when any of the three notifiers (`timeHoursNotifier`, `routeNotifier`, `statusNotifier`) changes. This is useful when you have several simple states and you want them all to be connected to trigger an update in the UI together.
 
-#### **Using with `ReactiveBuilder`**
-
 ```dart
-ReactiveBuilder.notifier(
+ReactiveBuilder(
   notifier: combinedNotifier,
-  builder: (context, _, keep) {
+  builder: (state, keep) {
     return Column(
       children: [
-        Text("Horas: ${timeHoursNotifier.value}"),
-        Text("Ruta: ${routeNotifier.value}"),
-        Text("Estado: ${statusNotifier.value ? 'Activo' : 'Inactivo'}"),
+        Text("Hours: ${timeHoursNotifier.value}"),
+        Text("Route: ${routeNotifier.value}"),
+        Text("State: ${statusNotifier.value ? 'Active' : 'Inactive'}"),
       ],
     );
   },
@@ -572,7 +370,7 @@ ReactiveBuilder.notifier(
 
 ---
 
-### **2. Relationship between a Main `ReactiveNotifier` and Other Complementary Notifiers**
+### ** Relationship between a Main `ReactiveNotifier` and Other Complementary Notifiers**
 
 In this approach, you have a main `ReactiveNotifier` that handles a more complex class, such as a `UserInfo` object, and other complementary `ReactiveNotifier`s are related through `related`. These complementary notifiers do not need to be declared inside the main object class, but are integrated with it through the `related` attribute.
 
@@ -613,17 +411,15 @@ final userStateNotifier = ReactiveNotifier<UserInfo>(
 - **Explanation**:
   In this example, `userStateNotifier` is the main `ReactiveNotifier` that handles the state of `UserInfo`. `settingsNotifier` and `notificationsEnabledNotifier` are companion notifiers that handle user settings such as dark mode and enabling notifications. While they are not declared within `UserInfo`, they are related to it via `related`.
 
-#### **Using with `ReactiveBuilder`**
-
 ```dart
 ReactiveBuilder<UserInfo>(
-  valueListenable: userStateNotifier.value,
-  builder: (context, userInfo, keep) {
+  notifier: userStateNotifier,
+  builder: ( userInfo, keep) {
     return Column(
       children: [
-        Text("Usuario: ${userInfo.name}, Edad: ${userInfo.age}"),
-        Text("Configuración: ${settingsNotifier.value}"),
-        Text("Notificaciones: ${notificationsEnabledNotifier.value ? 'Habilitadas' : 'Deshabilitadas'}"),
+        Text("User: ${userInfo.name}, Age: ${userInfo.age}"),
+        Text("Configuration: ${settingsNotifier.notifier}"),
+        Text("Notifications: ${notificationsEnabledNotifier.notifier ? 'Active' : 'Inactive'}"),
       ],
     );
   },
@@ -636,9 +432,9 @@ ReactiveBuilder<UserInfo>(
 #### **Usage with `ReactiveBuilder.notifier`**
 
 ```dart
-ReactiveBuilder.notifier(
+ReactiveBuilder(
   notifier: userStateNotifier,
-  builder: (context, userInfo, keep) {
+  builder: (userInfo, keep) {
     return Column(
       children: [
         ElevatedButton(
@@ -652,16 +448,12 @@ ReactiveBuilder.notifier(
   },
 );
 ```
-
-- **Explanation**:
-  We use `ReactiveBuilder.notifier` to directly observe and update the `userStateNotifier`. When the user's name or any other value changes, it is automatically updated in the UI.
-
 ---
 
 ### **Advantages of Using `related` in `ReactiveNotifier`**
 
 1. **Flexibility**:
-   You can relate simple and complex notifiers without the need to involve additional classes. This is useful for handling states that depend on multiple values ​​without overcomplicating the structure.
+   You can relate simple and complex notifiers without the need to involve additional classes. This is useful for handling states that depend on multiple values without overcomplicating the structure.
 
 2. **Optimization**:
    When related notifiers change, the UI is automatically updated without the need to manually manage dependencies. This streamlines the workflow and improves the performance of the application.
@@ -713,12 +505,12 @@ class AppDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ReactiveBuilder<AppState>(
-      valueListenable: appState,
-      builder: (context, state, keep) {
+      notifier: appState,
+      builder: (state, keep) {
         
-        final user = userState.value;
-        final cart = cartState.value;
-        final settings = settingsState.value;
+        final user = userState.notifier.data;
+        final cart = cartState.notifier.data;
+        final settings = settingsState.notifier.data;
 
         return Column(
           children: [
@@ -735,8 +527,8 @@ class AppDashboard extends StatelessWidget {
 ```
 
 - **Explanation**:
-- Here, we directly access the values ​​of `userState`, `cartState`, and `settingsState` using `.value`.
-- **Pros**: It's a quick and straightforward way to access the values ​​if you don't need to perform any extra logic on them.
+- Here, we directly access the values of `userState`, `cartState`, and `settingsState` using `.notifier.data`.
+- **Pros**: It's a quick and straightforward way to access the values if you don't need to perform any extra logic on them.
 - **Cons**: If you need to access a specific value of a related `ReactiveNotifier` and it's not directly in the `builder`, you might need something more organized, like using `keyNotifier` or the `from<T>()` method.
 
 ---
@@ -752,8 +544,8 @@ class AppDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ReactiveBuilder<AppState>(
-      valueListenable: appState,
-      builder: (context, state, keep) {
+      notifier: appState,
+      builder: (state, keep) {
         
         final user = appState.from<UserState>();
         final cart = appState.from<CartState>();
@@ -782,7 +574,7 @@ class AppDashboard extends StatelessWidget {
 
 ### **3. Using `keyNotifier` to Access Specific Notifiers**
 
-The `keyNotifier` is useful when you want to access a related state that has a unique key within the `related` relationship. This is especially useful when you have multiple notifiers of the same type (for example, multiple `cartState`s) and you need to distinguish between them.
+The `keyNotifier` is useful when you want to access a related state that has a unique key within the `related` relationship. This is especially useful when you have multiple notifiers of the same type (for example, multiple `cartState's`) and you need to distinguish between them.
 
 #### **Using `keyNotifier`**
 
@@ -791,12 +583,12 @@ class AppDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ReactiveBuilder<AppState>(
-      valueListenable: appState,
-      builder: (context, state, keep) {
+      notifier: appState,
+      builder: (state, keep) {
        
-        final user = appState.from<UserState>(userState.keyNotifier);
-        final cart = appState.from<CartState>(cartState.keyNotifier);
-        final settings = appState.from<SettingsState>(settingsState.keyNotifier);
+        final user = appState.from<UserState>(userState.keyNotifier);  /// Or appState.from(userState.keyNotifier)
+        final cart = appState.from<CartState>(cartState.keyNotifier);  /// ....
+        final settings = appState.from<SettingsState>(settingsState.keyNotifier); /// ....
 
         return Column(
           children: [
@@ -818,21 +610,6 @@ class AppDashboard extends StatelessWidget {
 - **Cons**: If you only have one `ReactiveNotifier` of each type, this may be unnecessary, but in more complex scenarios with multiple notifiers of the same type, it's a great way to distinguish them.
 
 ---
-
-### **Summary of Ways to Access Related States**
-
-1. **Direct Access to `ReactiveNotifier`**:
-- **Simplest way**: `userState.value or final user = userState.value;`
-- **Ideal for simple, straightforward states**.
-
-2. **Using `from<T>()`**:
-- **Explicit access to a related state**: `final user = appState.from<UserState>();`
-- **Ideal for handling more complex relationships between notifiers and extracting values ​​from a specific state**.
-
-3. **Using `keyNotifier`**:
-- **Access to a related state with a unique identifier**: `final cart = appState.from<CartState>(cartState.keyNotifier);`
-- **Ideal for handling notifiers of the same type and differentiating between them**.
-
 
 ### What to Avoid
 
@@ -873,11 +650,11 @@ class ProductsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ReactiveAsyncBuilder<List<Product>>(
-      viewModel: productViewModel,
-      buildSuccess: (products) => ProductGrid(products),
-      buildLoading: () => const LoadingSpinner(),
-      buildError: (error, stack) => ErrorWidget(error),
-      buildInitial: () => const InitialView(),
+      notifier: productViewModel,
+      onSuccess: (products) => ProductGrid(products),
+      onLoading: () => const LoadingSpinner(),
+      onError: (error, stack) => ErrorWidget(error),
+      onInitial: () => const InitialView(),
     );
   }
 }
@@ -896,12 +673,12 @@ class ChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ReactiveStreamBuilder<Message>(
-      streamNotifier: messagesStream,
-      buildData: (message) => MessageBubble(message),
-      buildLoading: () => const LoadingIndicator(),
-      buildError: (error) => ErrorMessage(error),
-      buildEmpty: () => const NoMessages(),
-      buildDone: () => const StreamComplete(),
+      notifier: messagesStream,
+      onData: (message) => MessageBubble(message),
+      onLoading: () => const LoadingIndicator(),
+      onError: (error) => ErrorMessage(error),
+      onEmpty: () => const NoMessages(),
+      onDone: () => const StreamComplete(),
     );
   }
 }

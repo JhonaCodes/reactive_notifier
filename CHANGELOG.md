@@ -1,3 +1,23 @@
+# 2.4.0
+
+### Breaking Changes 🚨
+
+- Introducing `transformState` function for model editing, allowing state modifications at any nesting level. This function supports implementations like `copyWith`, enabling selective value updates in your models.
+
+- Simplified state management: unified `notifier` and VM into a single approach using `ReactiveBuilder`, `ReactiveAsync`, and `ReactiveStream`. Access functions directly through notifier reference (e.g., `instance.notifier.replaceData(...)`). Access `ReactiveAsync` data via `notifier.data`.
+
+- Removed `ValueNotifier` value dependency, eliminating nested state update issues (previously `instance.value.value`, now `instance.data`).
+
+- Protected internal builder functions for improved encapsulation.
+
+- Maintained compatibility with `ListenableBuilder` for `ReactiveNotifier`.
+
+- Removed `context` dependency from builder as `ReactiveNotifier` doesn't require it.
+
+### Best Practices
+- Recommend using mixins to store related Notifiers, avoiding global variables and maintaining proper context encapsulation.
+
+
 # 2.3.1
 * Update documentation.
 * Protected value for NotifierImpl.
@@ -12,7 +32,7 @@
 * For ViewModels/Complex States:
   ```dart
   ReactiveBuilder(
-    valueListenable: stateConnection.value,
+    notifier: stateConnection.value,
     builder: (context, state, keep) => YourWidget()
   )
   ```

@@ -14,22 +14,22 @@ void main() {
     group('Initialization and Basic Functionality', () {
       test('should initialize with default value', () {
         final state = ReactiveNotifier<int>(() => 0);
-        expect(state.value, 0);
+        expect(state.notifier, 0);
         expect(ReactiveNotifier.instanceCount, 1);
       });
 
       test('should create separate instances for each call', () {
         final state1 = ReactiveNotifier<int>(() => 0);
         final state2 = ReactiveNotifier<int>(() => 1);
-        expect(state1.value, 0);
-        expect(state2.value, 1);
+        expect(state1.notifier, 0);
+        expect(state2.notifier, 1);
         expect(ReactiveNotifier.instanceCount, 2);
       });
 
       test('should update value with setState', () {
         final state = ReactiveNotifier<int>(() => 0);
         state.updateState(10);
-        expect(state.value, 10);
+        expect(state.notifier, 10);
       });
     });
 
@@ -39,7 +39,7 @@ void main() {
         int? notifiedValue;
 
         notify.addListener(() {
-          notifiedValue = notify.value;
+          notifiedValue = notify.notifier;
         });
 
         notify.updateState(5);
@@ -53,10 +53,10 @@ void main() {
         int? listener2Value;
 
         notify.addListener(() {
-          listener1Value = notify.value;
+          listener1Value = notify.notifier;
         });
         notify.addListener(() {
-          listener2Value = notify.value;
+          listener2Value = notify.notifier;
         });
 
         notify.updateState(10);
@@ -70,7 +70,7 @@ void main() {
         int? listenerValue;
 
         void listener() {
-          listenerValue = notify.value;
+          listenerValue = notify.notifier;
         }
 
         notify.addListener(listener);
@@ -121,16 +121,16 @@ void main() {
         final isEvenNotifier = ReactiveNotifier<bool>(() => true);
 
         countNotifier.addListener(() {
-          isEvenNotifier.updateState(countNotifier.value % 2 == 0);
+          isEvenNotifier.updateState(countNotifier.notifier % 2 == 0);
         });
 
         countNotifier.updateState(1);
-        expect(countNotifier.value, 1);
-        expect(isEvenNotifier.value, false);
+        expect(countNotifier.notifier, 1);
+        expect(isEvenNotifier.notifier, false);
 
         countNotifier.updateState(2);
-        expect(countNotifier.value, 2);
-        expect(isEvenNotifier.value, true);
+        expect(countNotifier.notifier, 2);
+        expect(isEvenNotifier.notifier, true);
       });
 
       test('should handle cascading updates', () {
@@ -140,15 +140,15 @@ void main() {
 
         temperatureCelsius.addListener(() {
           temperatureFahrenheit
-              .updateState(temperatureCelsius.value * 9 / 5 + 32);
+              .updateState(temperatureCelsius.notifier * 9 / 5 + 32);
         });
 
         temperatureFahrenheit.addListener(() {
-          if (temperatureFahrenheit.value < 32) {
+          if (temperatureFahrenheit.notifier < 32) {
             weatherDescription.updateState('Freezing');
-          } else if (temperatureFahrenheit.value < 65) {
+          } else if (temperatureFahrenheit.notifier < 65) {
             weatherDescription.updateState('Cold');
-          } else if (temperatureFahrenheit.value < 80) {
+          } else if (temperatureFahrenheit.notifier < 80) {
             weatherDescription.updateState('Comfortable');
           } else {
             weatherDescription.updateState('Hot');
@@ -156,14 +156,14 @@ void main() {
         });
 
         temperatureCelsius.updateState(25); // 77°F
-        expect(temperatureCelsius.value, 25);
-        expect(temperatureFahrenheit.value, closeTo(77, 0.1));
-        expect(weatherDescription.value, 'Comfortable');
+        expect(temperatureCelsius.notifier, 25);
+        expect(temperatureFahrenheit.notifier, closeTo(77, 0.1));
+        expect(weatherDescription.notifier, 'Comfortable');
 
         temperatureCelsius.updateState(35); // 95°F
-        expect(temperatureCelsius.value, 35);
-        expect(temperatureFahrenheit.value, closeTo(95, 0.1));
-        expect(weatherDescription.value, 'Hot');
+        expect(temperatureCelsius.notifier, 35);
+        expect(temperatureFahrenheit.notifier, closeTo(95, 0.1));
+        expect(weatherDescription.notifier, 'Hot');
       });
 
       test('should handle circular dependencies without infinite updates', () {
@@ -177,21 +177,21 @@ void main() {
 
         notifierA.addListener(() {
           updateCountA++;
-          notifierB.updateState(notifierA.value + 1);
+          notifierB.updateState(notifierA.notifier + 1);
         });
 
         notifierB.addListener(() {
           updateCountB++;
-          notifierA.updateState(notifierB.value + 1);
+          notifierA.updateState(notifierB.notifier + 1);
         });
 
         notifierA.updateState(1);
 
         expect(updateCountA, equals(1), reason: 'notifierA should update once');
         expect(updateCountB, equals(1), reason: 'notifierB should update once');
-        expect(notifierA.value, equals(1),
+        expect(notifierA.notifier, equals(1),
             reason: 'notifierA state should remain 1');
-        expect(notifierB.value, equals(2),
+        expect(notifierB.notifier, equals(2),
             reason: 'notifierB state should be updated to 2');
 
         ReactiveNotifier.cleanup();
@@ -250,14 +250,14 @@ void main() {
         final complexState = ReactiveNotifier<Map<String, dynamic>>(
             () => {'count': 0, 'name': 'Test'});
         complexState.updateState({'count': 1, 'name': 'Updated'});
-        expect(complexState.value, {'count': 1, 'name': 'Updated'});
+        expect(complexState.notifier, {'count': 1, 'name': 'Updated'});
       });
 
       test('should handle null states', () {
         final nullableState = ReactiveNotifier<int?>(() => null);
-        expect(nullableState.value, isNull);
+        expect(nullableState.notifier, isNull);
         nullableState.updateState(5);
-        expect(nullableState.value, 5);
+        expect(nullableState.notifier, 5);
       });
 
       test('should handle state transitions', () {
@@ -281,54 +281,55 @@ void main() {
         }
 
         updateStateAsync();
-        expect(asyncState.value, 'initial');
+        expect(asyncState.notifier, 'initial');
         await Future.delayed(const Duration(milliseconds: 150));
-        expect(asyncState.value, 'updated');
+        expect(asyncState.notifier, 'updated');
       });
 
       test('should manage concurrent async updates', () async {
         final concurrentState = ReactiveNotifier<int>(() => 0);
         Future<void> incrementAsync() async {
           await Future.delayed(const Duration(milliseconds: 50));
-          concurrentState.updateState(concurrentState.value + 1);
+          concurrentState.updateState(concurrentState.notifier + 1);
         }
 
         await Future.wait(
             [incrementAsync(), incrementAsync(), incrementAsync()]);
-        expect(concurrentState.value, 3);
+        expect(concurrentState.notifier, 3);
       });
     });
 
     group('Computed States', () {
       test('should handle computed states', () {
         final baseState = ReactiveNotifier<int>(() => 1);
-        final computedState = ReactiveNotifier<int>(() => baseState.value * 2);
-        baseState
-            .addListener(() => computedState.updateState(baseState.value * 2));
+        final computedState =
+            ReactiveNotifier<int>(() => baseState.notifier * 2);
+        baseState.addListener(
+            () => computedState.updateState(baseState.notifier * 2));
         baseState.updateState(5);
-        expect(computedState.value, 10);
+        expect(computedState.notifier, 10);
       });
 
       test('should efficiently update multiple dependent states', () {
         final rootState = ReactiveNotifier<int>(() => 0);
-        final computed1 = ReactiveNotifier<int>(() => rootState.value + 1);
-        final computed2 = ReactiveNotifier<int>(() => rootState.value * 2);
-        final computed3 =
-            ReactiveNotifier<int>(() => computed1.value + computed2.value);
+        final computed1 = ReactiveNotifier<int>(() => rootState.notifier + 1);
+        final computed2 = ReactiveNotifier<int>(() => rootState.notifier * 2);
+        final computed3 = ReactiveNotifier<int>(
+            () => computed1.notifier + computed2.notifier);
 
         rootState.addListener(() {
-          computed1.updateState(rootState.value + 1);
-          computed2.updateState(rootState.value * 2);
+          computed1.updateState(rootState.notifier + 1);
+          computed2.updateState(rootState.notifier * 2);
         });
-        computed1.addListener(
-            () => computed3.updateState(computed1.value + computed2.value));
-        computed2.addListener(
-            () => computed3.updateState(computed1.value + computed2.value));
+        computed1.addListener(() =>
+            computed3.updateState(computed1.notifier + computed2.notifier));
+        computed2.addListener(() =>
+            computed3.updateState(computed1.notifier + computed2.notifier));
 
         rootState.updateState(5);
-        expect(computed1.value, 6);
-        expect(computed2.value, 10);
-        expect(computed3.value, 16);
+        expect(computed1.notifier, 6);
+        expect(computed2.notifier, 10);
+        expect(computed3.notifier, 16);
       });
     });
 
@@ -336,7 +337,8 @@ void main() {
       test('should maintain state history', () {
         final historicalState = ReactiveNotifier<int>(() => 0);
         final history = <int>[];
-        historicalState.addListener(() => history.add(historicalState.value));
+        historicalState
+            .addListener(() => history.add(historicalState.notifier));
         historicalState.updateState(1);
         historicalState.updateState(2);
         historicalState.updateState(3);
@@ -346,11 +348,11 @@ void main() {
       test('should support undo operations', () {
         final undoableState = ReactiveNotifier<int>(() => 0);
         final history = <int>[0];
-        undoableState.addListener(() => history.add(undoableState.value));
+        undoableState.addListener(() => history.add(undoableState.notifier));
         undoableState.updateState(1);
         undoableState.updateState(2);
         undoableState.updateState(history[history.length - 2]); // Undo
-        expect(undoableState.value, 1);
+        expect(undoableState.notifier, 1);
       });
     });
 
@@ -359,8 +361,8 @@ void main() {
         final customState =
             ReactiveNotifier<CustomObject>(() => CustomObject(1, 'initial'));
         customState.updateState(CustomObject(2, 'updated'));
-        expect(customState.value.id, 2);
-        expect(customState.value.name, 'updated');
+        expect(customState.notifier.id, 2);
+        expect(customState.notifier.name, 'updated');
       });
     });
 
@@ -385,7 +387,7 @@ void main() {
         // Actualizar el estado en el isolate principal
         isolateState.updateState(updatedState as int);
 
-        expect(isolateState.value, 42);
+        expect(isolateState.notifier, 42);
       });
     });
 
@@ -406,9 +408,9 @@ void main() {
       test('should support dependency injection', () {
         const injectedDependency = 'Injected Value';
         final dependentState = ReactiveNotifier<String>(() => 'Initial');
-        expect(dependentState.value, 'Initial');
+        expect(dependentState.notifier, 'Initial');
         dependentState.updateState('Updated with $injectedDependency');
-        expect(dependentState.value, 'Updated with Injected Value');
+        expect(dependentState.notifier, 'Updated with Injected Value');
       });
     });
   });
@@ -436,7 +438,7 @@ void main() {
 
         state.updateState(42); //42;
         expect(notifications, 1);
-        expect(state.value, 42);
+        expect(state.notifier, 42);
       });
 
       test('does not notify if value is the same', () {
@@ -479,21 +481,21 @@ void main() {
             ReactiveNotifier(() => 'combined', related: [stateA, stateB]);
 
         stateA.addListener(() => updates.add('A'));
-        expect(stateA.value, 'A');
+        expect(stateA.notifier, 'A');
         expect(combined.from<String>(stateA.keyNotifier), 'A');
 
         stateB.addListener(() => updates.add('B'));
-        expect(stateB.value, 'B');
+        expect(stateB.notifier, 'B');
         expect(combined.from<String>(stateB.keyNotifier), 'B');
 
         combined.addListener(() => updates.add('combined'));
 
         stateA.updateState('A2');
-        expect(stateA.value, 'A2');
+        expect(stateA.notifier, 'A2');
         expect(combined.from<String>(stateA.keyNotifier), 'A2');
 
         stateB.updateState('B2');
-        expect(stateB.value, 'B2');
+        expect(stateB.notifier, 'B2');
         expect(combined.from<String>(stateB.keyNotifier), 'B2');
 
         expect(updates.length, 4);

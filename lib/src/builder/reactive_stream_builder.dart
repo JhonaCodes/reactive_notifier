@@ -5,21 +5,21 @@ import 'package:reactive_notifier/src/handler/stream_state.dart';
 import 'package:reactive_notifier/src/reactive_notifier.dart';
 
 class ReactiveStreamBuilder<T> extends StatefulWidget {
-  final ReactiveNotifier<Stream<T>> streamNotifier;
-  final Widget Function(T data) buildData;
-  final Widget Function()? buildLoading;
-  final Widget Function(Object error)? buildError;
-  final Widget Function()? buildEmpty;
-  final Widget Function()? buildDone;
+  final ReactiveNotifier<Stream<T>> notifier;
+  final Widget Function(T data) onData;
+  final Widget Function()? onLoading;
+  final Widget Function(Object error)? onError;
+  final Widget Function()? onEmpty;
+  final Widget Function()? onDone;
 
   const ReactiveStreamBuilder({
     super.key,
-    required this.streamNotifier,
-    required this.buildData,
-    this.buildLoading,
-    this.buildError,
-    this.buildEmpty,
-    this.buildDone,
+    required this.notifier,
+    required this.onData,
+    this.onLoading,
+    this.onError,
+    this.onEmpty,
+    this.onDone,
   });
 
   @override
@@ -34,20 +34,20 @@ class _ReactiveStreamBuilderState<T> extends State<ReactiveStreamBuilder<T>> {
   @override
   void initState() {
     super.initState();
-    widget.streamNotifier.addListener(_onStreamChanged);
-    _subscribe(widget.streamNotifier.value);
+    widget.notifier.addListener(_onStreamChanged);
+    _subscribe(widget.notifier.notifier);
   }
 
   @override
   void dispose() {
-    widget.streamNotifier.removeListener(_onStreamChanged);
+    widget.notifier.removeListener(_onStreamChanged);
     _unsubscribe();
     super.dispose();
   }
 
   void _onStreamChanged() {
     _unsubscribe();
-    _subscribe(widget.streamNotifier.value);
+    _subscribe(widget.notifier.notifier);
   }
 
   void _subscribe(Stream<T> stream) {
@@ -68,15 +68,14 @@ class _ReactiveStreamBuilderState<T> extends State<ReactiveStreamBuilder<T>> {
   @override
   Widget build(BuildContext context) {
     return _state.when(
-      initial: () => widget.buildEmpty?.call() ?? const SizedBox.shrink(),
+      initial: () => widget.onEmpty?.call() ?? const SizedBox.shrink(),
       loading: () =>
-          widget.buildLoading?.call() ??
+          widget.onLoading?.call() ??
           const Center(child: CircularProgressIndicator.adaptive()),
-      data: (data) => widget.buildData(data),
+      data: (data) => widget.onData(data),
       error: (error) =>
-          widget.buildError?.call(error) ??
-          Center(child: Text('Error: $error')),
-      done: () => widget.buildDone?.call() ?? const SizedBox.shrink(),
+          widget.onError?.call(error) ?? Center(child: Text('Error: $error')),
+      done: () => widget.onDone?.call() ?? const SizedBox.shrink(),
     );
   }
 }

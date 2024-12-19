@@ -21,7 +21,6 @@ export 'package:reactive_notifier/src/builder/reactive_async_builder.dart';
 export 'package:reactive_notifier/src/builder/reactive_stream_builder.dart';
 
 /// Export ViewModelImpl
-export 'package:reactive_notifier/src/viewmodel/async_viewmodel_impl.dart';
 export 'package:reactive_notifier/src/viewmodel/viewmodel_impl.dart';
 
 /// Export RepositoryImpl

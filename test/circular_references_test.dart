@@ -323,10 +323,10 @@ void main() {
         reason: 'Should create all instances without nesting',
       );
 
-      expect(firstNotifier2.value, equals('Level -1'));
-      expect(firstNotifier.value, equals('Level 0'));
-      expect(secondNotifier.value, equals('Level 1'));
-      expect(thirdNotifier.value, equals('Level 2'));
+      expect(firstNotifier2.notifier, equals('Level -1'));
+      expect(firstNotifier.notifier, equals('Level 0'));
+      expect(secondNotifier.notifier, equals('Level 1'));
+      expect(thirdNotifier.notifier, equals('Level 2'));
     });
   });
 }
