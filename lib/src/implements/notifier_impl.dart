@@ -63,7 +63,6 @@ abstract class StateNotifierImpl<T> extends ChangeNotifier {
     }
   }
 
-
   @immutable
   T get data => _data;
 

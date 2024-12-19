@@ -1,3 +1,6 @@
+# 2.4.2
+- Some dart format.
+
 # 2.4.1
 - Update name of state and documentation for `StateNotifierImpl`.
 

@@ -51,7 +51,6 @@ abstract class ViewModelImpl<T> extends StateNotifierImpl<T> {
       StateTracker.trackStateChange(_id);
     }
   }
-
 }
 
 /// [ViewModelStateImpl]
@@ -98,5 +97,4 @@ abstract class ViewModelStateImpl<T> extends StateNotifierImpl<T> {
       StateTracker.trackStateChange(_id);
     }
   }
-
 }
