@@ -1,4 +1,4 @@
-# 2.4.0
+# 2.4.1
 - Update name of state and documentation for `StateNotifierImpl`.
 
 # 2.4.0
