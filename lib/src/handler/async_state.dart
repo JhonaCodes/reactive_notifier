@@ -26,7 +26,7 @@ class AsyncState<T> {
     required R Function() initial,
     required R Function() loading,
     required R Function(T data) success,
-    required R Function(Object? error, StackTrace? stackTrace) error,
+    required R Function(Object? err, StackTrace? stackTrace) error,
   }) {
     switch (status) {
       case AsyncStatus.initial:

@@ -35,7 +35,7 @@ class _ReactiveStreamBuilderState<T> extends State<ReactiveStreamBuilder<T>> {
   void initState() {
     super.initState();
     widget.streamNotifier.addListener(_onStreamChanged);
-    _subscribe(widget.streamNotifier.value);
+    _subscribe(widget.streamNotifier.notifier);
   }
 
   @override
@@ -47,7 +47,7 @@ class _ReactiveStreamBuilderState<T> extends State<ReactiveStreamBuilder<T>> {
 
   void _onStreamChanged() {
     _unsubscribe();
-    _subscribe(widget.streamNotifier.value);
+    _subscribe(widget.streamNotifier.notifier);
   }
 
   void _subscribe(Stream<T> stream) {

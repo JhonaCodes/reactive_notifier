@@ -38,7 +38,7 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
       related?.forEach((child) {
         child._parents.add(this);
         assert(() {
-          log('➕ Added parent-child relation: $T -> ${child.value.runtimeType}',
+          log('➕ Added parent-child relation: $T -> ${child.notifier.runtimeType}',
               level: 10);
           return true;
         }());
@@ -59,7 +59,7 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
     assert(() {
       log('''
 📦 Creating ReactiveNotifier<$T>
-${related != null ? '🔗 With related types: ${related.map((r) => r.value.runtimeType).join(', ')}' : ''}
+${related != null ? '🔗 With related types: ${related.map((r) => r.notifier.runtimeType).join(', ')}' : ''}
 ''', level: 5);
       return true;
     }());
@@ -105,7 +105,7 @@ Location: $trace
 
   @override
   void updateState(T newState) {
-    if (value != newState) {
+    if (notifier != newState) {
       // Prevent circular update
       if (_updatingNotifiers.contains(this)) {
         return;
@@ -115,7 +115,7 @@ Location: $trace
       _checkNotificationOverflow();
 
       assert(() {
-        log('📝 Updating state for $T: $value -> ${newState.runtimeType}', level: 10);
+        log('📝 Updating state for $T: $notifier -> ${newState.runtimeType}', level: 10);
         return true;
       }());
 
@@ -163,7 +163,7 @@ Location: $trace
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Notifier: ${describeIdentity(this)}
 Type: $T
-Current Value: $value
+Current Value: $notifier
 Location: ${StackTrace.current}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 $_notificationCount notifications in ${_thresholdTimeWindow.inMilliseconds}ms
@@ -224,8 +224,8 @@ $_notificationCount notifications in ${_thresholdTimeWindow.inMilliseconds}ms
 
   String _formatNotifierInfo(ReactiveNotifier notifier) {
     return '''
-   Type: ${notifier.value.runtimeType}
-   Value: ${notifier.value}
+   Type: ${notifier.notifier.runtimeType}
+   Value: ${notifier.notifier}
    Key: ${notifier.keyNotifier}''';
   }
 
@@ -265,7 +265,7 @@ $_notificationCount notifications in ${_thresholdTimeWindow.inMilliseconds}ms
     Set<Key> pathKeys,
   ) {
     final cycle = [...pathKeys, child.keyNotifier]
-        .map((key) => '${_instances[key]?.value.runtimeType}($key)')
+        .map((key) => '${_instances[key]?.notifier.runtimeType}($key)')
         .join(' -> ');
 
     throw StateError('''
@@ -376,29 +376,29 @@ Requested type: $R${key != null ? '\nRequested key: $key' : ''}
 
     final result = key != null
         ? related!.firstWhere(
-            (n) => n.value is R && n.keyNotifier == key,
+            (n) => n.notifier is R && n.keyNotifier == key,
             orElse: () => throw StateError('''
 ❌ Related State Not Found
 ━━━━━━━━━━━━━━━━━━━━━
 Looking for: $R with key: $key
 Parent type: $T
-Available types: ${related!.map((r) => '${r.value.runtimeType}(${r.keyNotifier})').join(', ')}
+Available types: ${related!.map((r) => '${r.notifier.runtimeType}(${r.keyNotifier})').join(', ')}
 ━━━━━━━━━━━━━━━━━━━━━
 '''),
           )
         : related!.firstWhere(
-            (n) => n.value is R,
+            (n) => n.notifier is R,
             orElse: () => throw StateError('''
 ❌ Related State Not Found
 ━━━━━━━━━━━━━━━━━━━━━
 Looking for: $R
 Parent type: $T
-Available types: ${related!.map((r) => '${r.value.runtimeType}(${r.keyNotifier})').join(', ')}
+Available types: ${related!.map((r) => '${r.notifier.runtimeType}(${r.keyNotifier})').join(', ')}
 ━━━━━━━━━━━━━━━━━━━━━
 '''),
           );
 
-    return result.value as R;
+    return result.notifier as R;
   }
 
   /// Utility methods
@@ -414,5 +414,6 @@ Available types: ${related!.map((r) => '${r.value.runtimeType}(${r.keyNotifier})
   }
 
   @override
-  String toString() => '${describeIdentity(this)}($value)';
+  String toString() => '${describeIdentity(this)}($notifier)';
+
 }

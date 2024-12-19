@@ -3,28 +3,27 @@ import 'package:flutter/foundation.dart';
 @protected
 
 /// value return.
-abstract class NotifierImpl<T> extends ChangeNotifier
-    implements ValueListenable<T> {
-  T _value;
-  NotifierImpl(this._value) {
+abstract class NotifierImpl<T> extends ChangeNotifier {
+  T _notifier;
+  NotifierImpl(this._notifier) {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
   }
 
-  @override
-  T get value => _value;
+
+  T get notifier => _notifier;
 
   /// [updateState]
   /// Updates the state and notifies listeners if the value has changed.
   ///
   @protected
   void updateState(T newState) {
-    if (_value == newState) {
+    if (_notifier == newState) {
       return;
     }
 
-    _value = newState;
+    _notifier = newState;
     notifyListeners();
   }
 
@@ -33,60 +32,51 @@ abstract class NotifierImpl<T> extends ChangeNotifier
   ///
   @protected
   void updateSilently(T newState) {
-    _value = newState;
-  }
-  @protected
-  @override
-  String toString() => '${describeIdentity(this)}($value)';
-
-  @protected
-  @override
-  void addListener(VoidCallback listener) {
-    super.addListener(listener);
+    _notifier = newState;
   }
 
   @protected
   @override
-  void removeListener(VoidCallback listener) => super.removeListener(listener);
+  String toString() => '${describeIdentity(this)}($_notifier)';
 
-  @protected
-  @override
-  void dispose() => super.dispose();
 
   @immutable
-  @protected
-  @override
-  void notifyListeners() => super.notifyListeners();
-
-  @immutable
-  @protected
   @override
   bool get hasListeners => super.hasListeners;
 }
 
 @protected
-abstract class StateNotifierImpl<T> extends ChangeNotifier
-    implements ValueListenable<T> {
-  T _value;
-  StateNotifierImpl(this._value) {
+abstract class StateNotifierImpl<T> extends ChangeNotifier {
+  T _notifier;
+  StateNotifierImpl(this._notifier) {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
   }
 
   @protected
-  @override
-  T get value => _value;
+  T get notifier => _notifier;
 
   /// [updateState]
   /// Updates the state and notifies listeners if the value has changed.
-  @protected
+
+
   void updateState(T newState) {
-    if (_value == newState) {
+    if (_notifier.hashCode == newState.hashCode) {
       return;
     }
 
-    _value = newState;
+    _notifier = newState;
+    notifyListeners();
+  }
+
+
+  void transformState( T Function(T data) data){
+    final dataNotifier = data(_notifier);
+    if(dataNotifier.hashCode == _notifier.hashCode){
+      return;
+    }
+    _notifier = data(_notifier);
     notifyListeners();
   }
 
@@ -94,12 +84,12 @@ abstract class StateNotifierImpl<T> extends ChangeNotifier
   /// Updates the value silently without notifying listeners.
   @protected
   void updateSilently(T newState) {
-    _value = newState;
+    _notifier = newState;
   }
 
   @protected
   @override
-  String toString() => '${describeIdentity(this)}($value)';
+  String toString() => '${describeIdentity(this)}($notifier)';
 
   @protected
   @override

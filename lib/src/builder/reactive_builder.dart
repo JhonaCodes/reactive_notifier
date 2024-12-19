@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:reactive_notifier/src/implements/notifier_impl.dart';
 import 'package:reactive_notifier/src/reactive_notifier.dart';
 
 class ReactiveBuilder<T> extends StatefulWidget {
-  final ValueListenable<T> valueListenable;
+  final NotifierImpl<T> valueListenable;
   final Widget Function(
-    BuildContext context,
-    T value,
+    T state,
     Widget Function(Widget child) keep,
   ) builder;
 
@@ -18,20 +18,6 @@ class ReactiveBuilder<T> extends StatefulWidget {
     required this.builder,
   });
 
-  /// Recommended constructor for handling simple states.
-  const ReactiveBuilder.notifier({
-    Key? key,
-    required ReactiveNotifier<T> notifier,
-    required Widget Function(
-      BuildContext context,
-      T value,
-      Widget Function(Widget child) keep,
-    ) builder,
-  }) : this(
-          key: key,
-          valueListenable: notifier,
-          builder: builder,
-        );
 
   @override
   State<ReactiveBuilder<T>> createState() => _ReactiveBuilderState<T>();
@@ -45,7 +31,7 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
   @override
   void initState() {
     super.initState();
-    value = widget.valueListenable.value;
+    value = widget.valueListenable.notifier;
     widget.valueListenable.addListener(_valueChanged);
   }
 
@@ -54,7 +40,7 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.valueListenable != widget.valueListenable) {
       oldWidget.valueListenable.removeListener(_valueChanged);
-      value = widget.valueListenable.value;
+      value = widget.valueListenable.notifier;
       widget.valueListenable.addListener(_valueChanged);
     }
   }
@@ -74,12 +60,12 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
     if (!isTesting) {
       debounceTimer = Timer(const Duration(milliseconds: 100), () {
         setState(() {
-          value = widget.valueListenable.value;
+          value = widget.valueListenable.notifier;
         });
       });
     } else {
       setState(() {
-        value = widget.valueListenable.value;
+        value = widget.valueListenable.notifier;
       });
     }
   }
@@ -94,7 +80,7 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return widget.builder(context, value, _noRebuild);
+    return widget.builder( value, _noRebuild);
   }
 }
 
@@ -121,3 +107,6 @@ class _NoRebuildWrapperState extends State<_NoRebuildWrapper> {
 }
 
 bool get isTesting => const bool.fromEnvironment('dart.vm.product') == true;
+
+
+

@@ -26,6 +26,7 @@ abstract class ViewModelImpl<T> extends StateNotifierImpl<T> {
     }
   }
 
+  @protected
   void init();
 
   bool _initialized = false;
@@ -93,4 +94,9 @@ abstract class ViewModelStateImpl<T> extends StateNotifierImpl<T> {
       StateTracker.trackStateChange(_id);
     }
   }
+
+
+  @override
+  T get notifier => this.notifier;
+
 }
