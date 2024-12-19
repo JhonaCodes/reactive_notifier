@@ -26,7 +26,7 @@ abstract class ViewModelImpl<T> extends StateNotifierImpl<T> {
     }
   }
 
-  @protected
+  @immutable
   void init();
 
   bool _initialized = false;
@@ -51,6 +51,10 @@ abstract class ViewModelImpl<T> extends StateNotifierImpl<T> {
       StateTracker.trackStateChange(_id);
     }
   }
+
+
+  @override
+  T get data => this.data;
 }
 
 /// [ViewModelStateImpl]
@@ -70,6 +74,7 @@ abstract class ViewModelStateImpl<T> extends StateNotifierImpl<T> {
     }
   }
 
+  @immutable
   void init();
 
   bool _initialized = false;
@@ -83,18 +88,21 @@ abstract class ViewModelStateImpl<T> extends StateNotifierImpl<T> {
     }
   }
 
+  @immutable
   void addDependencyTracker(String notifyId, String dependentId) {
     if (!kReleaseMode) {
       StateTracker.addDependency(notifyId, dependentId);
     }
   }
 
+  @immutable
   void currentTracker() {
     if (!kReleaseMode && _id != null) {
       StateTracker.trackStateChange(_id);
     }
   }
 
+
   @override
-  T get notifier => this.notifier;
+  T get data => this.data;
 }

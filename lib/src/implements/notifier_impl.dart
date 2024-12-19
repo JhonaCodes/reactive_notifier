@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 
-/// value return.
+/// [NotifierImpl]
+/// Contains all the elements of the viewmodel, such as the main functions and attributes, which are used to modify data.
+/// [ReactiveBuilder] and [ReactiveNotifier]
+///
 @protected
 abstract class NotifierImpl<T> extends ChangeNotifier {
   T _notifier;
@@ -47,36 +50,41 @@ abstract class NotifierImpl<T> extends ChangeNotifier {
   bool get hasListeners => super.hasListeners;
 }
 
+/// [StateNotifierImpl]
+/// Contains the data that is modified by `NotifierImpl`, it takes the data type declared in the viewmodel -
+/// to use as a data type and returns the data from that viewmodel.
+/// [ViewModelImpl] and [ViewModelStateImpl]
 @protected
 abstract class StateNotifierImpl<T> extends ChangeNotifier {
-  T _notifier;
-  StateNotifierImpl(this._notifier) {
+  T _data;
+  StateNotifierImpl(this._data) {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
   }
 
-  @protected
-  T get notifier => _notifier;
+
+  @immutable
+  T get data => _data;
 
   /// [updateState]
   /// Updates the state and notifies listeners if the value has changed.
 
   void updateState(T newState) {
-    if (_notifier.hashCode == newState.hashCode) {
+    if (_data.hashCode == newState.hashCode) {
       return;
     }
 
-    _notifier = newState;
+    _data = newState;
     notifyListeners();
   }
 
   void transformState(T Function(T data) data) {
-    final dataNotifier = data(_notifier);
-    if (dataNotifier.hashCode == _notifier.hashCode) {
+    final dataNotifier = data(_data);
+    if (dataNotifier.hashCode == _data.hashCode) {
       return;
     }
-    _notifier = data(_notifier);
+    _data = data(_data);
     notifyListeners();
   }
 
@@ -84,12 +92,12 @@ abstract class StateNotifierImpl<T> extends ChangeNotifier {
   /// Updates the value silently without notifying listeners.
   @protected
   void updateSilently(T newState) {
-    _notifier = newState;
+    _data = newState;
   }
 
   @protected
   @override
-  String toString() => '${describeIdentity(this)}($notifier)';
+  String toString() => '${describeIdentity(this)}($data)';
 
   @protected
   @override

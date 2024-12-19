@@ -12,8 +12,7 @@ class ConnectionStateWidget extends StatelessWidget {
     return ReactiveBuilder<ConnectionManagerVM>(
       notifier: ConnectionService.instance,
       builder: (service, keep) {
-        final state = service.notifier;
-
+        final state = service.data;
         return Card(
           elevation: 4,
           child: Padding(
