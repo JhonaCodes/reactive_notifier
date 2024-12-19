@@ -4,16 +4,18 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 import 'service/connection_service.dart';
 import 'viewmodel/connection_state_viewmodel.dart';
 
+
 class ConnectionStateWidget extends StatelessWidget {
   const ConnectionStateWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ReactiveBuilder<ConnectionManager>(
-      valueListenable: ConnectionService.instance,
+    return ReactiveBuilder<ConnectionManagerVM>(
+      notifier: ConnectionService.instance,
       builder: ( service, keep) {
 
         final state = service.notifier;
+
 
         return Card(
           elevation: 4,

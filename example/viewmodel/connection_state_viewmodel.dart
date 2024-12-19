@@ -4,8 +4,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
-class ConnectionManager extends ViewModelStateImpl<ConnectionState> {
-  ConnectionManager() : super(ConnectionState.offline);
+class ConnectionManagerVM extends ViewModelStateImpl<ConnectionState> {
+  ConnectionManagerVM() : super(ConnectionState.offline);
 
   Timer? _reconnectTimer;
   bool _isReconnecting = false;

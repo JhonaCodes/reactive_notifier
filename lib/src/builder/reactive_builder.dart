@@ -1,12 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/src/implements/notifier_impl.dart';
-import 'package:reactive_notifier/src/reactive_notifier.dart';
 
 class ReactiveBuilder<T> extends StatefulWidget {
-  final NotifierImpl<T> valueListenable;
+  final NotifierImpl<T> notifier;
   final Widget Function(
     T state,
     Widget Function(Widget child) keep,
@@ -14,7 +12,7 @@ class ReactiveBuilder<T> extends StatefulWidget {
 
   const ReactiveBuilder({
     super.key,
-    required this.valueListenable,
+    required this.notifier,
     required this.builder,
   });
 
@@ -31,23 +29,23 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
   @override
   void initState() {
     super.initState();
-    value = widget.valueListenable.notifier;
-    widget.valueListenable.addListener(_valueChanged);
+    value = widget.notifier.notifier;
+    widget.notifier.addListener(_valueChanged);
   }
 
   @override
   void didUpdateWidget(ReactiveBuilder<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.valueListenable != widget.valueListenable) {
-      oldWidget.valueListenable.removeListener(_valueChanged);
-      value = widget.valueListenable.notifier;
-      widget.valueListenable.addListener(_valueChanged);
+    if (oldWidget.notifier != widget.notifier) {
+      oldWidget.notifier.removeListener(_valueChanged);
+      value = widget.notifier.notifier;
+      widget.notifier.addListener(_valueChanged);
     }
   }
 
   @override
   void dispose() {
-    widget.valueListenable.removeListener(_valueChanged);
+    widget.notifier.removeListener(_valueChanged);
     debounceTimer?.cancel();
     super.dispose();
   }
@@ -60,12 +58,12 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
     if (!isTesting) {
       debounceTimer = Timer(const Duration(milliseconds: 100), () {
         setState(() {
-          value = widget.valueListenable.notifier;
+          value = widget.notifier.notifier;
         });
       });
     } else {
       setState(() {
-        value = widget.valueListenable.notifier;
+        value = widget.notifier.notifier;
       });
     }
   }

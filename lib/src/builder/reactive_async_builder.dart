@@ -3,33 +3,33 @@ import 'package:flutter/material.dart';
 import 'package:reactive_notifier/src/handler/async_state.dart';
 
 class ReactiveAsyncBuilder<T> extends StatelessWidget {
-  final AsyncViewModelImpl<T> viewModel;
-  final Widget Function(T data) buildSuccess;
-  final Widget Function()? buildLoading;
-  final Widget Function(Object? error, StackTrace? stackTrace)? buildError;
-  final Widget Function()? buildInitial;
+  final AsyncViewModelImpl<T> notifier;
+  final Widget Function(T data) onSuccess;
+  final Widget Function()? onLoading;
+  final Widget Function(Object? error, StackTrace? stackTrace)? onError;
+  final Widget Function()? onInitial;
 
   const ReactiveAsyncBuilder({
     super.key,
-    required this.viewModel,
-    required this.buildSuccess,
-    this.buildLoading,
-    this.buildError,
-    this.buildInitial,
+    required this.notifier,
+    required this.onSuccess,
+    this.onLoading,
+    this.onError,
+    this.onInitial,
   });
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: viewModel,
+      animation: notifier,
       builder: (context, _) {
-        return viewModel.when(
-          initial: () => buildInitial?.call() ?? const SizedBox.shrink(),
+        return notifier.when(
+          initial: () => onInitial?.call() ?? const SizedBox.shrink(),
           loading: () =>
-              buildLoading?.call() ??
+              onLoading?.call() ??
               const Center(child: CircularProgressIndicator.adaptive()),
-          success: (data) => buildSuccess(data),
-          error: (error, stackTrace) => buildError != null ? buildError!(error, stackTrace) : Center(child: Text('Error: $error')),
+          success: (data) => onSuccess(data),
+          error: (error, stackTrace) => onError != null ? onError!(error, stackTrace) : Center(child: Text('Error: $error')),
         );
       },
     );
@@ -42,6 +42,7 @@ class ReactiveAsyncBuilder<T> extends StatelessWidget {
 /// Provides a standardized way to handle loading, success, and error states for async data.
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
+@protected
 abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
 
   late AsyncState _state;

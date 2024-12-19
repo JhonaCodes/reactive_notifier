@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 
-@protected
 
 /// value return.
+@protected
 abstract class NotifierImpl<T> extends ChangeNotifier {
   T _notifier;
   NotifierImpl(this._notifier) {
@@ -33,6 +33,11 @@ abstract class NotifierImpl<T> extends ChangeNotifier {
   @protected
   void updateSilently(T newState) {
     _notifier = newState;
+  }
+
+  void transformState( T Function(T data) data){
+    _notifier = data(_notifier);
+    notifyListeners();
   }
 
   @protected

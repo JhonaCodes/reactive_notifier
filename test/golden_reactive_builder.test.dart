@@ -18,7 +18,7 @@ void main() {
           GoldenTestScenario(
             name: 'Change value 0',
             child: ReactiveBuilder(
-                valueListenable: state,
+                notifier: state,
                 builder: (value, child) {
                   return Column(
                     children: [
@@ -45,7 +45,7 @@ void main() {
           GoldenTestScenario(
             name: 'Change value 200',
             child: ReactiveBuilder<int>(
-                valueListenable: state,
+                notifier: state,
                 builder: (value, child) {
                   if (value == 0) {
                     state.updateState(200);
@@ -68,7 +68,7 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: ReactiveBuilder<int>(
-            valueListenable: valueNotifier,
+            notifier: valueNotifier,
             builder: ( value, noRebuildable) {
               rebuildCount++; // Contador para verificar reconstrucciones
               log("Widget que se reconstruye: $value");
