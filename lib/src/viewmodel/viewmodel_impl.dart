@@ -52,9 +52,6 @@ abstract class ViewModelImpl<T> extends StateNotifierImpl<T> {
     }
   }
 
-
-  @override
-  T get data => this.data;
 }
 
 /// [ViewModelStateImpl]
@@ -102,7 +99,4 @@ abstract class ViewModelStateImpl<T> extends StateNotifierImpl<T> {
     }
   }
 
-
-  @override
-  T get data => this.data;
 }
