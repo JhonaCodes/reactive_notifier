@@ -29,13 +29,14 @@ class ReactiveAsyncBuilder<T> extends StatelessWidget {
               onLoading?.call() ??
               const Center(child: CircularProgressIndicator.adaptive()),
           success: (data) => onSuccess(data),
-          error: (error, stackTrace) => onError != null ? onError!(error, stackTrace) : Center(child: Text('Error: $error')),
+          error: (error, stackTrace) => onError != null
+              ? onError!(error, stackTrace)
+              : Center(child: Text('Error: $error')),
         );
       },
     );
   }
 }
-
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
 ///
@@ -44,12 +45,10 @@ class ReactiveAsyncBuilder<T> extends StatelessWidget {
 /// Base ViewModel implementation for handling asynchronous operations with state management.
 @protected
 abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
-
   late AsyncState _state;
   late bool loadOnInit;
 
-  AsyncViewModelImpl(this._state,{ this.loadOnInit = true }) :super() {
-
+  AsyncViewModelImpl(this._state, {this.loadOnInit = true}) : super() {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
@@ -57,7 +56,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
     if (loadOnInit) {
       _initializeAsync();
     }
-
   }
 
   /// Internal initialization method that properly handles async initialization
@@ -97,7 +95,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
   }
 
   @protected
-  void loadingState(){
+  void loadingState() {
     _state = AsyncState.loading();
     notifyListeners();
   }
@@ -111,11 +109,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
   }
 
   @protected
-  void cleanState(){
+  void cleanState() {
     _state = AsyncState.initial();
   }
-
-
 
   /// Check if any operation is in progress
   bool get isLoading => _state.isLoading;
@@ -138,7 +134,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
     required R Function() loading,
     required R Function(T data) success,
     required R Function(Object? err, StackTrace? stackTrace) error,
-  }){
+  }) {
     return _state.when(
       initial: initial,
       loading: loading,
@@ -146,5 +142,4 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
       error: error,
     );
   }
-
 }

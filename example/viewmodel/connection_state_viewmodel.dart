@@ -57,8 +57,6 @@ class ConnectionManagerVM extends ViewModelStateImpl<ConnectionState> {
     _reconnectTimer?.cancel();
     super.dispose();
   }
-
-
 }
 
 enum ConnectionState {
@@ -105,7 +103,7 @@ extension ConnectionStateX on ConnectionState {
       ConnectionState.uploading ||
       ConnectionState.syncing ||
       ConnectionState.connecting =>
-      Colors.blue,
+        Colors.blue,
       ConnectionState.waiting || ConnectionState.pendingSync => Colors.orange,
       _ => Colors.red,
     };

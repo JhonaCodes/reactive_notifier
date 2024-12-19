@@ -302,9 +302,10 @@ void main() {
     group('Computed States', () {
       test('should handle computed states', () {
         final baseState = ReactiveNotifier<int>(() => 1);
-        final computedState = ReactiveNotifier<int>(() => baseState.notifier * 2);
-        baseState
-            .addListener(() => computedState.updateState(baseState.notifier * 2));
+        final computedState =
+            ReactiveNotifier<int>(() => baseState.notifier * 2);
+        baseState.addListener(
+            () => computedState.updateState(baseState.notifier * 2));
         baseState.updateState(5);
         expect(computedState.notifier, 10);
       });
@@ -313,17 +314,17 @@ void main() {
         final rootState = ReactiveNotifier<int>(() => 0);
         final computed1 = ReactiveNotifier<int>(() => rootState.notifier + 1);
         final computed2 = ReactiveNotifier<int>(() => rootState.notifier * 2);
-        final computed3 =
-            ReactiveNotifier<int>(() => computed1.notifier + computed2.notifier);
+        final computed3 = ReactiveNotifier<int>(
+            () => computed1.notifier + computed2.notifier);
 
         rootState.addListener(() {
           computed1.updateState(rootState.notifier + 1);
           computed2.updateState(rootState.notifier * 2);
         });
-        computed1.addListener(
-            () => computed3.updateState(computed1.notifier + computed2.notifier));
-        computed2.addListener(
-            () => computed3.updateState(computed1.notifier + computed2.notifier));
+        computed1.addListener(() =>
+            computed3.updateState(computed1.notifier + computed2.notifier));
+        computed2.addListener(() =>
+            computed3.updateState(computed1.notifier + computed2.notifier));
 
         rootState.updateState(5);
         expect(computed1.notifier, 6);
@@ -336,7 +337,8 @@ void main() {
       test('should maintain state history', () {
         final historicalState = ReactiveNotifier<int>(() => 0);
         final history = <int>[];
-        historicalState.addListener(() => history.add(historicalState.notifier));
+        historicalState
+            .addListener(() => history.add(historicalState.notifier));
         historicalState.updateState(1);
         historicalState.updateState(2);
         historicalState.updateState(3);

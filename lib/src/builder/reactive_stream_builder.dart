@@ -74,8 +74,7 @@ class _ReactiveStreamBuilderState<T> extends State<ReactiveStreamBuilder<T>> {
           const Center(child: CircularProgressIndicator.adaptive()),
       data: (data) => widget.onData(data),
       error: (error) =>
-          widget.onError?.call(error) ??
-          Center(child: Text('Error: $error')),
+          widget.onError?.call(error) ?? Center(child: Text('Error: $error')),
       done: () => widget.onDone?.call() ?? const SizedBox.shrink(),
     );
   }

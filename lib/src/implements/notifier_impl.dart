@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-
 /// value return.
 @protected
 abstract class NotifierImpl<T> extends ChangeNotifier {
@@ -10,7 +9,6 @@ abstract class NotifierImpl<T> extends ChangeNotifier {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
   }
-
 
   T get notifier => _notifier;
 
@@ -35,7 +33,7 @@ abstract class NotifierImpl<T> extends ChangeNotifier {
     _notifier = newState;
   }
 
-  void transformState( T Function(T data) data){
+  void transformState(T Function(T data) data) {
     _notifier = data(_notifier);
     notifyListeners();
   }
@@ -43,7 +41,6 @@ abstract class NotifierImpl<T> extends ChangeNotifier {
   @protected
   @override
   String toString() => '${describeIdentity(this)}($_notifier)';
-
 
   @immutable
   @override
@@ -65,7 +62,6 @@ abstract class StateNotifierImpl<T> extends ChangeNotifier {
   /// [updateState]
   /// Updates the state and notifies listeners if the value has changed.
 
-
   void updateState(T newState) {
     if (_notifier.hashCode == newState.hashCode) {
       return;
@@ -75,10 +71,9 @@ abstract class StateNotifierImpl<T> extends ChangeNotifier {
     notifyListeners();
   }
 
-
-  void transformState( T Function(T data) data){
+  void transformState(T Function(T data) data) {
     final dataNotifier = data(_notifier);
-    if(dataNotifier.hashCode == _notifier.hashCode){
+    if (dataNotifier.hashCode == _notifier.hashCode) {
       return;
     }
     _notifier = data(_notifier);

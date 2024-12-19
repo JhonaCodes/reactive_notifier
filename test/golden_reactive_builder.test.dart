@@ -69,7 +69,7 @@ void main() {
         home: Scaffold(
           body: ReactiveBuilder<int>(
             notifier: valueNotifier,
-            builder: ( value, noRebuildable) {
+            builder: (value, noRebuildable) {
               rebuildCount++; // Contador para verificar reconstrucciones
               log("Widget que se reconstruye: $value");
               log("Widget que se reconstruye: $value");

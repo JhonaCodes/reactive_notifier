@@ -16,7 +16,6 @@ class ReactiveBuilder<T> extends StatefulWidget {
     required this.builder,
   });
 
-
   @override
   State<ReactiveBuilder<T>> createState() => _ReactiveBuilderState<T>();
 }
@@ -78,7 +77,7 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return widget.builder( value, _noRebuild);
+    return widget.builder(value, _noRebuild);
   }
 }
 
@@ -105,6 +104,3 @@ class _NoRebuildWrapperState extends State<_NoRebuildWrapper> {
 }
 
 bool get isTesting => const bool.fromEnvironment('dart.vm.product') == true;
-
-
-

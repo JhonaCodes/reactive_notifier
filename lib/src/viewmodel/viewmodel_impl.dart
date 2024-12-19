@@ -95,8 +95,6 @@ abstract class ViewModelStateImpl<T> extends StateNotifierImpl<T> {
     }
   }
 
-
   @override
   T get notifier => this.notifier;
-
 }

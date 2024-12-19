@@ -115,7 +115,8 @@ Location: $trace
       _checkNotificationOverflow();
 
       assert(() {
-        log('📝 Updating state for $T: $notifier -> ${newState.runtimeType}', level: 10);
+        log('📝 Updating state for $T: $notifier -> ${newState.runtimeType}',
+            level: 10);
         return true;
       }());
 
@@ -415,5 +416,4 @@ Available types: ${related!.map((r) => '${r.notifier.runtimeType}(${r.keyNotifie
 
   @override
   String toString() => '${describeIdentity(this)}($notifier)';
-
 }
