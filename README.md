@@ -9,6 +9,8 @@ A flexible, elegant, and secure tool for state management in Flutter. Designed w
 [![pub package](https://img.shields.io/pub/v/reactive_notifier.svg)](https://pub.dev/packages/reactive_notifier)
 [![likes](https://img.shields.io/pub/likes/reactive_notifier?logo=dart)](https://pub.dev/packages/reactive_notifier/score)
 [![popularity](https://img.shields.io/pub/popularity/reactive_notifier?logo=dart)](https://pub.dev/packages/reactive_notifier/score)
+[![downloads](https://img.shields.io/pub/downloads/reactive_notifier?logo=dart)](https://pub.dev/packages/reactive_notifier/score)
+
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/jhonacodes/reactive_notifier/workflows/ci/badge.svg)](https://github.com/jhonacodes/reactive_notifier/actions)
@@ -24,7 +26,7 @@ A flexible, elegant, and secure tool for state management in Flutter. Designed w
 - 📡 Built-in Async and Stream support
 - 🔗 Smart related states system
 - 🛠️ Repository/Service layer integration
-- ⚡  High performance with minimal rebuilds
+- ⚡ High performance with minimal rebuilds
 - 🐛 Powerful debugging tools
 - 📊 Detailed error reporting
 
@@ -39,78 +41,71 @@ dependencies:
 
 ## Quick Start
 
-### **Usage with ReactiveNotifier
+### Usage with ReactiveNotifier
 
 Learn how to implement ReactiveNotifier across different use cases - from basic data types (`String`, `bool`) to complex classes (`ViewModels`). These examples showcase global state management patterns that maintain accessibility across your application.
 
 #### With Classes, Viewmodel, etc.
+
 ```dart
 
 /// It is recommended to use mixin to save your notifiers, from a static variable.
-/// 
+///
 mixin ConnectionService{
   static final ReactiveNotifier<ConnectionManager> instance = ReactiveNotifier<ConnectionManager>(() => ConnectionManager());
 }
 
-class ConnectionStateWidget extends StatelessWidget {
-  const ConnectionStateWidget({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    
-    /// It is recommended to set the data type in the builder.
-    return ReactiveBuilder<ConnectionManager>(
+ReactiveBuilder<ConnectionManager>(
 
-      notifier: ConnectionService.instance,
-      
-      builder: ( service, keep) {
+  notifier: ConnectionService.instance,
 
-        /// Notifier is used to access your model's data.
-        final state = service.notifier;
+  builder: ( service, keep) {
 
-        return Card(
-          elevation: 4,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 10,
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: state.color.withValues(alpha: 255 * 0.2),
-                  child: Icon(
-                    state.icon,
-                    color: state.color,
-                    size: 35,
-                  ),
-                ),
-                
-                Text(
-                  state.message,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                
-                if (state.isError || state == ConnectionState.disconnected)
-                  keep(
-                    ElevatedButton.icon(
-                      
-                      /// If you don't use notifier, access the functions of your Viewmodel that contains your model.
-                      onPressed: () => service.manualReconnect(), 
-                      
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Retry Connection'),
-                    ),
-                  ),
-                if (state.isSyncing) const LinearProgressIndicator(),
-              ],
+    /// Notifier is used to access your model's data.
+    final state = service.notifier;
+
+    return Card(
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 10,
+          children: [
+            CircleAvatar(
+              radius: 30,
+              backgroundColor: state.color.withValues(alpha: 255 * 0.2),
+              child: Icon(
+                state.icon,
+                color: state.color,
+                size: 35,
+              ),
             ),
-          ),
-        );
-      },
+
+            Text(
+              state.message,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+
+            if (state.isError || state == ConnectionState.disconnected)
+              keep(
+                ElevatedButton.icon(
+
+                  /// If you don't use notifier, access the functions of your Viewmodel that contains your model.
+                  onPressed: () => service.manualReconnect(),
+
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry Connection'),
+                ),
+              ),
+            if (state.isSyncing) const LinearProgressIndicator(),
+          ],
+        ),
+      ),
     );
-  }
-}
+  },
+);
 ```
 
 #### With simple values.
@@ -121,23 +116,14 @@ mixin ConnectionService{
   static final ReactiveNotifier<String> instance = ReactiveNotifier<String>(() => "N/A");
 }
 
-import 'package:flutter/material.dart';
-import 'package:reactive_notifier/reactive_notifier.dart';
-
 // Declare a simple state
-class ConnectionStateWidget extends StatelessWidget {
-  const ConnectionStateWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ReactiveBuilder<ConnectionManager>(
-      notifier: ConnectionService.instance,
-      builder: ( state, keep) => Text(state),
-    );
-  }
-}
+ReactiveBuilder<ConnectionManager>(
+  notifier: ConnectionService.instance,
+  builder: ( state, keep) => Text(state),
+);
 
 
+/// Modify from other widget.
 class OtherWidget extends StatelessWidget {
   const OtherWidget({super.key});
 
@@ -153,6 +139,8 @@ class OtherWidget extends StatelessWidget {
   }
 }
 
+
+/// Modify from any class, etc.
 class OtherViewModel{
 
   void otherFunction(){
@@ -164,16 +152,46 @@ class OtherViewModel{
 
 /// This example above applies to any Reactive Notifier, no matter how complex, it can be used from anywhere without the need for a reference or handler.
 ```
+
 Both simple and complex values can be modified from anywhere in the application without modifying the structure of your widget.
 You also don't need to instantiate variables in your widget build, you just call the mixin directly where you want to use it, this helps with less coupling, being able to replace all functions from the mixin and not fight with extensive migrations.
 
 ---
 
-### **Using the Library Repository with `ViewModelImpl`**
+## **`ViewModelStateImpl` without Repository**
+
+For simpler cases where direct state management is needed without a repository layer, you can use `ViewModelStateImpl`. This approach manages state directly within the ViewModel:
+
+```dart
+class CartViewModel extends ViewModelStateImpl<CartModel> {
+  CartViewModel() : super(CartModel());
+
+  // Add product directly to state
+  void addProduct(String item, double price) {
+    final currentItems = notifier.items;
+    final newItems = [...currentItems, item];
+    final newTotal = notifier.total + price;
+    
+    // Or using transformState
+    transformState((state) => state.copyWith(items: newItems, total: newTotal));
+    
+    // Or dreate new instance and replace.
+    updaeState(newCarInstance);
+  }
+
+  // Other business logic methods...
+}
+```
+This implementation is suitable for:
+- When you don't require repository at ViewModel level
+- When implementing different architectural patterns (MVP, DAO, Clean Architecture)
+- Any complexity level of state management
+- Freedom to implement data persistence and business logic as needed
+- Flexibility to structure your code without being tied to specific architectural constraints
+
+# **Using the Library Repository with `ViewModelImpl`**
 
 In this example, we are going to use the library's built-in repository to get and update the shopping cart data in the `ViewModelImpl`.
-
----
 
 ## **1. Defining the Repository using the library**
 
@@ -191,7 +209,7 @@ class CartRepository extends RepositoryImpl<CartModel> {
       total: 39.98,
     );
   }
-  
+
   /// More functions .....
 
 }
@@ -199,7 +217,7 @@ class CartRepository extends RepositoryImpl<CartModel> {
 
 ---
 
-## **3. `ViewModelImpl` with the Repository**
+## **2. `ViewModelImpl` with the Repository**
 
 Now we are going to use the repository in the `ViewModelImpl` to interact with the cart model. The `ViewModelImpl` will leverage the repository to get data and make updates.
 
@@ -224,31 +242,30 @@ class CartViewModel extends ViewModelImpl<CartModel> {
   // Function to add a product to the cart
   Future<void> addProduct(String item, double price) async {
     try {
-      
+
       await repository.addProduct(value, item, price);
-      
+
       // We update the status after adding the product
       updateState(notifier.copyWith(items: value.items, total: value.total));
-      
+
       // Or
       transformState((state) => state.copyWith(items: value.items, total: value.total));
-      
+
       // Or
       updateState(yourModelWithData);
-      
+
     } catch (e) {
-      
+
     // Error handling
       print("Error $e");
-      
-      
+
+
     }
   }
 }
 ```
 
-
-## **4. Repository Instance and `ViewModelImpl`**
+## **3. Repository Instance and `ViewModelImpl`**
 
 Here we create the repository instance and the `ViewModelImpl`:
 
@@ -261,7 +278,7 @@ final cartViewModel = ReactiveNotifier<CartViewModel>((){
 
 ---
 
-## **5. Cart Status Widget**
+## **4. Cart Status Widget**
 
 Finally, we are going to display the cart status in the UI using `ReactiveBuilder`, which will automatically update when the status changes.
 
@@ -298,7 +315,7 @@ ReactiveBuilder<CartViewModel>(
                   onPressed: () {
                     // Empty cart
                     cartViewModel.notifier.myCleaningCarFunction();
-                    
+
                   },
                   child: Text("Vaciar Carrito"),
                 ),
@@ -313,8 +330,8 @@ ReactiveBuilder<CartViewModel>(
 
 ```
 
-
 # ⚡️ **Essential: `ReactiveNotifier` Core Concepts**
+
 ## **Documentation for `related` in `ReactiveNotifier`**
 
 The `related` attribute in `ReactiveNotifier` allows you to efficiently manage interdependent states. They can be used in different ways depending on the structure and complexity of the state you need to handle.
@@ -322,10 +339,13 @@ The `related` attribute in `ReactiveNotifier` allows you to efficiently manage i
 ### **Using `related` in ReactiveNotifier**
 
 **Establishing Relationships Between Notifiers**
+
 - `ReactiveNotifier` can manage any type of data (simple or complex). Through the `related` property, you can establish connections between different notifiers, where changes in any related notifier will trigger updates in the `ReactiveBuilder` that's watching them.
 
 **Example Scenario: Managing Connected States**
+
 - A primary notifier might handle a complex `UserInfo` class, while other notifiers manage related states like `Settings` or `Preferences`. Using `related`, any changes in these interconnected states will trigger the appropriate UI updates through `ReactiveBuilder`.
+
 ---
 
 ### **Direct Relationship between Simple Notifiers**
@@ -335,9 +355,9 @@ In this approach, you have several simple `ReactiveNotifier`s, and you use them 
 #### **Example**
 
 ```dart
-final timeHoursNotifier = ReactiveNotifier<int>(() => 0);  
-final routeNotifier = ReactiveNotifier<String>(() => '');  
-final statusNotifier = ReactiveNotifier<bool>(() => false); 
+final timeHoursNotifier = ReactiveNotifier<int>(() => 0);
+final routeNotifier = ReactiveNotifier<String>(() => '');
+final statusNotifier = ReactiveNotifier<bool>(() => false);
 
 // A combined ReactiveNotifier that watches for changes in all three notifiers
 final combinedNotifier = ReactiveNotifier(
@@ -448,6 +468,7 @@ ReactiveBuilder(
   },
 );
 ```
+
 ---
 
 ### **Advantages of Using `related` in `ReactiveNotifier`**
@@ -463,7 +484,6 @@ ReactiveBuilder(
 
 4. **Simplicity**:
    You can easily handle complex states using `related`, keeping everything decoupled and clean without the need to wrap everything in a single ViewModel.
-
 
 ## **Accessing Related States within a `ReactiveBuilder`**
 
@@ -493,7 +513,6 @@ final appState = ReactiveNotifier<AppState>(
 
 - **`userState`, `cartState` and `settingsState`** are individual states, and **`appState`** is the main `ReactiveNotifier` that is related to them. This means that when any of the related states change, `appState` will be automatically updated.
 
-
 ### **1. Accessing Related States Directly**
 
 In a `ReactiveBuilder`, you can directly access related notifiers without using additional methods like `from<T>()` or `keyNotifier`. You simply use the notifiers directly inside the `builder`.
@@ -507,7 +526,7 @@ class AppDashboard extends StatelessWidget {
     return ReactiveBuilder<AppState>(
       notifier: appState,
       builder: (state, keep) {
-        
+
         final user = userState.notifier.data;
         final cart = cartState.notifier.data;
         final settings = settingsState.notifier.data;
@@ -546,7 +565,7 @@ class AppDashboard extends StatelessWidget {
     return ReactiveBuilder<AppState>(
       notifier: appState,
       builder: (state, keep) {
-        
+
         final user = appState.from<UserState>();
         final cart = appState.from<CartState>();
         final settings = appState.from<SettingsState>();
@@ -570,8 +589,6 @@ class AppDashboard extends StatelessWidget {
 - **Pros**: `from<T>()` is useful when you have multiple related states and want to extract a value from a specific one more explicitly.
 - **Cons**: Although it is more organized, it can add complexity if you only need to access one or two states in a simple way.
 
-
-
 ### **3. Using `keyNotifier` to Access Specific Notifiers**
 
 The `keyNotifier` is useful when you want to access a related state that has a unique key within the `related` relationship. This is especially useful when you have multiple notifiers of the same type (for example, multiple `cartState's`) and you need to distinguish between them.
@@ -585,7 +602,7 @@ class AppDashboard extends StatelessWidget {
     return ReactiveBuilder<AppState>(
       notifier: appState,
       builder: (state, keep) {
-       
+
         final user = appState.from<UserState>(userState.keyNotifier);  /// Or appState.from(userState.keyNotifier)
         final cart = appState.from<CartState>(cartState.keyNotifier);  /// ....
         final settings = appState.from<SettingsState>(settingsState.keyNotifier); /// ....
@@ -633,7 +650,6 @@ final appState = ReactiveNotifier<AppState>(
 );
 ```
 
-
 ## Async & Stream Support
 
 ### Async Operations
@@ -660,8 +676,6 @@ class ProductsScreen extends StatelessWidget {
 }
 ```
 
-
-
 ### Stream Handling
 
 ```dart
@@ -684,18 +698,19 @@ class ChatScreen extends StatelessWidget {
 }
 ```
 
-
 ## Debugging System
 
 ReactiveNotifier includes a comprehensive debugging system with detailed error messages:
 
 ### Creation Tracking
+
 ```
 📦 Creating ReactiveNotifier<UserState>
 🔗 With related types: CartState, OrderState
 ```
 
 ### Invalid Structure Detection
+
 ```
 ⚠️ Invalid Reference Structure Detected!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -707,6 +722,7 @@ Location: package:my_app/cart/cart_state.dart:42
 ```
 
 ### Performance Monitoring
+
 ```
 ⚠️ Notification Overflow Detected!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -715,28 +731,33 @@ Notifier: CartState
 ❌ Problem: Excessive updates detected
 ✅ Solution: Review update logic and consider debouncing
 ```
+
 And more...
 
 ## Best Practices
 
 ### State Declaration
+
 - Declare ReactiveNotifier instances globally or as static mixin members
 - Never create instances inside widgets
 - Use mixins for better organization of related states
 
 ### Performance Optimization
+
 - Use `keep` for static content
 - Maintain flat state hierarchy
 - Use keyNotifier for specific state access
 - Avoid unnecessary rebuilds
 
 ### Architecture Guidelines
+
 - Follow MVVM pattern
 - Utilize Repository/Service patterns
 - Let ViewModels initialize automatically
 - Keep state updates context-independent
 
 ### Related States
+
 - Maintain flat relationships
 - Avoid circular dependencies
 - Use type-safe access
@@ -747,6 +768,7 @@ And more...
 We're developing a powerful visual debugging interface that will revolutionize how you debug and monitor ReactiveNotifier states:
 
 ### Features in Development
+
 - 📊 Real-time state visualization
 - 🔄 Live update tracking
 - 📈 Performance metrics
@@ -756,6 +778,7 @@ We're developing a powerful visual debugging interface that will revolutionize h
 - 📱 DevTools integration
 
 This tool will help you:
+
 - Understand state flow in real-time
 - Identify performance bottlenecks
 - Debug complex state relationships
