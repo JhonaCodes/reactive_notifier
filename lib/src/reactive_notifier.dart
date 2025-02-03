@@ -1,6 +1,8 @@
 import 'dart:developer';
-import 'implements/notifier_impl.dart';
+
 import 'package:flutter/foundation.dart';
+
+import 'implements/notifier_impl.dart';
 
 /// A reactive state management solution that supports:
 /// - Singleton instances with key-based identity

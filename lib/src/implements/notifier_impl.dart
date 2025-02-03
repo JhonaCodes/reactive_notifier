@@ -100,16 +100,6 @@ abstract class StateNotifierImpl<T> extends ChangeNotifier {
 
   @protected
   @override
-  void addListener(VoidCallback listener) {
-    super.addListener(listener);
-  }
-
-  @protected
-  @override
-  void removeListener(VoidCallback listener) => super.removeListener(listener);
-
-  @protected
-  @override
   void dispose() => super.dispose();
 
   @immutable

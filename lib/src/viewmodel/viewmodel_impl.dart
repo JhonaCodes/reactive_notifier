@@ -2,9 +2,9 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/src/tracker/state_tracker.dart';
-import '../implements/repository_impl.dart';
 
 import '../implements/notifier_impl.dart';
+import '../implements/repository_impl.dart';
 
 /// [ViewModelImpl]
 /// Base ViewModel implementation with repository integration for domain logic and data handling.
