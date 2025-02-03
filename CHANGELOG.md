@@ -1,3 +1,6 @@
+# 2.5.0
+- Implement `ReactiveViewModelBuilder` for complex state management.
+
 # 2.4.2
 - Some dart format.
 

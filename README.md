@@ -36,7 +36,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  reactive_notifier: ^2.4.2
+  reactive_notifier: ^2.5.0
 ```
 
 ## Quick Start
@@ -270,7 +270,7 @@ class CartViewModel extends ViewModelImpl<CartModel> {
 Here we create the repository instance and the `ViewModelImpl`:
 
 ```dart
-final cartViewModel = ReactiveNotifier<CartViewModel>((){
+final cartViewModelNotifier = ReactiveNotifier<CartViewModel>((){
 	final cartRepository = CartRepository();
 	return CartViewModel(cartRepository);
 });
@@ -283,17 +283,17 @@ final cartViewModel = ReactiveNotifier<CartViewModel>((){
 Finally, we are going to display the cart status in the UI using `ReactiveBuilder`, which will automatically update when the status changes.
 
 ```dart
-ReactiveBuilder<CartViewModel>(
-  notifier: cartViewModel,
-  builder: ( viewModel, keep) {
+ReactiveViewModelBuilder<CartModel>(
+  notifier: cartViewModelNotifier.notifier,
+  builder: ( carModel, keep) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (viewModel.data.isEmpty)
+        if (carModel.isEmpty)
           keep(Text("Loading cart...")),
-        if (viewModel.data.isNotEmpty) ...[
+        if (carModel.isNotEmpty) ...[
           keep(Text("Products in cart:")),
-          ...viewModel.data.map((item) => Text(item)).toList(),
+          ...carModel.map((item) => Text(item)).toList(),
           keep(const SizedBox(height: 20)),
           Text("Total: \$${viewModel.total.toStringAsFixed(2)}"),
           keep(const SizedBox(height: 20)),
@@ -304,7 +304,7 @@ ReactiveBuilder<CartViewModel>(
                 ElevatedButton(
                   onPressed: () {
                     // Add a new product
-                    cartViewModel.notifier.agregarProducto("Producto C", 29.99);
+                    cartViewModelNotifier.notifier.agregarProducto("Producto C", 29.99);
                   },
                   child: Text("Agregar Producto C"),
                 ),
@@ -314,7 +314,7 @@ ReactiveBuilder<CartViewModel>(
                 ElevatedButton(
                   onPressed: () {
                     // Empty cart
-                    cartViewModel.notifier.myCleaningCarFunction();
+                    cartViewModelNotifier.notifier.myCleaningCarFunction();
 
                   },
                   child: Text("Vaciar Carrito"),
