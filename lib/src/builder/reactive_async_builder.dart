@@ -45,7 +45,7 @@ class ReactiveAsyncBuilder<T> extends StatelessWidget {
 /// Base ViewModel implementation for handling asynchronous operations with state management.
 @protected
 abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
-  late AsyncState _state;
+  late AsyncState<T> _state;
   late bool loadOnInit;
 
   AsyncViewModelImpl(this._state, {this.loadOnInit = true}) : super() {
@@ -80,6 +80,15 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
     } catch (error, stackTrace) {
       errorState(error, stackTrace);
     }
+  }
+
+  void transformState(AsyncState<T> Function(AsyncState<T> data) data) {
+    final dataNotifier = data(_state);
+    if (dataNotifier.hashCode == _state.hashCode) {
+      return;
+    }
+    _state = data(_state);
+    notifyListeners();
   }
 
   /// Override this method to provide the async data loading logic

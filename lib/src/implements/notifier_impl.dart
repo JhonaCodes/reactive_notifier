@@ -45,7 +45,6 @@ abstract class NotifierImpl<T> extends ChangeNotifier {
   @override
   String toString() => '${describeIdentity(this)}($_notifier)';
 
-  @immutable
   @override
   bool get hasListeners => super.hasListeners;
 }
@@ -63,7 +62,6 @@ abstract class StateNotifierImpl<T> extends ChangeNotifier {
     }
   }
 
-  @immutable
   T get data => _data;
 
   /// [updateState]
@@ -101,14 +99,4 @@ abstract class StateNotifierImpl<T> extends ChangeNotifier {
   @protected
   @override
   void dispose() => super.dispose();
-
-  @immutable
-  @protected
-  @override
-  void notifyListeners() => super.notifyListeners();
-
-  @immutable
-  @protected
-  @override
-  bool get hasListeners => super.hasListeners;
 }

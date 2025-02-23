@@ -1,3 +1,7 @@
+# 2.5.1
+- Implement `transformState` on `AsyncViewModelImpl` and `getStateByKey` for ReactiveNotifier.
+- Format, etc.
+
 # 2.5.0
 - Implement `ReactiveViewModelBuilder` for complex state management.
 
