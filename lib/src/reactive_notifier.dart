@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -12,7 +13,7 @@ import 'implements/notifier_impl.dart';
 /// - Detailed debug logging
 class ReactiveNotifier<T> extends NotifierImpl<T> {
   // Singleton management
-  static final Map<Key, dynamic> _instances = {};
+  static final HashMap<Key, dynamic> _instances = HashMap.from({});
 
   // Relations management
   final List<ReactiveNotifier>? related;
@@ -408,6 +409,11 @@ Available types: ${related!.map((r) => '${r.notifier.runtimeType}(${r.keyNotifie
   static void cleanup() {
     _instances.clear();
     _updatingNotifiers.clear();
+  }
+
+  T? getStateByKey(Key key){
+    if(_instances.containsKey(key)) return _instances[key]!.notifier;
+    return null;
   }
 
   static int get instanceCount => _instances.length;
