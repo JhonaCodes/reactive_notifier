@@ -1,5 +1,3 @@
-import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/src/handler/async_state.dart';
@@ -84,7 +82,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
     }
   }
 
-
   void transformState(AsyncState<T> Function(AsyncState<T> data) data) {
     final dataNotifier = data(_state);
     if (dataNotifier.hashCode == _state.hashCode) {
@@ -93,7 +90,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
     _state = data(_state);
     notifyListeners();
   }
-
 
   /// Override this method to provide the async data loading logic
   @protected

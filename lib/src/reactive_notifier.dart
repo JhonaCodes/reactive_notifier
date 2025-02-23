@@ -411,8 +411,8 @@ Available types: ${related!.map((r) => '${r.notifier.runtimeType}(${r.keyNotifie
     _updatingNotifiers.clear();
   }
 
-  T? getStateByKey(Key key){
-    if(_instances.containsKey(key)) return _instances[key]!.notifier;
+  T? getStateByKey(Key key) {
+    if (_instances.containsKey(key)) return _instances[key]!.notifier;
     return null;
   }
 

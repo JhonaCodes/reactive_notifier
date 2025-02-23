@@ -26,7 +26,6 @@ abstract class ViewModelImpl<T> extends StateNotifierImpl<T> {
     }
   }
 
-  @immutable
   void init();
 
   bool _initialized = false;
@@ -70,7 +69,6 @@ abstract class ViewModelStateImpl<T> extends StateNotifierImpl<T> {
     }
   }
 
-  @immutable
   void init();
 
   bool _initialized = false;
@@ -84,14 +82,12 @@ abstract class ViewModelStateImpl<T> extends StateNotifierImpl<T> {
     }
   }
 
-  @immutable
   void addDependencyTracker(String notifyId, String dependentId) {
     if (!kReleaseMode) {
       StateTracker.addDependency(notifyId, dependentId);
     }
   }
 
-  @immutable
   void currentTracker() {
     if (!kReleaseMode && _id != null) {
       StateTracker.trackStateChange(_id);
