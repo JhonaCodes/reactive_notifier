@@ -100,7 +100,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
 
   /// Update data directly
 
-
   void updateState(T data) {
     _state = AsyncState.success(data);
     notifyListeners();
@@ -113,7 +112,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
   }
 
   /// Set error state
-
 
   void errorState(Object error, [StackTrace? stackTrace]) {
     _state = AsyncState.error(error, stackTrace);
