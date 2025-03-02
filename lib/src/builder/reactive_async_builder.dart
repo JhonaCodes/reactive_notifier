@@ -68,7 +68,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
   }
 
   /// Public method to reload data
-  @protected
   Future<void> reload() async {
     loadOnInit = false;
     if (_state.isLoading) return;
@@ -80,6 +79,10 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
     } catch (error, stackTrace) {
       errorState(error, stackTrace);
     }
+  }
+
+  void updateSilently(T newState) {
+    _state = AsyncState.success(newState);
   }
 
   void transformState(AsyncState<T> Function(AsyncState<T> data) data) {
@@ -97,7 +100,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
 
   /// Update data directly
 
-  @protected
+
   void updateState(T data) {
     _state = AsyncState.success(data);
     notifyListeners();
@@ -111,7 +114,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
 
   /// Set error state
 
-  @protected
+
   void errorState(Object error, [StackTrace? stackTrace]) {
     _state = AsyncState.error(error, stackTrace);
     notifyListeners();
