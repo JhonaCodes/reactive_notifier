@@ -1,3 +1,8 @@
+# 2.5.2
+- Implement `updateSilently` on `AsyncViewModelImpl`.
+- Format, etc.
+
+
 # 2.5.1
 - Implement `transformState` on `AsyncViewModelImpl` and `getStateByKey` for ReactiveNotifier.
 - Format, etc.
