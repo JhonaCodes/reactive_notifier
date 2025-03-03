@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
-import 'package:reactive_notifier/src/implements/notifier_impl.dart';
 
 // Mock de un StateNotifierImpl simple para testing
-class MockStateNotifier extends StateNotifierImpl<String> {
+class MockStateNotifier extends ViewModel<String> {
   MockStateNotifier() : super('initial');
 
   void updateValue(String newValue) {
     updateState(newValue);
+  }
+
+  @override
+  void init() {
+    // TODO: implement init
   }
 }
 
@@ -27,7 +31,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ReactiveViewModelBuilder<String>(
-            notifier: mockNotifier,
+            viewmodel: mockNotifier,
             builder: (state, keep) {
               capturedState = state;
               return Text(state);
@@ -47,7 +51,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ReactiveViewModelBuilder<String>(
-            notifier: mockNotifier,
+            viewmodel: mockNotifier,
             builder: (state, keep) => Text(state),
           ),
         ),
@@ -69,7 +73,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ReactiveViewModelBuilder<String>(
-            notifier: mockNotifier,
+            viewmodel: mockNotifier,
             builder: (state, keep) {
               return Column(
                 children: [
@@ -140,7 +144,7 @@ void main() {
         MaterialApp(
           home: ReactiveViewModelBuilder<String>(
             key: key,
-            notifier: mockNotifier,
+            viewmodel: mockNotifier,
             builder: (state, keep) => Text(state),
           ),
         ),
@@ -164,7 +168,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ReactiveViewModelBuilder<String>(
-            notifier: mockNotifier,
+            viewmodel: mockNotifier,
             builder: (state, keep) => Text(state),
           ),
         ),
@@ -174,7 +178,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ReactiveViewModelBuilder<String>(
-            notifier: newNotifier,
+            viewmodel: newNotifier,
             builder: (state, keep) => Text(state),
           ),
         ),
