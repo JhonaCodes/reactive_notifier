@@ -101,34 +101,35 @@ void main() {
       expect(find.text('Kept Widget'), findsOneWidget);
     });
 
-    testWidgets('should handle rapid updates with debouncing',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: ReactiveViewModelBuilder<String>(
-            notifier: mockNotifier,
-            builder: (state, keep) => Text(state),
-          ),
-        ),
-      );
-
-      // Act - múltiples actualizaciones rápidas
-      mockNotifier.updateValue('update1');
-      mockNotifier.updateValue('update2');
-      mockNotifier.updateValue('update3');
-
-      // Esperamos menos que el tiempo de debounce
-      await tester.pump(const Duration(milliseconds: 50));
-
-      // No debería haber actualizado aún
-      expect(find.text('initial'), findsOneWidget);
-
-      // Esperamos que complete el debounce
-      await tester.pump(const Duration(milliseconds: 50));
-
-      // Assert - debería tener solo la última actualización
-      expect(find.text('update3'), findsOneWidget);
-    });
+    /// no more debouncing
+    // testWidgets('should handle rapid updates with debouncing',
+    //     (WidgetTester tester) async {
+    //   await tester.pumpWidget(
+    //     MaterialApp(
+    //       home: ReactiveViewModelBuilder<String>(
+    //         notifier: mockNotifier,
+    //         builder: (state, keep) => Text(state),
+    //       ),
+    //     ),
+    //   );
+    //
+    //   // Act - múltiples actualizaciones rápidas
+    //   mockNotifier.updateValue('update1');
+    //   mockNotifier.updateValue('update2');
+    //   mockNotifier.updateValue('update3');
+    //
+    //   // Esperamos menos que el tiempo de debounce
+    //   await tester.pump(const Duration(milliseconds: 50));
+    //
+    //   // No debería haber actualizado aún
+    //   expect(find.text('initial'), findsOneWidget);
+    //
+    //   // Esperamos que complete el debounce
+    //   await tester.pump(const Duration(milliseconds: 50));
+    //
+    //   // Assert - debería tener solo la última actualización
+    //   expect(find.text('update3'), findsOneWidget);
+    // });
 
     testWidgets('should cleanup properly when disposed',
         (WidgetTester tester) async {
