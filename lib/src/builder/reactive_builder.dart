@@ -1,7 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:reactive_notifier/reactive_notifier.dart'
+    show ReactiveNotifier, ViewModel;
 import 'package:reactive_notifier/src/implements/notifier_impl.dart';
+
+import '../reactive_notifier_viewmodel.dart';
 
 /// Reactive Builder for simple state or direct model state.
 class ReactiveBuilder<T> extends StatefulWidget {
@@ -47,6 +51,17 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
   void dispose() {
     widget.notifier.removeListener(_valueChanged);
     debounceTimer?.cancel();
+
+    debounceTimer?.cancel();
+
+    if (widget.notifier is ReactiveNotifier) {
+      final reactiveNotifier = widget.notifier as ReactiveNotifier;
+      if (reactiveNotifier.autoDispose && !reactiveNotifier.hasListeners) {
+        /// Clean current reactive and any dispose on Viewmodel
+        reactiveNotifier.cleanCurrentNotifier();
+      }
+    }
+
     super.dispose();
   }
 
@@ -55,17 +70,9 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
     debounceTimer?.cancel();
 
     // Start a new timer. After 100 milliseconds, update the state and rebuild the widget.
-    if (!isTesting) {
-      debounceTimer = Timer(const Duration(milliseconds: 100), () {
-        setState(() {
-          value = widget.notifier.notifier;
-        });
-      });
-    } else {
-      setState(() {
-        value = widget.notifier.notifier;
-      });
-    }
+    setState(() {
+      value = widget.notifier.notifier;
+    });
   }
 
   Widget _noRebuild(Widget keep) {
@@ -110,27 +117,27 @@ class _NoRebuildWrapperState extends State<_NoRebuildWrapper> {
 /// and provides efficient state management and rebuilding mechanisms
 ///
 class ReactiveViewModelBuilder<T> extends StatefulWidget {
-  /// [StateNotifierImpl]
   /// The notifier should be a StateNotifierImpl that manages the ViewModel's data
-  /// T represents the data type being managed, not the ViewModel class itself
-  ///
-  final StateNotifierImpl<T> notifier;
+  /// This is optional if viewmodel is provided
+  final StateNotifierImpl<T>? notifier;
+
+  /// New ViewModel approach, takes precedence over notifier if both are provided
+  final ViewModel<T>? viewmodel;
 
   /// Builder function that creates the widget tree
-  /// Takes two parameters:
-  /// - state: Current state of type T
-  /// - keep: Function to prevent unnecessary rebuilds of child widgets
-  ///
   final Widget Function(
     T state,
     Widget Function(Widget child) keep,
   ) builder;
 
+  /// Constructor that ensures either notifier or viewmodel is provided
   const ReactiveViewModelBuilder({
     super.key,
-    required this.notifier,
+    this.notifier,
+    this.viewmodel,
     required this.builder,
-  });
+  }) : assert(notifier != null || viewmodel != null,
+            'Either notifier or viewmodel must be provided');
 
   @override
   State<ReactiveViewModelBuilder<T>> createState() =>
@@ -138,7 +145,6 @@ class ReactiveViewModelBuilder<T> extends StatefulWidget {
 }
 
 /// State class for ReactiveViewModelBuilder
-/// Handles state management and widget rebuilding
 class _ReactiveBuilderStateViewModel<T>
     extends State<ReactiveViewModelBuilder<T>> {
   /// Current value of the state
@@ -153,50 +159,71 @@ class _ReactiveBuilderStateViewModel<T>
   @override
   void initState() {
     super.initState();
-    // Initialize with current data from notifier
-    value = widget.notifier.data;
-    // Subscribe to changes
-    widget.notifier.addListener(_valueChanged);
+    // Initialize with data from either source
+    value = widget.viewmodel?.data ?? widget.notifier!.data;
+
+    // Subscribe to changes from either source
+    if (widget.viewmodel != null) {
+      widget.viewmodel!.addListener(_valueChanged);
+    } else {
+      widget.notifier!.addListener(_valueChanged);
+    }
   }
 
   @override
   void didUpdateWidget(ReactiveViewModelBuilder<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Handle notifier changes by updating subscriptions
-    if (oldWidget.notifier != widget.notifier) {
-      oldWidget.notifier.removeListener(_valueChanged);
-      value = widget.notifier.data;
-      widget.notifier.addListener(_valueChanged);
+
+    // Handle changes in the provided sources
+    final bool viewModelChanged = widget.viewmodel != oldWidget.viewmodel;
+    final bool notifierChanged = widget.notifier != oldWidget.notifier;
+
+    // First, clean up old listeners
+    if (viewModelChanged && oldWidget.viewmodel != null) {
+      oldWidget.viewmodel!.removeListener(_valueChanged);
+    } else if (notifierChanged && oldWidget.notifier != null) {
+      oldWidget.notifier!.removeListener(_valueChanged);
+    }
+
+    // Then set up new state and listeners
+    if (widget.viewmodel != null) {
+      value = widget.viewmodel!.data;
+      widget.viewmodel!.addListener(_valueChanged);
+    } else if (widget.notifier != null) {
+      value = widget.notifier!.data;
+      widget.notifier!.addListener(_valueChanged);
     }
   }
 
   @override
   void dispose() {
     // Cleanup subscriptions and timer
-    widget.notifier.removeListener(_valueChanged);
+    if (widget.viewmodel != null) {
+      widget.viewmodel!.removeListener(_valueChanged);
+
+      // Handle auto-dispose if applicable
+      if (widget.viewmodel is ReactiveNotifierViewModel) {
+        final reactiveViewModel = widget.viewmodel as ReactiveNotifierViewModel;
+        if (reactiveViewModel.autoDispose &&
+            !reactiveViewModel.notifier.hasListeners) {
+          reactiveViewModel.dispose();
+        }
+      }
+    } else if (widget.notifier != null) {
+      widget.notifier!.removeListener(_valueChanged);
+    }
+
     debounceTimer?.cancel();
     super.dispose();
   }
 
   /// Handles state changes from the notifier
-  /// Implements debouncing to prevent too frequent updates
   void _valueChanged() {
     // Cancel existing debounce timer
     debounceTimer?.cancel();
-
-    // Debounce updates with 100ms delay
-    if (!isTesting) {
-      debounceTimer = Timer(const Duration(milliseconds: 100), () {
-        setState(() {
-          value = widget.notifier.data;
-        });
-      });
-    } else {
-      // Immediate update during testing
-      setState(() {
-        value = widget.notifier.data;
-      });
-    }
+    setState(() {
+      value = widget.viewmodel?.data ?? widget.notifier!.data;
+    });
   }
 
   /// Creates or retrieves a cached widget that shouldn't rebuild

@@ -27,7 +27,10 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   DateTime? _firstNotificationTime;
   int _notificationCount = 0;
 
-  ReactiveNotifier._(T Function() create, this.related, this.keyNotifier)
+  final bool autoDispose;
+
+  ReactiveNotifier._(
+      T Function() create, this.related, this.keyNotifier, this.autoDispose)
       : super(create()) {
     if (related != null) {
       assert(() {
@@ -56,7 +59,7 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   /// - [related]: Optional list of related states
   /// - [key]: Optional key for instance identity
   factory ReactiveNotifier(T Function() create,
-      {List<ReactiveNotifier>? related, Key? key}) {
+      {List<ReactiveNotifier>? related, Key? key, bool autoDispose = false}) {
     key ??= UniqueKey();
 
     assert(() {
@@ -82,7 +85,7 @@ Location: $trace
     }
 
     try {
-      _instances[key] = ReactiveNotifier._(create, related, key);
+      _instances[key] = ReactiveNotifier._(create, related, key, autoDispose);
     } catch (e) {
       if (e is StateError) {
         rethrow;
@@ -420,6 +423,271 @@ Available types: ${related!.map((r) => '${r.notifier.runtimeType}(${r.keyNotifie
 
   static int instanceCountByType<S>() {
     return _instances.values.whereType<ReactiveNotifier<S>>().length;
+  }
+
+  /// Attempts to remove the current instance from the global registry if it's not being used.
+  ///
+  /// This method will only clean up the instance if:
+  /// - It has no active listeners
+  /// - It's not being referenced by other notifiers
+  ///
+  /// If the instance cannot be cleaned, detailed diagnostic information will be provided
+  /// about what's preventing the cleanup.
+  ///
+  /// Returns `true` if the instance was cleaned, `false` if it's still in use.
+  bool cleanCurrentNotifier() {
+    // Check if it has listeners
+    if (hasListeners) {
+      assert(() {
+        final trace = StackTrace.current.toString().split('\n')[1];
+        log('''
+⚠️ Cannot clean ReactiveNotifier<$T>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Key: $keyNotifier
+Reason: Still has active listeners.
+${_getLocationInfo()}
+
+🔍 Recommended actions:
+   - Ensure all widgets using this notifier are disposed
+   - Verify that there are no listeners added without being removed
+   - Use removeListener() for all registered listeners
+
+Location of cleanup request: $trace
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 100);
+        return true;
+      }());
+      return false;
+    }
+
+    // Check if it has parents (notifiers referencing it)
+    if (_parents.isNotEmpty) {
+      assert(() {
+        final parentInfo = _parents.map((parent) => '''
+   - ${parent.notifier.runtimeType} (${parent.keyNotifier})
+     ${_getParentLocationInfo(parent)}''').join('\n');
+
+        final trace = StackTrace.current.toString().split('\n')[1];
+        log('''
+⚠️ Cannot clean ReactiveNotifier<$T>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Key: $keyNotifier
+Reason: Being referenced by other notifiers.
+
+🔗 Active references:
+$parentInfo
+
+🔍 Recommended actions:
+   - First clean the notifiers that reference this one
+   - Or use ReactiveNotifier.cleanup() to clean the entire registry
+
+Location of cleanup request: $trace
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 100);
+        return true;
+      }());
+      return false;
+    }
+
+    // Si es seguro limpiar esta instancia
+    if (notifier is StateNotifierImpl) {
+      assert(() {
+        log('''
+ℹ️ Propagating dispose to StateNotifierImpl
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type: ${notifier.runtimeType}
+Key: $keyNotifier
+This will release any resources held by the ViewModel (timers, streams, etc.)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+        return true;
+      }());
+
+      (notifier as StateNotifierImpl).dispose();
+    }
+
+    // It's safe to clean this instance
+    _instances.removeWhere((key, value) => value == this);
+
+    // Clean child references
+    if (related != null) {
+      for (var child in related!) {
+        child._parents.remove(this);
+      }
+    }
+
+    assert(() {
+      log('''
+✅ ReactiveNotifier<$T> successfully cleaned
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Key: $keyNotifier
+${_getLocationInfo()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+
+    return true;
+  }
+
+// Helper method to get location information for a parent
+  String _getParentLocationInfo(ReactiveNotifier parent) {
+    try {
+      final framePattern =
+          RegExp(r'#\d+\s+([^(]+)\(([^:]+):(\d+)(?::(\d+))?\)');
+      final frames = StackTrace.current.toString().split('\n');
+
+      for (final frame in frames) {
+        final match = framePattern.firstMatch(frame);
+        if (match != null && !frame.contains('reactive_notifier.dart')) {
+          final method = match.group(1)?.trim();
+          final file = match.group(2);
+          final line = match.group(3);
+          return 'Location: $file:$line in $method';
+        }
+      }
+      return 'Location: Not determined';
+    } catch (e) {
+      return 'Location: Error determining location ($e)';
+    }
+  }
+
+  /// Removes a specific instance from the global registry by its key.
+  ///
+  /// This method allows for targeted cleanup of a single instance when you know its key.
+  ///
+  /// Parameters:
+  /// - [key]: The unique key of the instance to be removed
+  ///
+  /// Returns `true` if an instance was found and removed, `false` otherwise.
+  static bool cleanupInstance(Key key) {
+    if (!_instances.containsKey(key)) {
+      assert(() {
+        final trace = StackTrace.current.toString().split('\n')[1];
+        log('''
+⚠️ Cannot clean ReactiveNotifier instance
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Key: $key
+Reason: No instance found with this key.
+
+🔍 Available keys: ${_instances.keys.take(5).join(', ')}${_instances.length > 5 ? '... (${_instances.length - 5} more)' : ''}
+
+Location of cleanup request: $trace
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 100);
+        return true;
+      }());
+      return false;
+    }
+
+    final instance = _instances[key];
+
+    // Check if instance has listeners
+    if (instance is ReactiveNotifier && instance.hasListeners) {
+      assert(() {
+        final trace = StackTrace.current.toString().split('\n')[1];
+        log('''
+⚠️ Warning: Cleaning ReactiveNotifier with active listeners
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Key: $key
+Type: ${instance.notifier.runtimeType}
+Reason: Instance still has active listeners.
+
+❗ This may cause unexpected behavior if widgets are still listening to this instance.
+
+Location of cleanup request: $trace
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 50);
+        return true;
+      }());
+    }
+
+    _instances.remove(key);
+
+    assert(() {
+      log('''
+✅ ReactiveNotifier instance successfully cleaned
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Key: $key
+Type: ${instance?.notifier.runtimeType}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+
+    return true;
+  }
+
+  /// Removes all instances of a specific type from the global registry.
+  ///
+  /// This method cleans up all ReactiveNotifier instances of the specified type T.
+  /// Useful when you want to clear all notifiers of a certain model type.
+  ///
+  /// Returns the number of instances that were removed.
+  static int cleanupByType<T>() {
+    final instancesBeforeCleanup = _instances.length;
+    final instancesOfType = _instances.entries
+        .where((entry) => entry.value is ReactiveNotifier<T>)
+        .toList();
+
+    if (instancesOfType.isEmpty) {
+      assert(() {
+        final trace = StackTrace.current.toString().split('\n')[1];
+        log('''
+ℹ️ No ReactiveNotifier instances of type <$T> found
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Location of cleanup request: $trace
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+        return true;
+      }());
+      return 0;
+    }
+
+    // Check for instances with active listeners
+    final instancesWithListeners = instancesOfType
+        .where((entry) => (entry.value as ReactiveNotifier).hasListeners)
+        .toList();
+
+    if (instancesWithListeners.isNotEmpty) {
+      assert(() {
+        final trace = StackTrace.current.toString().split('\n')[1];
+        final listenerInfo = instancesWithListeners
+            .map((entry) => '   - Key: ${entry.key}')
+            .join('\n');
+
+        log('''
+⚠️ Warning: Cleaning ReactiveNotifier instances with active listeners
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type: $T
+Count: ${instancesWithListeners.length}
+Instances with active listeners:
+$listenerInfo
+
+❗ This may cause unexpected behavior if widgets are still listening to these instances.
+
+Location of cleanup request: $trace
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 50);
+        return true;
+      }());
+    }
+
+    _instances.removeWhere((_, value) => value is ReactiveNotifier<T>);
+
+    final removedCount = instancesBeforeCleanup - _instances.length;
+
+    assert(() {
+      log('''
+✅ ReactiveNotifier instances of type <$T> successfully cleaned
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Count: $removedCount
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+
+    return removedCount;
   }
 
   @override

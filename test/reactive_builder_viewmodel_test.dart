@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
-import 'package:reactive_notifier/src/implements/notifier_impl.dart';
 
 // Mock de un StateNotifierImpl simple para testing
-class MockStateNotifier extends StateNotifierImpl<String> {
+class MockStateNotifier extends ViewModel<String> {
   MockStateNotifier() : super('initial');
 
   void updateValue(String newValue) {
     updateState(newValue);
+  }
+
+  @override
+  void init() {
+    // TODO: implement init
   }
 }
 
@@ -27,7 +31,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ReactiveViewModelBuilder<String>(
-            notifier: mockNotifier,
+            viewmodel: mockNotifier,
             builder: (state, keep) {
               capturedState = state;
               return Text(state);
@@ -47,7 +51,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ReactiveViewModelBuilder<String>(
-            notifier: mockNotifier,
+            viewmodel: mockNotifier,
             builder: (state, keep) => Text(state),
           ),
         ),
@@ -69,7 +73,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ReactiveViewModelBuilder<String>(
-            notifier: mockNotifier,
+            viewmodel: mockNotifier,
             builder: (state, keep) {
               return Column(
                 children: [
@@ -101,34 +105,35 @@ void main() {
       expect(find.text('Kept Widget'), findsOneWidget);
     });
 
-    testWidgets('should handle rapid updates with debouncing',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: ReactiveViewModelBuilder<String>(
-            notifier: mockNotifier,
-            builder: (state, keep) => Text(state),
-          ),
-        ),
-      );
-
-      // Act - múltiples actualizaciones rápidas
-      mockNotifier.updateValue('update1');
-      mockNotifier.updateValue('update2');
-      mockNotifier.updateValue('update3');
-
-      // Esperamos menos que el tiempo de debounce
-      await tester.pump(const Duration(milliseconds: 50));
-
-      // No debería haber actualizado aún
-      expect(find.text('initial'), findsOneWidget);
-
-      // Esperamos que complete el debounce
-      await tester.pump(const Duration(milliseconds: 50));
-
-      // Assert - debería tener solo la última actualización
-      expect(find.text('update3'), findsOneWidget);
-    });
+    /// no more debouncing
+    // testWidgets('should handle rapid updates with debouncing',
+    //     (WidgetTester tester) async {
+    //   await tester.pumpWidget(
+    //     MaterialApp(
+    //       home: ReactiveViewModelBuilder<String>(
+    //         notifier: mockNotifier,
+    //         builder: (state, keep) => Text(state),
+    //       ),
+    //     ),
+    //   );
+    //
+    //   // Act - múltiples actualizaciones rápidas
+    //   mockNotifier.updateValue('update1');
+    //   mockNotifier.updateValue('update2');
+    //   mockNotifier.updateValue('update3');
+    //
+    //   // Esperamos menos que el tiempo de debounce
+    //   await tester.pump(const Duration(milliseconds: 50));
+    //
+    //   // No debería haber actualizado aún
+    //   expect(find.text('initial'), findsOneWidget);
+    //
+    //   // Esperamos que complete el debounce
+    //   await tester.pump(const Duration(milliseconds: 50));
+    //
+    //   // Assert - debería tener solo la última actualización
+    //   expect(find.text('update3'), findsOneWidget);
+    // });
 
     testWidgets('should cleanup properly when disposed',
         (WidgetTester tester) async {
@@ -139,7 +144,7 @@ void main() {
         MaterialApp(
           home: ReactiveViewModelBuilder<String>(
             key: key,
-            notifier: mockNotifier,
+            viewmodel: mockNotifier,
             builder: (state, keep) => Text(state),
           ),
         ),
@@ -163,7 +168,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ReactiveViewModelBuilder<String>(
-            notifier: mockNotifier,
+            viewmodel: mockNotifier,
             builder: (state, keep) => Text(state),
           ),
         ),
@@ -173,7 +178,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: ReactiveViewModelBuilder<String>(
-            notifier: newNotifier,
+            viewmodel: newNotifier,
             builder: (state, keep) => Text(state),
           ),
         ),

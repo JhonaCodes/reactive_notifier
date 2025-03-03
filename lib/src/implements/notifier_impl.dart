@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 /// [ReactiveBuilder] and [ReactiveNotifier]
 ///
 @protected
+@Deprecated(
+    "NotifierImpl will be replaced by ViewModel in version 2.7.0. It is recommended to migrate.")
 abstract class NotifierImpl<T> extends ChangeNotifier {
   T _notifier;
   NotifierImpl(this._notifier) {
@@ -54,6 +56,8 @@ abstract class NotifierImpl<T> extends ChangeNotifier {
 /// to use as a data type and returns the data from that viewmodel.
 /// [ViewModelImpl] and [ViewModelStateImpl]
 @protected
+@Deprecated(
+    "StateNotifierImpl will be replaced by ViewModel in version 2.7.0. It is recommended to migrate.")
 abstract class StateNotifierImpl<T> extends ChangeNotifier {
   T _data;
   StateNotifierImpl(this._data) {
@@ -95,8 +99,4 @@ abstract class StateNotifierImpl<T> extends ChangeNotifier {
   @protected
   @override
   String toString() => '${describeIdentity(this)}($data)';
-
-  @protected
-  @override
-  void dispose() => super.dispose();
 }

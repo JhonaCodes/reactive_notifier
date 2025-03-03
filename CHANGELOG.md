@@ -1,3 +1,14 @@
+# 2.6.0
+- Added new `ViewModel<T>` abstract class with robust lifecycle management, automatic reinitialization, and detailed diagnostic logging.
+- Implemented `ReactiveNotifierViewModel<VM, T>` to better encapsulate ReactiveNotifier's singleton management with ViewModels.
+- Added auto-dispose functionality to clean up resources automatically when a ViewModel is no longer in use.
+- Enhanced `ReactiveViewModelBuilder` to support both traditional `StateNotifierImpl` and new ViewModel pattern.
+- Implemented `cleanCurrentNotifier()`, `cleanupInstance()`, and c`leanupByType()` methods to provide granular control over instance cleanup.
+- Added detailed error messages for ViewModel initialization, disposal, and state updates.
+- Improved debugging with instance tracking, performance analytics, and detailed state change logging.
+- Added comprehensive validations and safeguards to prevent state inconsistencies.
+- Remove `debounce` on builder.
+
 # 2.5.2
 - Implement `updateSilently` on `AsyncViewModelImpl`.
 - Format, etc.
