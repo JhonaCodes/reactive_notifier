@@ -25,6 +25,7 @@ export 'package:reactive_notifier/src/implements/service_impl.dart';
 
 /// Export the base [ReactiveNotifier] class which provides basic state management functionality.
 export 'package:reactive_notifier/src/reactive_notifier.dart';
+export 'package:reactive_notifier/src/reactive_notifier_viewmodel.dart';
 
 /// Export ViewModelImpl
 export 'package:reactive_notifier/src/viewmodel/viewmodel_impl.dart';
