@@ -28,7 +28,6 @@ class ReactiveBuilder<T> extends StatefulWidget {
 class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
   late T value;
   final Map<String, _NoRebuildWrapper> _noRebuildWidgets = {};
-  Timer? debounceTimer;
 
   @override
   void initState() {
@@ -50,9 +49,6 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
   @override
   void dispose() {
     widget.notifier.removeListener(_valueChanged);
-    debounceTimer?.cancel();
-
-    debounceTimer?.cancel();
 
     if (widget.notifier is ReactiveNotifier) {
       final reactiveNotifier = widget.notifier as ReactiveNotifier;
@@ -66,13 +62,11 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
   }
 
   void _valueChanged() {
-    // Cancel any existing timer to prevent multiple updates within the debounce period.
-    debounceTimer?.cancel();
-
-    // Start a new timer. After 100 milliseconds, update the state and rebuild the widget.
-    setState(() {
-      value = widget.notifier.notifier;
-    });
+    if(mounted) {
+      setState(() {
+        value = widget.notifier.notifier;
+      });
+    }
   }
 
   Widget _noRebuild(Widget keep) {
@@ -153,8 +147,6 @@ class _ReactiveBuilderStateViewModel<T>
   /// Cache for widgets that shouldn't rebuild
   final Map<String, _NoRebuildWrapperViewModel> _noRebuildWidgets = {};
 
-  /// Timer for debouncing updates
-  Timer? debounceTimer;
 
   @override
   void initState() {
@@ -213,17 +205,16 @@ class _ReactiveBuilderStateViewModel<T>
       widget.notifier!.removeListener(_valueChanged);
     }
 
-    debounceTimer?.cancel();
     super.dispose();
   }
 
   /// Handles state changes from the notifier
   void _valueChanged() {
-    // Cancel existing debounce timer
-    debounceTimer?.cancel();
-    setState(() {
-      value = widget.viewmodel?.data ?? widget.notifier!.data;
-    });
+    if(mounted) {
+      setState(() {
+        value = widget.viewmodel?.data ?? widget.notifier!.data;
+      });
+    }
   }
 
   /// Creates or retrieves a cached widget that shouldn't rebuild
@@ -271,5 +262,3 @@ class _NoRebuildWrapperStateViewModel
   @override
   Widget build(BuildContext context) => child;
 }
-
-bool get isTesting => const bool.fromEnvironment('dart.vm.product') == true;

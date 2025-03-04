@@ -1,3 +1,11 @@
+# 2.6.1
+- Added mounted check in _valueChanged() method to prevent "setState() called after dispose()" errors when asynchronous notifications arrive after widget removal from the tree.
+
+### 🐛 Bug Fixes
+- where `ReactiveViewModelBuilder` could attempt to update no longer available widgets, causing runtime exceptions, especially during integration tests.
+- Improved lifecycle management of listeners to prevent memory leaks and unexpected behaviors.
+
+
 # 2.6.0
 - Added new `ViewModel<T>` abstract class with robust lifecycle management, automatic reinitialization, and detailed diagnostic logging.
 - Implemented `ReactiveNotifierViewModel<VM, T>` to better encapsulate ReactiveNotifier's singleton management with ViewModels.
