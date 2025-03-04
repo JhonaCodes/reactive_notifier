@@ -1,7 +1,7 @@
 name: reactive_notifier
 description: A Dart library for managing reactive state efficiently, supporting multiples related state.
 
-version: 2.6.0
+version: 2.6.1
 homepage: https://github.com/JhonaCodes/reactive_notifier.git
 
 environment:
