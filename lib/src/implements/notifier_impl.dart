@@ -5,8 +5,6 @@ import 'package:flutter/foundation.dart';
 /// [ReactiveBuilder] and [ReactiveNotifier]
 ///
 @protected
-@Deprecated(
-    "NotifierImpl will be replaced by ViewModel in version 2.7.0. It is recommended to migrate.")
 abstract class NotifierImpl<T> extends ChangeNotifier {
   T _notifier;
   NotifierImpl(this._notifier) {

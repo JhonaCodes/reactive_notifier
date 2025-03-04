@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/reactive_notifier.dart'
     show ReactiveNotifier, ViewModel;
@@ -62,7 +60,7 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
   }
 
   void _valueChanged() {
-    if(mounted) {
+    if (mounted) {
       setState(() {
         value = widget.notifier.notifier;
       });
@@ -113,6 +111,8 @@ class _NoRebuildWrapperState extends State<_NoRebuildWrapper> {
 class ReactiveViewModelBuilder<T> extends StatefulWidget {
   /// The notifier should be a StateNotifierImpl that manages the ViewModel's data
   /// This is optional if viewmodel is provided
+  @Deprecated(
+      "Use ViewModel instead. The Notifier will be removed in version 2.7.0.")
   final StateNotifierImpl<T>? notifier;
 
   /// New ViewModel approach, takes precedence over notifier if both are provided
@@ -146,7 +146,6 @@ class _ReactiveBuilderStateViewModel<T>
 
   /// Cache for widgets that shouldn't rebuild
   final Map<String, _NoRebuildWrapperViewModel> _noRebuildWidgets = {};
-
 
   @override
   void initState() {
@@ -210,7 +209,7 @@ class _ReactiveBuilderStateViewModel<T>
 
   /// Handles state changes from the notifier
   void _valueChanged() {
-    if(mounted) {
+    if (mounted) {
       setState(() {
         value = widget.viewmodel?.data ?? widget.notifier!.data;
       });
