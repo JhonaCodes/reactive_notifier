@@ -347,7 +347,6 @@ Lifespan: ${lifespan}ms
   @override
   bool get hasListeners => super.hasListeners;
 
-
   /// [loadNotifier]
   /// Ensures the ViewModel's availability by confirming initialization has occurred.
   ///
@@ -390,5 +389,4 @@ Is disposed: $_disposed
     }());
     return Future.value();
   }
-
 }
