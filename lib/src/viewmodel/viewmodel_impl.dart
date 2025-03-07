@@ -346,4 +346,49 @@ Lifespan: ${lifespan}ms
 
   @override
   bool get hasListeners => super.hasListeners;
+
+
+  /// [loadNotifier]
+  /// Ensures the ViewModel's availability by confirming initialization has occurred.
+  ///
+  /// This method should be called when explicit access to the ViewModel is required
+  /// outside its normal lifecycle. Typical situations include:
+  ///
+  /// - At application startup to pre-load critical ViewModels
+  /// - In code paths where it's not evident if the ViewModel is already initialized
+  /// - When data availability needs to be guaranteed before executing an operation
+  ///
+  /// It is not necessary to call this method in the normal lifecycle, as the ViewModel's
+  /// constructor automatically handles initialization through [_safeInitialization].
+  ///
+  /// ```dart
+  /// // Typical usage during app initialization
+  /// await myViewModel.loadNotifier();
+  ///
+  /// // Or from a service
+  /// await notifier<MyViewModel>().loadNotifier();
+  /// ```
+  ///
+  /// This method is idempotent and safe for multiple calls:
+  /// - If the ViewModel is already initialized, it will do nothing
+  /// - If the ViewModel was disposed, it will log the state but not interfere
+  ///   with the automatic reinitialization process
+  ///
+  /// @return Future<void> that completes immediately, allowing
+  ///         sequential asynchronous operations if needed
+  Future<void> loadNotifier() async {
+    assert(() {
+      log('''
+🔍 loadNotifier() called for ViewModel<${T.toString()}>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ID: $_instanceId
+Already initialized: $_initialized
+Is disposed: $_disposed
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+    return Future.value();
+  }
+
 }

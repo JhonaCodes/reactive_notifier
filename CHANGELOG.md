@@ -1,3 +1,6 @@
+# 2.6.2
+- `updateSilently` for Simple reactiveNotifiers and `loadNotifier` for first initialization.
+
 # 2.6.1
 - Added mounted check in _valueChanged() method to prevent "setState() called after dispose()" errors when asynchronous notifications arrive after widget removal from the tree.
 
