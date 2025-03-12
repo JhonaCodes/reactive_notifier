@@ -1,3 +1,6 @@
+# 2.6.3
+- `transformStateSilently` for Viewmodel and ReactiveNotifier.
+
 # 2.6.2
 - `updateSilently` for Simple reactiveNotifiers and `loadNotifier` for first initialization.
 

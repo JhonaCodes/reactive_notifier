@@ -40,6 +40,10 @@ abstract class NotifierImpl<T> extends ChangeNotifier {
     notifyListeners();
   }
 
+  void transformStateSilently(T Function(T data) data) {
+    _notifier = data(_notifier);
+  }
+
   @protected
   @override
   String toString() => '${describeIdentity(this)}($_notifier)';

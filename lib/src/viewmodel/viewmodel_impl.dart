@@ -277,6 +277,44 @@ New state hash: ${_data.hashCode}
     }());
   }
 
+
+  /// Transforms the state using a function
+  void transformStateSilently(T Function(T data) transformer) {
+    _checkDisposed();
+
+    final newState = transformer(_data);
+
+    // Skip if state hasn't changed
+    if (_data.hashCode == newState.hashCode) {
+      assert(() {
+        log('''
+ℹ️ ViewModel<${T.toString()}> transform skipped - state unchanged
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ID: $_instanceId
+Hash: ${_data.hashCode}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 5);
+        return true;
+      }());
+      return;
+    }
+
+    _data = newState;
+    _updateCount++;
+
+    assert(() {
+      log('''
+🔄 ViewModel<${T.toString()}> transformed
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ID: $_instanceId
+Update #: $_updateCount
+New state hash: ${_data.hashCode}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+  }
+
   /// Updates the state without notifying listeners
   void updateSilently(T newState) {
     _checkDisposed();
