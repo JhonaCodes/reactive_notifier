@@ -57,6 +57,14 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
     notifyListeners();
   }
 
+  void transformStateSilently(AsyncState<T> Function(AsyncState<T> data) data) {
+    final dataNotifier = data(_state);
+    if (dataNotifier.hashCode == _state.hashCode) {
+      return;
+    }
+    _state = data(_state);
+  }
+
   /// Override this method to provide the async data loading logic
   @protected
   Future<T> loadData();
@@ -101,7 +109,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
   /// Get the current data (may be null if not in success state)
   T? get data => _state.isSuccess ? _state.data : null;
 
-  @protected
+
   R when<R>({
     required R Function() initial,
     required R Function() loading,

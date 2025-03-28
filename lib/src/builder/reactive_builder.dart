@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:reactive_notifier/reactive_notifier.dart'
-    show ReactiveNotifier, ReactiveNotifierViewModel, ViewModel;
+import 'package:reactive_notifier/reactive_notifier.dart' show ReactiveNotifier;
 import 'package:reactive_notifier/src/notifier/notifier_impl.dart';
 
 
