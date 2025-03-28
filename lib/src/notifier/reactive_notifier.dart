@@ -2,8 +2,9 @@ import 'dart:collection';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
+import 'package:reactive_notifier/reactive_notifier.dart';
 
-import 'implements/notifier_impl.dart';
+import 'notifier_impl.dart';
 
 /// A reactive state management solution that supports:
 /// - Singleton instances with key-based identity
@@ -58,8 +59,7 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   /// - [create]: Function that creates the initial state
   /// - [related]: Optional list of related states
   /// - [key]: Optional key for instance identity
-  factory ReactiveNotifier(T Function() create,
-      {List<ReactiveNotifier>? related, Key? key, bool autoDispose = false}) {
+  factory ReactiveNotifier(T Function() create, {List<ReactiveNotifier>? related, Key? key, bool autoDispose = false}) {
     key ??= UniqueKey();
 
     assert(() {
@@ -120,11 +120,7 @@ Location: $trace
       // Check for possible notification overflow
       _checkNotificationOverflow();
 
-      assert(() {
-        log('📝 Updating state for $T: $notifier -> ${newState.runtimeType}',
-            level: 10);
-        return true;
-      }());
+      log('📝 Updating state for $T: $notifier -> ${newState.runtimeType}', level: 10);
 
       _updatingNotifiers.add(this);
 
@@ -490,7 +486,7 @@ Location of cleanup request: $trace
     }
 
     // Si es seguro limpiar esta instancia
-    if (notifier is StateNotifierImpl) {
+    if (notifier is ViewModel) {
       assert(() {
         log('''
 ℹ️ Propagating dispose to StateNotifierImpl
@@ -503,7 +499,7 @@ This will release any resources held by the ViewModel (timers, streams, etc.)
         return true;
       }());
 
-      (notifier as StateNotifierImpl).dispose();
+      (notifier as ViewModel).dispose();
     }
 
     // It's safe to clean this instance
