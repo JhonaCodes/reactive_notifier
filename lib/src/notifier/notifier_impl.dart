@@ -31,10 +31,12 @@ abstract class NotifierImpl<T> extends ChangeNotifier {
   /// [updateSilently]
   /// Updates the value silently without notifying listeners.
   ///
+  @protected
   void updateSilently(T newState) {
     _notifier = newState;
   }
 
+  @protected
   void transformState(T Function(T data) data) {
     _notifier = data(_notifier);
     notifyListeners();

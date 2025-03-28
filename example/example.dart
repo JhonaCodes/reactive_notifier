@@ -112,14 +112,14 @@ class CounterScreen extends StatelessWidget {
               children: [
                 ElevatedButton(
                   onPressed: CounterService.decrement,
-                  child: const Text('-'),
+                  child: Text('-'),
                 ),
-                const SizedBox(width: 20),
+                SizedBox(width: 20),
                 ElevatedButton(
                   onPressed: CounterService.increment,
-                  child: const Text('+'),
+                  child: Text('+'),
                 ),
-                const SizedBox(width: 20),
+                SizedBox(width: 20),
                 ElevatedButton(
                   onPressed: () => CounterService.updateMessage('Mensaje actualizado: ${DateTime.now()}'),
                   child: const Text('Actualizar Mensaje'),

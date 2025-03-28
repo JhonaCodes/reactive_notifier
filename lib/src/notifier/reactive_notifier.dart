@@ -145,6 +145,110 @@ Location: $trace
     }
   }
 
+  @override
+  void updateSilently(T newState) {
+    if (notifier != newState) {
+      // Prevent circular update
+      if (_updatingNotifiers.contains(this)) {
+        return;
+      }
+
+      // Check for possible notification overflow
+      _checkNotificationOverflow();
+
+      log('📝 Updating state silently for $T: $notifier -> ${newState.runtimeType}', level: 10);
+
+      _updatingNotifiers.add(this);
+
+      try {
+        // Update value without notifying
+        super.updateSilently(newState);
+
+        // Notify parents if they exist
+        if (_parents.isNotEmpty) {
+          assert(() {
+            log('📤 Notifying parent states for $T', level: 10);
+            return true;
+          }());
+
+          for (var parent in _parents) {
+            parent.notifyListeners();
+          }
+        }
+      } finally {
+        _updatingNotifiers.remove(this);
+      }
+    }
+  }
+
+  @override
+  void transformStateSilently(T Function(T data) data) {
+    // Prevent circular update
+    if (_updatingNotifiers.contains(this)) {
+      return;
+    }
+
+    // Check for possible notification overflow
+    _checkNotificationOverflow();
+
+    log('🔄 Transforming state silently for $T', level: 10);
+
+    _updatingNotifiers.add(this);
+
+    try {
+      // Transform state without notifying
+      super.transformStateSilently(data);
+
+      // Notify parents if they exist
+      if (_parents.isNotEmpty) {
+        assert(() {
+          log('📤 Notifying parent states for $T', level: 10);
+          return true;
+        }());
+
+        for (var parent in _parents) {
+          parent.notifyListeners();
+        }
+      }
+    } finally {
+      _updatingNotifiers.remove(this);
+    }
+  }
+
+  @override
+  void transformState(T Function(T data) data) {
+    // Prevent circular update
+    if (_updatingNotifiers.contains(this)) {
+      return;
+    }
+
+    // Check for possible notification overflow
+    _checkNotificationOverflow();
+
+    log('🔄 Transforming state for $T', level: 10);
+
+    _updatingNotifiers.add(this);
+
+    try {
+      // Transform state and notify
+      super.transformState(data);
+
+      // Notify parents if they exist
+      if (_parents.isNotEmpty) {
+        assert(() {
+          log('📤 Notifying parent states for $T', level: 10);
+          return true;
+        }());
+
+        for (var parent in _parents) {
+          parent.notifyListeners();
+        }
+      }
+    } finally {
+      _updatingNotifiers.remove(this);
+    }
+  }
+
   /// Checks for potential notification overflow
   /// Throws assertion error if too many notifications occur in a short time window
   void _checkNotificationOverflow() {
@@ -410,8 +514,8 @@ Available types: ${related!.map((r) => '${r.notifier.runtimeType}(${r.keyNotifie
     _updatingNotifiers.clear();
   }
 
-  T? getStateByKey(Key key) {
-    if (_instances.containsKey(key)) return _instances[key]!.notifier;
+  R? getStateByKey<R>(Key key) {
+    if (_instances.containsKey(key)) return (_instances[key]! as ReactiveNotifier<R>).notifier;
     return null;
   }
 
