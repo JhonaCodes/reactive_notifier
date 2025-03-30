@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
-
 /// Immutable model representing the counter state.
 ///
 /// Contains a numeric [count] value and a descriptive [message].
@@ -41,7 +40,6 @@ class CounterState {
   }
 }
 
-
 /// Mixin that encapsulates all the counter's state logic and business rules.
 ///
 /// Implements a stateless service that manages [ReactiveNotifier] instances
@@ -52,8 +50,9 @@ mixin CounterService {
   ///
   /// This instance is initialized with a counter at 0 and an initial message.
   /// It is related to [_messageNotifier] to create a composite state model.
-  static final ReactiveNotifier<CounterState> _instance = ReactiveNotifier<CounterState>(
-        () => const CounterState(count: 0, message: 'Initial'),
+  static final ReactiveNotifier<CounterState> _instance =
+      ReactiveNotifier<CounterState>(
+    () => const CounterState(count: 0, message: 'Initial'),
     related: [_messageNotifier],
   );
 
@@ -61,8 +60,9 @@ mixin CounterService {
   ///
   /// This notifier maintains a text message that can be updated
   /// independently of the counter state.
-  static final ReactiveNotifier<String> _messageNotifier = ReactiveNotifier<String>(
-        () => 'Initial message',
+  static final ReactiveNotifier<String> _messageNotifier =
+      ReactiveNotifier<String>(
+    () => 'Initial message',
   );
 
   /// Accesses the counter notifier instance.
@@ -115,7 +115,6 @@ mixin CounterService {
     _messageNotifier.updateState(newMessage);
   }
 }
-
 
 /// Widget that displays the counter and provides user interaction controls.
 ///
@@ -178,7 +177,8 @@ class CounterScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 20),
                 ElevatedButton(
-                  onPressed: () => CounterService.updateMessage('Updated message: ${DateTime.now()}'),
+                  onPressed: () => CounterService.updateMessage(
+                      'Updated message: ${DateTime.now()}'),
                   child: const Text('Update Message'),
                 ),
               ],
@@ -189,5 +189,3 @@ class CounterScreen extends StatelessWidget {
     );
   }
 }
-
-

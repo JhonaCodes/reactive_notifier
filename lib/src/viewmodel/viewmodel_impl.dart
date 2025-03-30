@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 
-
 /// Se usa en las clases Viewmodel donde debe estar toda la logica de mi negocio
 abstract class ViewModel<T> extends ChangeNotifier {
   // Internal state
@@ -34,7 +33,6 @@ Initial state hash: ${_data.hashCode}
       return true;
     }());
   }
-
 
   /// Abstract method that returns an empty/clean state of type T
   /// Must be implemented by subclasses
@@ -174,7 +172,6 @@ New state hash: ${_data.hashCode}
       return true;
     }());
   }
-
 
   /// Transforms the state using a function
   void transformStateSilently(T Function(T data) transformer) {
@@ -326,7 +323,6 @@ Is disposed: $_disposed
     return Future.value();
   }
 
-
   /// Cleans the state to allow garbage collection without calling dispose
   void cleanState() {
     _checkDisposed();
@@ -348,5 +344,4 @@ New empty state hash: ${_data.hashCode}
       return true;
     }());
   }
-
 }

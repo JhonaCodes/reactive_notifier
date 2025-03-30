@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:reactive_notifier/reactive_notifier.dart' show ReactiveNotifier;
 import 'package:reactive_notifier/src/notifier/notifier_impl.dart';
 
-
-
 /// Reactive Builder for simple state or direct model state.
 class ReactiveBuilder<T> extends StatefulWidget {
   final NotifierImpl<T> notifier;

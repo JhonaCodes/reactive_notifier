@@ -59,7 +59,8 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   /// - [create]: Function that creates the initial state
   /// - [related]: Optional list of related states
   /// - [key]: Optional key for instance identity
-  factory ReactiveNotifier(T Function() create, {List<ReactiveNotifier>? related, Key? key, bool autoDispose = false}) {
+  factory ReactiveNotifier(T Function() create,
+      {List<ReactiveNotifier>? related, Key? key, bool autoDispose = false}) {
     key ??= UniqueKey();
 
     assert(() {
@@ -120,7 +121,8 @@ Location: $trace
       // Check for possible notification overflow
       _checkNotificationOverflow();
 
-      log('📝 Updating state for $T: $notifier -> ${newState.runtimeType}', level: 10);
+      log('📝 Updating state for $T: $notifier -> ${newState.runtimeType}',
+          level: 10);
 
       _updatingNotifiers.add(this);
 
@@ -156,7 +158,8 @@ Location: $trace
       // Check for possible notification overflow
       _checkNotificationOverflow();
 
-      log('📝 Updating state silently for $T: $notifier -> ${newState.runtimeType}', level: 10);
+      log('📝 Updating state silently for $T: $notifier -> ${newState.runtimeType}',
+          level: 10);
 
       _updatingNotifiers.add(this);
 
@@ -516,11 +519,11 @@ Available types: ${related!.map((r) => '${r.notifier.runtimeType}(${r.keyNotifie
       log('🧹 Cleaned up all ReactiveNotifiers', level: 10);
       return true;
     }());
-
   }
 
   R? getStateByKey<R>(Key key) {
-    if (_instances.containsKey(key)) return (_instances[key]! as ReactiveNotifier<R>).notifier;
+    if (_instances.containsKey(key))
+      return (_instances[key]! as ReactiveNotifier<R>).notifier;
     return null;
   }
 
@@ -798,7 +801,8 @@ Count: $removedCount
   @override
   String toString() => '${describeIdentity(this)}($notifier)';
 
-  static List<ReactiveNotifier> get getInstances => _instances.values.map((e) => e as ReactiveNotifier).toList();
-  static ReactiveNotifier<T> getInstanceByKey<T>(Key key) => _instances[key]! as ReactiveNotifier<T>;
-
+  static List<ReactiveNotifier> get getInstances =>
+      _instances.values.map((e) => e as ReactiveNotifier).toList();
+  static ReactiveNotifier<T> getInstanceByKey<T>(Key key) =>
+      _instances[key]! as ReactiveNotifier<T>;
 }

@@ -11,8 +11,6 @@ library reactive_notifier;
 /// itself whenever the value changes.
 export 'package:reactive_notifier/src/builder/builder.dart';
 
-
-
 /// Export the [AsyncState]
 export 'package:reactive_notifier/src/handler/async_state.dart';
 

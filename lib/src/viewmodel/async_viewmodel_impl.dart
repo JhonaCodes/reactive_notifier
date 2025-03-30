@@ -109,7 +109,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
   /// Get the current data (may be null if not in success state)
   T? get data => _state.isSuccess ? _state.data : null;
 
-
   R when<R>({
     required R Function() initial,
     required R Function() loading,

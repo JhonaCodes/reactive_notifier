@@ -7,15 +7,14 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 /// and provides efficient state management and rebuilding mechanisms
 ///
 class ReactiveViewModelBuilder<T> extends StatefulWidget {
-
   /// New ViewModel approach, takes precedence over notifier if both are provided
   final ViewModel<T> viewmodel;
 
   /// Builder function that creates the widget tree
   final Widget Function(
-      T state,
-      Widget Function(Widget child) keep,
-      ) builder;
+    T state,
+    Widget Function(Widget child) keep,
+  ) builder;
 
   /// Constructor that ensures either notifier or viewmodel is provided
   const ReactiveViewModelBuilder({
@@ -56,7 +55,6 @@ class _ReactiveBuilderStateViewModel<T>
       value = widget.viewmodel.data;
       widget.viewmodel.addListener(_valueChanged);
     }
-
   }
 
   @override
