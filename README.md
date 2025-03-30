@@ -73,12 +73,6 @@ class CounterState {
   }
 }
 
-/// Create a mixin to encapsulate your ViewModel
-mixin CounterService {
-  static final ReactiveNotifierViewModel<CounterViewModel, CounterState> viewModel = 
-      ReactiveNotifierViewModel(() => CounterViewModel());
-}
-
 /// Define your ViewModel
 class CounterViewModel extends ViewModel<CounterState> {
   CounterViewModel() : super(CounterState(count: 0, message: 'Initial'));
@@ -87,12 +81,6 @@ class CounterViewModel extends ViewModel<CounterState> {
   void init() {
     // Initialization logic runs only once when created
     print('Counter initialized');
-  }
-  
-  @override
-  CounterState _createEmptyState() {
-    // Required for cleanState() functionality
-    return CounterState(count: 0, message: '');
   }
   
   void increment() {
@@ -109,6 +97,14 @@ class CounterViewModel extends ViewModel<CounterState> {
     ));
   }
 }
+
+
+/// Create a mixin to encapsulate your ViewModel
+mixin CounterService {
+  static final ReactiveNotifierViewModel<CounterViewModel, CounterState> viewModel =
+  ReactiveNotifierViewModel(() => CounterViewModel());
+}
+
 
 /// In your UI, use ReactiveViewModelBuilder
 class CounterWidget extends StatelessWidget {
@@ -363,21 +359,21 @@ For async operations with loading, error, and success states:
 ```dart
 mixin ProductService {
   static final productsViewModel = ReactiveNotifier<ProductsViewModel>(
-    () => ProductsViewModel(repository)
+          () => ProductsViewModel(repository)
   );
 }
 
 class ProductsViewModel extends AsyncViewModelImpl<List<Product>> {
   final ProductRepository repository;
-  
-  ProductsViewModel(this.repository) 
+
+  ProductsViewModel(this.repository)
       : super(AsyncState.initial(), loadOnInit: true);
-  
+
   @override
   Future<List<Product>> loadData() async {
     return await repository.getProducts();
   }
-  
+
   // Clean state when widget is disposed (don't dispose the ViewModel)
   void onWidgetDispose() {
     cleanState();
@@ -418,7 +414,7 @@ ReactiveStreamBuilder<Message>(
 
 ## Performance Optimization with keep
 
-The `keep` function is a powerful way to prevent unnecessary rebuilds:
+The `keep` function is a powerful way to prevent unnecessary rebuilds, even for complex widgets containing other reactive components:
 
 ```dart
 ReactiveBuilder<int>(
@@ -433,9 +429,31 @@ ReactiveBuilder<int>(
         keep(
           Image.asset('assets/counter_image.png'),
         ),
+        
+        // Even another ReactiveBuilder inside keep won't rebuild when the parent rebuilds
+        // Only rebuilds when ThemeService.isDarkMode changes
         keep(
-          const ExpensiveWidget(),
+          ReactiveBuilder<bool>(
+            notifier: ThemeService.isDarkMode,
+            builder: (isDark, innerKeep) {
+              return Card(
+                color: isDark ? Colors.grey[800] : Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'Theme card with count: $count',
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
         ),
+
+        const ExpensiveWidget(),
+        
         keep(
           ElevatedButton(
             onPressed: CounterService.increment,
@@ -447,6 +465,18 @@ ReactiveBuilder<int>(
   },
 )
 ```
+
+Key points about `keep`:
+
+1. Using `keep` prevents widgets from rebuilding even when their parent rebuilds
+2. Nested ReactiveBuilder widgets inside `keep` only rebuild when their own state changes
+3. Use `keep` for:
+    - Expensive widgets that don't depend on the current state
+    - Other ReactiveBuilders that should update independently
+    - Widgets with their own state management
+    - Widgets that access the current state but don't need to rebuild when it changes
+
+Note that there's no need to use `keep` on `const` widgets as they're already optimized by Flutter.
 
 ## Debugging and Monitoring
 
@@ -779,22 +809,15 @@ class UserModel {
 }
 ```
 
-#### 2. Repository Wrapped in ReactiveNotifier
+#### 2. Repository
 
 ```dart
 // src/auth/repository/auth_repository.dart
 import 'package:http/http.dart' as http;
-import 'package:reactive_notifier/reactive_notifier.dart';
 import '../model/user_model.dart';
 
-mixin AuthRepository {
-  // Wrap repository in ReactiveNotifier for global access
-  static final repository = ReactiveNotifier<AuthRepositoryImpl>(
-    () => AuthRepositoryImpl(),
-  );
-}
-
 class AuthRepositoryImpl {
+  AuthRepositoryImpl();
   final http.Client _client = http.Client();
   
   Future<UserModel> login(String email, String password) async {
@@ -837,64 +860,60 @@ import '../../dashboard/notifier/dashboard_notifier.dart';
 import '../../profile/notifier/profile_notifier.dart';
 
 class AuthViewModel extends ViewModel<UserModel> {
-  AuthViewModel() : super(UserModel.empty());
-  
+  final AuthRepositoryImpl repository;
+
+  // Pass repository by reference for better testability
+  AuthViewModel(this.repository) : super(UserModel.empty());
+
   @override
   void init() {
     // Check for saved session
     checkSavedSession();
   }
   
-  @override
-  UserModel _createEmptyState() {
-    return UserModel.empty();
-  }
-  
+
   Future<void> checkSavedSession() async {
     // Logic to check for saved session
   }
-  
+
   Future<void> login(String email, String password) async {
     try {
       // Show loading state
       transformState((state) => state.copyWith(
         name: 'Loading...',
       ));
-      
-      // Use repository for login
-      final user = await AuthRepository.repository.notifier.login(
-        email, 
-        password
-      );
-      
+
+      // Use injected repository for login
+      final user = await repository.login(email, password);
+
       // Update state with user
       updateState(user);
-      
+
       // CROSS-MODULE COMMUNICATION
       // Update other modules after successful login
       DashboardNotifier.dashboardState.updateSilently(DashboardModel.forUser(user));
       ProfileNotifier.profileState.updateSilently(ProfileModel.fromUser(user));
-      
+
     } catch (e) {
       // Handle error and update state
       transformState((state) => UserModel.empty().copyWith(
-        name: 'Error: ${e.toString()}'
+          name: 'Error: ${e.toString()}'
       ));
     }
   }
-  
+
   Future<void> logout() async {
     try {
-      await AuthRepository.repository.notifier.logout();
-      
+      await repository.logout();
+
       // Clear state 
       cleanState();
-      
+
       // CROSS-MODULE COMMUNICATION
       // Clear data from other modules
       DashboardNotifier.dashboardState.cleanCurrentNotifier();
       ProfileNotifier.profileState.cleanCurrentNotifier();
-      
+
     } catch (e) {
       print('Logout error: $e');
     }
@@ -912,8 +931,10 @@ import '../model/user_model.dart';
 
 mixin AuthNotifier {
   // Main state
-  static final authState = ReactiveNotifier<AuthViewModel>(
-    () => AuthViewModel(),
+  static final authState = ReactiveNotifier<AuthViewModel>(() {
+      final repository = AuthRepositoryImpl();
+      return AuthViewModel(repository);
+    },
   );
   
   // Utility methods for use in UI
@@ -954,6 +975,14 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -976,7 +1005,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 keep(LoginForm(
                   emailController: _emailController,
                   passwordController: _passwordController,
-                  onLogin: _handleLogin,
+                  onLogin: ()async => await AuthNotifier.login(
+                    _emailController.text,
+                    _passwordController.text,
+                  ),
                 )),
               ],
             ),
@@ -986,19 +1018,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
   
-  void _handleLogin() {
-    AuthNotifier.login(
-      _emailController.text,
-      _passwordController.text,
-    );
-  }
-  
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
 }
 
 // Reusable widget
@@ -1062,9 +1081,8 @@ Future<void> login(String email, String password) async {
       ProfileModel.fromUser(user)
     );
     
-    // Cart might require additional data from an API
-    final savedCart = await CartRepository.repository.notifier.getCartForUser(user.id);
-    CartNotifier.cartState.updateState(savedCart);
+    // Cart might require additional data.
+    CartNotifier.cartState.updateStateFromUserId(user.id);
     
   } catch (e) {
     // Error handling
@@ -1136,7 +1154,7 @@ class OrderRepositoryImpl {
 }
 ```
 
-The main advantage of this approach is that it keeps business logic and cross-module communication in the appropriate layers (ViewModel, Repository), leaving the UI clean and focused solely on presentation. No complex event systems, BLoCs, or additional controllers are required.
+The main advantage of this approach is that it keeps business logic and cross-module communication in the appropriate layers (ViewModel, Repository), leaving the UI clean and focused solely on presentation. No complex event systems, or additional controllers are required.
 
 ## Examples
 
