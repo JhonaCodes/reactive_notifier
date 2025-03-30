@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/src/handler/stream_state.dart';
-import 'package:reactive_notifier/src/reactive_notifier.dart';
+import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 class ReactiveStreamBuilder<T> extends StatefulWidget {
   final ReactiveNotifier<Stream<T>> notifier;

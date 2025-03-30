@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:reactive_notifier/src/reactive_notifier.dart';
+import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 void main() {
   group('ReactiveNotifier Circular Reference Tests', () {

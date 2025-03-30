@@ -2,8 +2,9 @@ import 'dart:collection';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
+import 'package:reactive_notifier/reactive_notifier.dart';
 
-import 'implements/notifier_impl.dart';
+import 'notifier_impl.dart';
 
 /// A reactive state management solution that supports:
 /// - Singleton instances with key-based identity
@@ -58,8 +59,7 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   /// - [create]: Function that creates the initial state
   /// - [related]: Optional list of related states
   /// - [key]: Optional key for instance identity
-  factory ReactiveNotifier(T Function() create,
-      {List<ReactiveNotifier>? related, Key? key, bool autoDispose = false}) {
+  factory ReactiveNotifier(T Function() create, {List<ReactiveNotifier>? related, Key? key, bool autoDispose = false}) {
     key ??= UniqueKey();
 
     assert(() {
@@ -120,11 +120,7 @@ Location: $trace
       // Check for possible notification overflow
       _checkNotificationOverflow();
 
-      assert(() {
-        log('📝 Updating state for $T: $notifier -> ${newState.runtimeType}',
-            level: 10);
-        return true;
-      }());
+      log('📝 Updating state for $T: $notifier -> ${newState.runtimeType}', level: 10);
 
       _updatingNotifiers.add(this);
 
@@ -146,6 +142,110 @@ Location: $trace
       } finally {
         _updatingNotifiers.remove(this);
       }
+    }
+  }
+
+  @override
+  void updateSilently(T newState) {
+    if (notifier != newState) {
+      // Prevent circular update
+      if (_updatingNotifiers.contains(this)) {
+        return;
+      }
+
+      // Check for possible notification overflow
+      _checkNotificationOverflow();
+
+      log('📝 Updating state silently for $T: $notifier -> ${newState.runtimeType}', level: 10);
+
+      _updatingNotifiers.add(this);
+
+      try {
+        // Update value without notifying
+        super.updateSilently(newState);
+
+        // Notify parents if they exist
+        if (_parents.isNotEmpty) {
+          assert(() {
+            log('📤 Notifying parent states for $T', level: 10);
+            return true;
+          }());
+
+          for (var parent in _parents) {
+            parent.notifyListeners();
+          }
+        }
+      } finally {
+        _updatingNotifiers.remove(this);
+      }
+    }
+  }
+
+  @override
+  void transformStateSilently(T Function(T data) data) {
+    // Prevent circular update
+    if (_updatingNotifiers.contains(this)) {
+      return;
+    }
+
+    // Check for possible notification overflow
+    _checkNotificationOverflow();
+
+    log('🔄 Transforming state silently for $T', level: 10);
+
+    _updatingNotifiers.add(this);
+
+    try {
+      // Transform state without notifying
+      super.transformStateSilently(data);
+
+      // Notify parents if they exist
+      if (_parents.isNotEmpty) {
+        assert(() {
+          log('📤 Notifying parent states for $T', level: 10);
+          return true;
+        }());
+
+        for (var parent in _parents) {
+          parent.notifyListeners();
+        }
+      }
+    } finally {
+      _updatingNotifiers.remove(this);
+    }
+  }
+
+  @override
+  void transformState(T Function(T data) data) {
+    // Prevent circular update
+    if (_updatingNotifiers.contains(this)) {
+      return;
+    }
+
+    // Check for possible notification overflow
+    _checkNotificationOverflow();
+
+    log('🔄 Transforming state for $T', level: 10);
+
+    _updatingNotifiers.add(this);
+
+    try {
+      // Transform state and notify
+      super.transformState(data);
+
+      // Notify parents if they exist
+      if (_parents.isNotEmpty) {
+        assert(() {
+          log('📤 Notifying parent states for $T', level: 10);
+          return true;
+        }());
+
+        for (var parent in _parents) {
+          parent.notifyListeners();
+        }
+      }
+    } finally {
+      _updatingNotifiers.remove(this);
     }
   }
 
@@ -412,10 +512,15 @@ Available types: ${related!.map((r) => '${r.notifier.runtimeType}(${r.keyNotifie
   static void cleanup() {
     _instances.clear();
     _updatingNotifiers.clear();
+    assert(() {
+      log('🧹 Cleaned up all ReactiveNotifiers', level: 10);
+      return true;
+    }());
+
   }
 
-  T? getStateByKey(Key key) {
-    if (_instances.containsKey(key)) return _instances[key]!.notifier;
+  R? getStateByKey<R>(Key key) {
+    if (_instances.containsKey(key)) return (_instances[key]! as ReactiveNotifier<R>).notifier;
     return null;
   }
 
@@ -490,7 +595,7 @@ Location of cleanup request: $trace
     }
 
     // Si es seguro limpiar esta instancia
-    if (notifier is StateNotifierImpl) {
+    if (notifier is ViewModel) {
       assert(() {
         log('''
 ℹ️ Propagating dispose to StateNotifierImpl
@@ -503,7 +608,7 @@ This will release any resources held by the ViewModel (timers, streams, etc.)
         return true;
       }());
 
-      (notifier as StateNotifierImpl).dispose();
+      (notifier as ViewModel).dispose();
     }
 
     // It's safe to clean this instance
@@ -692,4 +797,8 @@ Count: $removedCount
 
   @override
   String toString() => '${describeIdentity(this)}($notifier)';
+
+  static List<ReactiveNotifier> get getInstances => _instances.values.map((e) => e as ReactiveNotifier).toList();
+  static ReactiveNotifier<T> getInstanceByKey<T>(Key key) => _instances[key]! as ReactiveNotifier<T>;
+
 }

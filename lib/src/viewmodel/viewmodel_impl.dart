@@ -1,114 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
-import 'package:reactive_notifier/reactive_notifier.dart';
-import 'package:reactive_notifier/src/tracker/state_tracker.dart';
 
-import '../implements/notifier_impl.dart';
-import '../implements/repository_impl.dart';
-
-/// [ViewModelImpl]
-/// Base ViewModel implementation with repository integration for domain logic and data handling.
-/// Use this when you need to interact with repositories and manage business logic.
-/// For simple state management without repository, use [ViewModelStateImpl] instead.
-///
-@Deprecated("Use ViewModel")
-abstract class ViewModelImpl<T> extends StateNotifierImpl<T> {
-  final String? _id;
-  final String? _location;
-
-  // ignore_for_file: unused_field
-  final RepositoryImpl _repository;
-
-  ViewModelImpl(this._repository, super._data, [this._id, this._location]) {
-    _initialization();
-
-    if (!kReleaseMode && (_id != null && _location != null)) {
-      StateTracker.setLocation(_id, _location);
-    }
-  }
-
-  void init();
-
-  bool _initialized = false;
-
-  void _initialization() {
-    if (!_initialized) {
-      log('ViewModelImpl.init');
-
-      init();
-      _initialized = true;
-    }
-  }
-
-  void addDependencyTracker(String notifyId, String dependentId) {
-    if (!kReleaseMode) {
-      StateTracker.addDependency(notifyId, dependentId);
-    }
-  }
-
-  void currentTracker() {
-    if (!kReleaseMode && _id != null) {
-      StateTracker.trackStateChange(_id);
-    }
-  }
-
-  @override
-  void dispose() {
-    _initialized = false;
-    super.dispose();
-  }
-}
-
-/// [ViewModelStateImpl]
-/// Base ViewModel implementation for simple state management without repository dependencies.
-/// Use this when you only need to handle UI state without domain logic or data layer interactions.
-/// For cases requiring repository access, use [ViewModelImpl] instead.
-///
-@Deprecated("Use ViewModel")
-abstract class ViewModelStateImpl<T> extends StateNotifierImpl<T> {
-  final String? _id;
-  final String? _location;
-
-  ViewModelStateImpl(super._data, [this._id, this._location]) {
-    _initialization();
-
-    if (!kReleaseMode && (_id != null && _location != null)) {
-      StateTracker.setLocation(_id, _location);
-    }
-  }
-
-  void init();
-
-  bool _initialized = false;
-
-  void _initialization() {
-    if (!_initialized) {
-      log('ViewModelStateImpl.init');
-
-      init();
-      _initialized = true;
-    }
-  }
-
-  void addDependencyTracker(String notifyId, String dependentId) {
-    if (!kReleaseMode) {
-      StateTracker.addDependency(notifyId, dependentId);
-    }
-  }
-
-  void currentTracker() {
-    if (!kReleaseMode && _id != null) {
-      StateTracker.trackStateChange(_id);
-    }
-  }
-
-  @override
-  void dispose() {
-    _initialized = false;
-    super.dispose();
-  }
-}
 
 /// Se usa en las clases Viewmodel donde debe estar toda la logica de mi negocio
 abstract class ViewModel<T> extends ChangeNotifier {
@@ -141,6 +34,11 @@ Initial state hash: ${_data.hashCode}
       return true;
     }());
   }
+
+
+  /// Abstract method that returns an empty/clean state of type T
+  /// Must be implemented by subclasses
+  T _createEmptyState();
 
   /// Public getter for the data
   T get data {
@@ -427,4 +325,28 @@ Is disposed: $_disposed
     }());
     return Future.value();
   }
+
+
+  /// Cleans the state to allow garbage collection without calling dispose
+  void cleanState() {
+    _checkDisposed();
+
+    // Use the subclass implementation to create a clean state
+    final emptyState = _createEmptyState();
+
+    // Update to the empty state
+    updateState(emptyState);
+
+    assert(() {
+      log('''
+🧹 ViewModel<${T.toString()}> state cleaned
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ID: $_instanceId
+New empty state hash: ${_data.hashCode}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+  }
+
 }
