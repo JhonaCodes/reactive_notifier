@@ -30,6 +30,9 @@ A flexible, elegant, and secure tool for state management in Flutter. Designed w
 - 🔍 Comprehensive state tracking
 - 📊 Granular state update control
 
+![performance_test](https://github.com/user-attachments/assets/0dc568d2-7e0a-46e5-8ad6-1fec92b772be)
+
+
 ## Installation
 
 Add this to your package's `pubspec.yaml` file:
