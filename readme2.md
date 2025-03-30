@@ -23,15 +23,12 @@ A flexible, elegant, and secure tool for state management in Flutter. Designed w
 - 📡 Built-in Async and Stream support
 - 🔗 Smart related states system
 - 🛠️ Repository/Service layer integration
-- ⚡  High performance with minimal rebuilds
+- ⚡ High performance with minimal rebuilds
 - 🐛 Powerful debugging tools
 - 📊 Detailed error reporting
 - 🧹 Full lifecycle control with state cleaning
 - 🔍 Comprehensive state tracking
 - 📊 Granular state update control
-
-![performance_test](https://github.com/user-attachments/assets/0dc568d2-7e0a-46e5-8ad6-1fec92b772be)
-
 
 ## Installation
 
@@ -62,50 +59,50 @@ The ViewModel approach provides a robust foundation for complex state management
 class CounterState {
   final int count;
   final String message;
-  
+
   const CounterState({required this.count, required this.message});
-  
+
   CounterState copyWith({int? count, String? message}) {
     return CounterState(
-      count: count ?? this.count,
-      message: message ?? this.message
+        count: count ?? this.count,
+        message: message ?? this.message
     );
   }
 }
 
 /// Create a mixin to encapsulate your ViewModel
 mixin CounterService {
-  static final ReactiveNotifierViewModel<CounterViewModel, CounterState> viewModel = 
-      ReactiveNotifierViewModel(() => CounterViewModel());
+  static final ReactiveNotifierViewModel<CounterViewModel, CounterState> viewModel =
+  ReactiveNotifierViewModel(() => CounterViewModel());
 }
 
 /// Define your ViewModel
 class CounterViewModel extends ViewModel<CounterState> {
   CounterViewModel() : super(CounterState(count: 0, message: 'Initial'));
-  
+
   @override
   void init() {
     // Initialization logic runs only once when created
     print('Counter initialized');
   }
-  
+
   @override
   CounterState _createEmptyState() {
     // Required for cleanState() functionality
     return CounterState(count: 0, message: '');
   }
-  
+
   void increment() {
     transformState((state) => state.copyWith(
-      count: state.count + 1,
-      message: 'Incremented to ${state.count + 1}'
+        count: state.count + 1,
+        message: 'Incremented to ${state.count + 1}'
     ));
   }
-  
+
   void decrement() {
     transformState((state) => state.copyWith(
-      count: state.count - 1,
-      message: 'Decremented to ${state.count - 1}'
+        count: state.count - 1,
+        message: 'Decremented to ${state.count - 1}'
     ));
   }
 }
@@ -121,7 +118,7 @@ class CounterWidget extends StatelessWidget {
           children: [
             Text('Count: ${state.count}'),
             Text(state.message),
-            
+
             // Prevent rebuilds with keep
             keep(
               Row(
@@ -152,9 +149,9 @@ For simpler state management scenarios:
 ```dart
 /// Create a mixin to encapsulate state
 mixin ThemeService {
-  static final ReactiveNotifier<bool> isDarkMode = 
-      ReactiveNotifier<bool>(() => false);
-  
+  static final ReactiveNotifier<bool> isDarkMode =
+  ReactiveNotifier<bool>(() => false);
+
   static void toggleTheme() {
     isDarkMode.updateState(!isDarkMode.notifier);
   }
@@ -167,9 +164,11 @@ class ThemeToggle extends StatelessWidget {
     return ReactiveBuilder<bool>(
       notifier: ThemeService.isDarkMode,
       builder: (isDark, keep) {
-        return Switch(
-          value: isDark,
-          onChanged: (_) => ThemeService.toggleTheme(),
+        return keep(
+          Switch(
+            value: isDark,
+            onChanged: (_) => ThemeService.toggleTheme(),
+          ),
         );
       },
     );
@@ -190,7 +189,7 @@ mixin StartupService {
     // Initialize critical states at startup
     await UserService.userState.loadNotifier();
     await ConfigService.configState.loadNotifier();
-    
+
     runApp(MyApp());
   }
 }
@@ -203,12 +202,12 @@ ReactiveNotifier promotes cleaning state rather than disposing instances:
 ```dart
 mixin UserService {
   static final userState = ReactiveNotifier<UserModel>(() => UserModel.guest());
-  
+
   // Recommended: Clean state (reset to empty but keep instance)
   static void resetToGuest() {
     userState.cleanCurrentNotifier();
   }
-  
+
   // Alternative: Dispose completely (only if you're certain)
   // Warning: If used elsewhere, this can cause issues
   static void disposeCompletely() {
@@ -236,12 +235,12 @@ ReactiveNotifier provides multiple ways to update state with precise control:
 ```dart
 mixin CounterService {
   static final ReactiveNotifier<int> counter = ReactiveNotifier<int>(() => 0);
-  
+
   // Normal update - triggers widget rebuilds
   static void increment() {
     counter.updateState(counter.notifier + 1);
   }
-  
+
   // Silent update - changes state without rebuilding widgets
   // Useful in initState or for background updates
   static void prepareInitialValue() {
@@ -256,17 +255,17 @@ For complex state that needs to be updated based on current values:
 
 ```dart
 mixin CartService {
-  static final ReactiveNotifier<CartModel> cart = 
-      ReactiveNotifier<CartModel>(() => CartModel.empty());
-  
+  static final ReactiveNotifier<CartModel> cart =
+  ReactiveNotifier<CartModel>(() => CartModel.empty());
+
   // Update with notification
   static void addItem(Product product) {
     cart.transformState((state) => state.copyWith(
-      items: [...state.items, product],
-      total: state.total + product.price
+        items: [...state.items, product],
+        total: state.total + product.price
     ));
   }
-  
+
   // Update without notification
   // Useful for background calculations or preparations
   static void prepareCartData(List<Product> products) {
@@ -285,32 +284,32 @@ ReactiveNotifier's related states system allows for managing interdependent stat
 ```dart
 mixin ShopService {
   // Individual state notifiers
-  static final ReactiveNotifier<UserState> userState = 
-      ReactiveNotifier<UserState>(() => UserState.guest());
-  
-  static final ReactiveNotifier<CartState> cartState = 
-      ReactiveNotifier<CartState>(() => CartState.empty());
-  
-  static final ReactiveNotifier<ProductsState> productsState = 
-      ReactiveNotifier<ProductsState>(() => ProductsState.initial());
-  
+  static final ReactiveNotifier<UserState> userState =
+  ReactiveNotifier<UserState>(() => UserState.guest());
+
+  static final ReactiveNotifier<CartState> cartState =
+  ReactiveNotifier<CartState>(() => CartState.empty());
+
+  static final ReactiveNotifier<ProductsState> productsState =
+  ReactiveNotifier<ProductsState>(() => ProductsState.initial());
+
   // Combined state that's aware of all related states
   static final ReactiveNotifier<ShopState> shopState = ReactiveNotifier<ShopState>(
-    () => ShopState.initial(),
+        () => ShopState.initial(),
     related: [userState, cartState, productsState],
   );
-  
+
   // Access related states in three ways:
   static void showUserCartSummary() {
     // 1. Direct access
     final user = userState.notifier;
-    
+
     // 2. Using from<T>()
     final cart = shopState.from<CartState>();
-    
+
     // 3. Using keyNotifier
     final products = shopState.from<ProductsState>(productsState.keyNotifier);
-    
+
     print("${user.name}'s cart has ${cart.items.length} items with products from ${products.categories.length} categories");
   }
 }
@@ -324,13 +323,13 @@ For simple state values:
 
 ```dart
 ReactiveBuilder<bool>(
-  notifier: SettingsService.isNotificationsEnabled,
-  builder: (enabled, keep) {
-    return Switch(
-      value: enabled,
-      onChanged: (value) => SettingsService.toggleNotifications(),
-    );
-  },
+notifier: SettingsService.isNotificationsEnabled,
+builder: (enabled, keep) {
+return Switch(
+value: enabled,
+onChanged: (value) => SettingsService.toggleNotifications(),
+);
+},
 )
 ```
 
@@ -656,13 +655,10 @@ class MockCounterState extends CounterState {
 
 This approach has several advantages:
 
-1. It uses the actual service mixin.
-2. No override.
-3. No container provider or similar.
-4. No force specific patter for testing, just natural :).
-5. It tests the real components with controlled data.
-6. It's simple and doesn't require complex mocking frameworks.
-7. It maintains the singleton pattern even during testing.
+1. It uses the actual service mixin - no need to create mock versions
+2. It tests the real components with controlled data
+3. It's simple and doesn't require complex mocking frameworks
+4. It maintains the singleton pattern even during testing
 
 For specific test scenarios, you can easily reset or prepare different states:
 
@@ -682,467 +678,16 @@ test('specific scenario', () {
 Testing with ReactiveNotifier follows its core philosophy: use the same instances but control their state directly.
 
 
-## Recommended Architecture
 
-ReactiveNotifier is designed to work optimally with modular applications, following a feature-based MVVM architecture. We recommend the following project structure, although you can use the names and architecture that suit your needs. This example aims to give a clearer idea of the power of this library.
-```
-src/
-├── auth/                   # A specific feature
-│   ├── ui/
-│   │   ├── layouts/
-│   │   ├── views/
-│   │   ├── widgets/
-│   │   └── screens/
-│   ├── model/
-│   │   ├── user_model.dart
-│   │   └── credentials_model.dart
-│   ├── viewmodel/
-│   │   └── auth_viewmodel.dart
-│   ├── repository/         # Only if required
-│   │   └── auth_repository.dart
-│   ├── routes/             # Only if required
-│   │   └── auth_routes.dart
-│   └── notifier/
-│       └── auth_notifier.dart (mixin)
-│
-├── dashboard/              # Another specific feature
-│   ├── ui/
-│   │   ├── layouts/
-│   │   ├── views/
-│   │   ├── widgets/
-│   │   └── screens/
-│   ├── model/
-│   │   └── dashboard_model.dart
-│   ├── viewmodel/
-│   │   └── dashboard_viewmodel.dart
-│   ├── repository/
-│   │   └── dashboard_repository.dart
-│   └── notifier/
-│       └── dashboard_notifier.dart (mixin)
-│
-├── profile/                # Another specific feature
-│   ├── ui/
-│   ├── model/
-│   ├── viewmodel/
-│   ├── repository/
-│   └── notifier/
-│
-└── core/                   # Shared core components
-    ├── api/
-    ├── theme/
-    └── utils/
-```
 
-Each feature follows the complete MVVM pattern with its own internal structure. This modular feature-based architecture allows for independent development and keeps related functionality grouped together.
-
-### Complete Architecture Example
-
-Below is an example of how to implement a complete system with this architecture:
-
-#### 1. Model
-
-```dart
-// src/auth/model/user_model.dart
-class UserModel {
-  final String id;
-  final String name;
-  final String email;
-  final List<String> roles;
-  
-  const UserModel({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.roles,
-  });
-  
-  UserModel copyWith({
-    String? id,
-    String? name,
-    String? email,
-    List<String>? roles,
-  }) {
-    return UserModel(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      email: email ?? this.email,
-      roles: roles ?? this.roles,
-    );
-  }
-  
-  factory UserModel.empty() => const UserModel(
-    id: '',
-    name: '',
-    email: '',
-    roles: [],
-  );
-}
-```
-
-#### 2. Repository Wrapped in ReactiveNotifier
-
-```dart
-// src/auth/repository/auth_repository.dart
-import 'package:http/http.dart' as http;
-import 'package:reactive_notifier/reactive_notifier.dart';
-import '../model/user_model.dart';
-
-mixin AuthRepository {
-  // Wrap repository in ReactiveNotifier for global access
-  static final repository = ReactiveNotifier<AuthRepositoryImpl>(
-    () => AuthRepositoryImpl(),
-  );
-}
-
-class AuthRepositoryImpl {
-  final http.Client _client = http.Client();
-  
-  Future<UserModel> login(String email, String password) async {
-    try {
-      final response = await _client.post(
-        Uri.parse('https://api.example.com/login'),
-        body: {'email': email, 'password': password},
-      );
-      
-      if (response.statusCode == 200) {
-        // Parse response and return model
-        return UserModel(
-          id: '123',
-          name: 'John Doe',
-          email: email,
-          roles: ['user'],
-        );
-      } else {
-        throw Exception('Authentication failed');
-      }
-    } catch (e) {
-      throw Exception('Login error: $e');
-    }
-  }
-  
-  Future<void> logout() async {
-    await _client.post(Uri.parse('https://api.example.com/logout'));
-  }
-}
-```
-
-#### 3. ViewModel
-
-```dart
-// src/auth/viewmodel/auth_viewmodel.dart
-import 'package:reactive_notifier/reactive_notifier.dart';
-import '../model/user_model.dart';
-import '../repository/auth_repository.dart';
-import '../../dashboard/notifier/dashboard_notifier.dart';
-import '../../profile/notifier/profile_notifier.dart';
-
-class AuthViewModel extends ViewModel<UserModel> {
-  AuthViewModel() : super(UserModel.empty());
-  
-  @override
-  void init() {
-    // Check for saved session
-    checkSavedSession();
-  }
-  
-  @override
-  UserModel _createEmptyState() {
-    return UserModel.empty();
-  }
-  
-  Future<void> checkSavedSession() async {
-    // Logic to check for saved session
-  }
-  
-  Future<void> login(String email, String password) async {
-    try {
-      // Show loading state
-      transformState((state) => state.copyWith(
-        name: 'Loading...',
-      ));
-      
-      // Use repository for login
-      final user = await AuthRepository.repository.notifier.login(
-        email, 
-        password
-      );
-      
-      // Update state with user
-      updateState(user);
-      
-      // CROSS-MODULE COMMUNICATION
-      // Update other modules after successful login
-      DashboardNotifier.dashboardState.updateSilently(DashboardModel.forUser(user));
-      ProfileNotifier.profileState.updateSilently(ProfileModel.fromUser(user));
-      
-    } catch (e) {
-      // Handle error and update state
-      transformState((state) => UserModel.empty().copyWith(
-        name: 'Error: ${e.toString()}'
-      ));
-    }
-  }
-  
-  Future<void> logout() async {
-    try {
-      await AuthRepository.repository.notifier.logout();
-      
-      // Clear state 
-      cleanState();
-      
-      // CROSS-MODULE COMMUNICATION
-      // Clear data from other modules
-      DashboardNotifier.dashboardState.cleanCurrentNotifier();
-      ProfileNotifier.profileState.cleanCurrentNotifier();
-      
-    } catch (e) {
-      print('Logout error: $e');
-    }
-  }
-}
-```
-
-#### 4. Notifier (Mixin)
-
-```dart
-// src/auth/notifier/auth_notifier.dart
-import 'package:reactive_notifier/reactive_notifier.dart';
-import '../viewmodel/auth_viewmodel.dart';
-import '../model/user_model.dart';
-
-mixin AuthNotifier {
-  // Main state
-  static final authState = ReactiveNotifier<AuthViewModel>(
-    () => AuthViewModel(),
-  );
-  
-  // Utility methods for use in UI
-  static Future<void> login(String email, String password) async {
-    await authState.notifier.login(email, password);
-  }
-  
-  static Future<void> logout() async {
-    await authState.notifier.logout();
-  }
-  
-  static bool get isLoggedIn {
-    return authState.notifier.data.id.isNotEmpty;
-  }
-  
-  static String get userName {
-    return authState.notifier.data.name;
-  }
-  
-  // More utility methods...
-}
-```
-
-#### 5. UI (Screen)
-
-```dart
-// src/auth/ui/screens/login_screen.dart
-import 'package:flutter/material.dart';
-import 'package:reactive_notifier/reactive_notifier.dart';
-import '../../notifier/auth_notifier.dart';
-import '../../model/user_model.dart';
-
-class LoginScreen extends StatefulWidget {
-  @override
-  _LoginScreenState createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Login')),
-      body: ReactiveViewModelBuilder<UserModel>(
-        viewmodel: AuthNotifier.authState.notifier,
-        builder: (user, keep) {
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                if (user.name.startsWith('Error'))
-                  Text(
-                    user.name,
-                    style: TextStyle(color: Colors.red),
-                  ),
-                
-                // Clean UI with reusable widgets
-                keep(LoginForm(
-                  emailController: _emailController,
-                  passwordController: _passwordController,
-                  onLogin: _handleLogin,
-                )),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-  
-  void _handleLogin() {
-    AuthNotifier.login(
-      _emailController.text,
-      _passwordController.text,
-    );
-  }
-  
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-}
-
-// Reusable widget
-class LoginForm extends StatelessWidget {
-  final TextEditingController emailController;
-  final TextEditingController passwordController;
-  final VoidCallback onLogin;
-  
-  const LoginForm({
-    required this.emailController,
-    required this.passwordController,
-    required this.onLogin,
-  });
-  
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        TextField(
-          controller: emailController,
-          decoration: InputDecoration(labelText: 'Email'),
-        ),
-        TextField(
-          controller: passwordController,
-          decoration: InputDecoration(labelText: 'Password'),
-          obscureText: true,
-        ),
-        SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: onLogin,
-          child: Text('Login'),
-        ),
-      ],
-    );
-  }
-}
-```
-
-## Cross-Module Communication
-
-ReactiveNotifier facilitates direct communication between modules without complex event systems. All logic can occur within the ViewModel, Notifier, or even the Repository.
-
-### Communication through ViewModel
-
-```dart
-// In auth_viewmodel.dart
-Future<void> login(String email, String password) async {
-  try {
-    // ... login code
-    
-    // After successful login, update other modules
-    // Note we're not using 'related', but direct communication
-    
-    // Update dashboard with user data
-    DashboardNotifier.dashboardState.updateState(
-      DashboardModel.forUser(user)
-    );
-    
-    // Prepare profile data silently (without rebuilding UI yet)
-    ProfileNotifier.profileState.updateSilently(
-      ProfileModel.fromUser(user)
-    );
-    
-    // Cart might require additional data from an API
-    final savedCart = await CartRepository.repository.notifier.getCartForUser(user.id);
-    CartNotifier.cartState.updateState(savedCart);
-    
-  } catch (e) {
-    // Error handling
-  }
-}
-```
-
-### Communication through Notifier (Mixin)
-
-```dart
-// In payment_notifier.dart
-mixin PaymentNotifier {
-  static final paymentState = ReactiveNotifier<PaymentViewModel>(
-    () => PaymentViewModel(),
-  );
-  
-  static Future<void> processPayment(String orderId) async {
-    try {
-      final result = await paymentState.notifier.processPayment(orderId);
-      
-      if (result.success) {
-        // Update other modules after successful payment
-        OrderNotifier.orderState.notifier.updateOrderStatus(
-          orderId, 
-          'PAID'
-        );
-        
-        CartNotifier.cartState.notifier.clearCart();
-        
-        NotificationNotifier.notificationState.notifier.addNotification(
-          NotificationModel(
-            title: 'Payment Successful',
-            body: 'Your order #$orderId has been paid.',
-            type: NotificationType.success,
-          ),
-        );
-      }
-    } catch (e) {
-      // Error handling
-    }
-  }
-}
-```
-
-### Communication from Repository
-
-```dart
-// In order_repository.dart
-class OrderRepositoryImpl {
-  // ... other methods
-  
-  Future<OrderModel> createOrder(CartModel cart) async {
-    try {
-      // API call to create order
-      final orderResponse = await _client.post(...);
-      final newOrder = OrderModel.fromJson(orderResponse);
-      
-      // Update related modules directly from repository
-      CartNotifier.cartState.notifier.setOrderId(newOrder.id);
-      
-      // We can even trigger navigation if needed
-      NavigationNotifier.navigate('order_confirmation', params: {'id': newOrder.id});
-      
-      return newOrder;
-    } catch (e) {
-      throw Exception('Failed to create order: $e');
-    }
-  }
-}
-```
-
-The main advantage of this approach is that it keeps business logic and cross-module communication in the appropriate layers (ViewModel, Repository), leaving the UI clean and focused solely on presentation. No complex event systems, BLoCs, or additional controllers are required.
 
 ## Examples
 
 Check out our [example app](https://github.com/jhonacodes/reactive_notifier/tree/main/example) for more comprehensive examples and use cases.
 
 ## Contributing
+
+We love contributions! Please read our [Contributing Guide](CONTRIBUTING.md) first.
 
 1. Fork it
 2. Create your feature branch (`git checkout -b feature/amazing`)
