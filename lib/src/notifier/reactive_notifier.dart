@@ -512,6 +512,11 @@ Available types: ${related!.map((r) => '${r.notifier.runtimeType}(${r.keyNotifie
   static void cleanup() {
     _instances.clear();
     _updatingNotifiers.clear();
+    assert(() {
+      log('🧹 Cleaned up all ReactiveNotifiers', level: 10);
+      return true;
+    }());
+
   }
 
   R? getStateByKey<R>(Key key) {
@@ -792,4 +797,8 @@ Count: $removedCount
 
   @override
   String toString() => '${describeIdentity(this)}($notifier)';
+
+  static List<ReactiveNotifier> get getInstances => _instances.values.map((e) => e as ReactiveNotifier).toList();
+  static ReactiveNotifier<T> getInstanceByKey<T>(Key key) => _instances[key]! as ReactiveNotifier<T>;
+
 }
