@@ -453,12 +453,10 @@ ReactiveBuilder<int>(
         ),
 
         const ExpensiveWidget(),
-        
-        keep(
-          ElevatedButton(
-            onPressed: CounterService.increment,
-            child: const Text('Increment'),
-          ),
+
+        const ElevatedButton(
+          onPressed: CounterService.increment,
+          child: const Text('Increment'),
         ),
       ],
     );
