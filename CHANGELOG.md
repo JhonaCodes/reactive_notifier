@@ -1,3 +1,38 @@
+# 2.7.0
+
+### Breaking Changes 🚨
+- Strict implementation of ViewModel patterns for state management
+- Updated ReactiveViewModelBuilder to work exclusively with ViewModel<T> implementations
+- Enforced proper mixin-based architecture for state organization
+- Improved related states handling with cleaner dependency management
+
+### 🚀 Enhancements
+- Enhanced ViewModel lifecycle management with detailed logging
+- Added `cleanState()` as the recommended approach instead of full dispose
+- Improved error detection for circular references and state dependencies
+- Comprehensive diagnostic logging for all lifecycle events
+- More granular control over rebuilds with optimized keep functionality
+- Efficient cross-module communication with direct state updates
+
+### 🛠 New Features
+- Added `loadNotifier()` method for explicit initialization of ViewModels at app startup
+- Added `updateSilently()` for state changes without triggering UI rebuilds
+- Added `transformStateSilently()` for granular model updates without notifications
+- Enhanced ReactiveStreamBuilder with more comprehensive stream state handling
+- Expanded debugging tools with detailed instance tracking
+
+### 🧹 Code Quality
+- Improved type safety across all components
+- Better error messages with actionable recommendations
+- Repository pattern integration with dependency injection support
+- Enhanced testing support with simplified mocking approach
+
+### 📚 Documentation
+- Complete architecture examples with feature-based MVVM structure
+- Improved examples for cross-module communication
+- Expanded API reference with best practices for this library
+- Better guidance for performance optimization
+
 # 2.6.3
 - `transformStateSilently` for Viewmodel and ReactiveNotifier.
 
