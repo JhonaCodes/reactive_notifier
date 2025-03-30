@@ -35,6 +35,11 @@ Initial state hash: ${_data.hashCode}
     }());
   }
 
+
+  /// Abstract method that returns an empty/clean state of type T
+  /// Must be implemented by subclasses
+  T _createEmptyState();
+
   /// Public getter for the data
   T get data {
     _checkDisposed();
@@ -320,4 +325,28 @@ Is disposed: $_disposed
     }());
     return Future.value();
   }
+
+
+  /// Cleans the state to allow garbage collection without calling dispose
+  void cleanState() {
+    _checkDisposed();
+
+    // Use the subclass implementation to create a clean state
+    final emptyState = _createEmptyState();
+
+    // Update to the empty state
+    updateState(emptyState);
+
+    assert(() {
+      log('''
+🧹 ViewModel<${T.toString()}> state cleaned
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ID: $_instanceId
+New empty state hash: ${_data.hashCode}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+  }
+
 }
