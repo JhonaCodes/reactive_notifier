@@ -522,8 +522,9 @@ Available types: ${related!.map((r) => '${r.notifier.runtimeType}(${r.keyNotifie
   }
 
   R? getStateByKey<R>(Key key) {
-    if (_instances.containsKey(key))
+    if (_instances.containsKey(key)) {
       return (_instances[key]! as ReactiveNotifier<R>).notifier;
+    }
     return null;
   }
 
