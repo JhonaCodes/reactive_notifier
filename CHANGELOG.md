@@ -1,3 +1,7 @@
+# 2.7.1
+- Update documentation
+
+
 # 2.7.0
 
 ### Breaking Changes 🚨

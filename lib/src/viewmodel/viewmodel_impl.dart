@@ -306,7 +306,7 @@ Lifespan: ${lifespan}ms
   /// - If the ViewModel was disposed, it will log the state but not interfere
   ///   with the automatic reinitialization process
   ///
-  /// @return Future<void> that completes immediately, allowing
+  /// @return [Future] that completes immediately, allowing
   ///         sequential asynchronous operations if needed
   Future<void> loadNotifier() async {
     assert(() {
