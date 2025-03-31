@@ -6,7 +6,6 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 /// Provides a standardized way to handle loading, success, and error states for async data.
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
-@protected
 abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
   late AsyncState<T> _state;
   late bool loadOnInit;
