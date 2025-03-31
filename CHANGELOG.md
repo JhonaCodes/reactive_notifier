@@ -1,4 +1,7 @@
 # 2.7.1
+- Expose `AsyncViewModelImpl`
+
+# 2.7.1
 - Update documentation
 
 
