@@ -1,4 +1,7 @@
 # 2.7.2
+- Export complete api 😅.
+
+# 2.7.2
 - Expose `AsyncViewModelImpl`
 
 # 2.7.1

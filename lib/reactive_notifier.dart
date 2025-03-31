@@ -21,3 +21,4 @@ export 'package:reactive_notifier/src/notifier/reactive_notifier_viewmodel.dart'
 
 /// Export ViewModelImpl
 export 'package:reactive_notifier/src/viewmodel/viewmodel_impl.dart';
+export 'package:reactive_notifier/src/viewmodel/async_viewmodel_impl.dart';
