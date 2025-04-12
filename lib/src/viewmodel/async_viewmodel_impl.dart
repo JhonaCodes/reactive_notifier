@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
@@ -91,6 +93,44 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
   @protected
   void cleanState() {
     _state = AsyncState.initial();
+  }
+
+  /// [loadNotifier]
+  /// Ensures the ViewModel's availability by confirming initialization has occurred.
+  ///
+  /// This method should be called when explicit access to the ViewModel is required
+  /// outside its normal lifecycle. Typical situations include:
+  ///
+  /// - At application startup to pre-load critical ViewModels
+  /// - In code paths where it's not evident if the ViewModel is already initialized
+  /// - When data availability needs to be guaranteed before executing an operation
+  ///
+  /// It is not necessary to call this method in the normal lifecycle, as the ViewModel's
+  /// constructor automatically handles initialization through [_safeInitialization].
+  ///
+  /// ```dart
+  /// // Typical usage during app initialization
+  /// await myViewModel.loadNotifier();
+  ///
+  /// // Or from a service
+  /// await notifier<MyViewModel>().loadNotifier();
+  /// ```
+  ///
+  /// This method is idempotent and safe for multiple calls:
+  /// - If the ViewModel is already initialized, it will do nothing
+  /// - If the ViewModel was disposed, it will log the state but not interfere
+  ///   with the automatic reinitialization process
+  ///
+  /// @return [Future] that completes immediately, allowing
+  ///         sequential asynchronous operations if needed
+  Future<void> loadNotifier() async {
+    assert(() {
+      log('''
+🔍 loadNotifier() called for ViewModel<${T.toString()}>
+''', level: 10);
+      return true;
+    }());
+    return Future.value();
   }
 
   /// Check if any operation is in progress

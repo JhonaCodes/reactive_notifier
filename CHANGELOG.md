@@ -1,3 +1,6 @@
+# 2.7.4
+- `loadNotifier` for `AsyncViewModelImpl`.
+
 # 2.7.3
 - Export complete api 😅.
 
