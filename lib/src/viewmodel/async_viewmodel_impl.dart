@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -46,6 +47,12 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
   }
 
   void updateSilently(T newState) {
+    if(newState is Iterable){
+      if(newState.isEmpty){
+        _state = AsyncState.empty();
+        return;
+      }
+    }
     _state = AsyncState.success(newState);
   }
 
@@ -53,6 +60,14 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
     final dataNotifier = data(_state);
     if (dataNotifier.hashCode == _state.hashCode) {
       return;
+    }
+
+    if(data(_state) is Iterable){
+      if(data(_state).isEmpty){
+        _state = AsyncState.empty();
+        notifyListeners();
+        return;
+      }
     }
     _state = data(_state);
     notifyListeners();
@@ -63,16 +78,30 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
     if (dataNotifier.hashCode == _state.hashCode) {
       return;
     }
+
+    if(data(_state) is Iterable){
+      if(data(_state).isEmpty){
+        _state = AsyncState.empty();
+        return;
+      }
+    }
     _state = data(_state);
   }
 
   /// Override this method to provide the async data loading logic
   @protected
-  Future<T> loadData();
+  FutureOr<T> loadData();
 
   /// Update data directly
 
   void updateState(T data) {
+    if(data is Iterable){
+      if(data.isEmpty){
+        _state = AsyncState.empty();
+        notifyListeners();
+        return;
+      }
+    }
     _state = AsyncState.success(data);
     notifyListeners();
   }
@@ -152,12 +181,14 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
     required R Function() initial,
     required R Function() loading,
     required R Function(T data) success,
+    required R Function() empty,
     required R Function(Object? err, StackTrace? stackTrace) error,
   }) {
     return _state.when(
       initial: initial,
       loading: loading,
       success: (infoData) => success(infoData),
+      empty: empty,
       error: error,
     );
   }
