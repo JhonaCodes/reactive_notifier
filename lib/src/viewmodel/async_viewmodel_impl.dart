@@ -3,13 +3,14 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
+import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
 ///
 /// Provides a standardized way to handle loading, success, and error states for async data.
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
-abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
+abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   late AsyncState<T> _state;
   late bool loadOnInit;
 
@@ -47,11 +48,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
   }
 
   void updateSilently(T newState) {
-    if(newState is Iterable){
-      if(newState.isEmpty){
-        _state = AsyncState.empty();
-        return;
-      }
+    if(isEmpty(newState)){
+      _state = AsyncState.empty();
+      return;
     }
     _state = AsyncState.success(newState);
   }
@@ -62,12 +61,10 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
       return;
     }
 
-    if(data(_state) is Iterable){
-      if(data(_state).isEmpty){
-        _state = AsyncState.empty();
-        notifyListeners();
-        return;
-      }
+    if(isEmpty(data(_state))){
+      _state = AsyncState.empty();
+      notifyListeners();
+      return;
     }
     _state = data(_state);
     notifyListeners();
@@ -79,11 +76,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
       return;
     }
 
-    if(data(_state) is Iterable){
-      if(data(_state).isEmpty){
-        _state = AsyncState.empty();
-        return;
-      }
+    if(isEmpty(data(_state))){
+      _state = AsyncState.empty();
+      return;
     }
     _state = data(_state);
   }
@@ -95,12 +90,10 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier {
   /// Update data directly
 
   void updateState(T data) {
-    if(data is Iterable){
-      if(data.isEmpty){
-        _state = AsyncState.empty();
-        notifyListeners();
-        return;
-      }
+    if(isEmpty(data)){
+      _state = AsyncState.empty();
+      notifyListeners();
+      return;
     }
     _state = AsyncState.success(data);
     notifyListeners();

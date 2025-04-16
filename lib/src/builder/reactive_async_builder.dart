@@ -23,19 +23,13 @@ class ReactiveAsyncBuilder<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: notifier,
-      builder: (context, _) {
-        return notifier.when(
-          initial: () => onInitial?.call() ?? const SizedBox.shrink(),
-          loading: () =>
-              onLoading?.call() ??
-              const Center(child: CircularProgressIndicator.adaptive()),
-          success: (data) => onSuccess(data),
-          empty: () => onEmpty?.call() ?? const SizedBox.shrink(),
-          error: (error, stackTrace) => onError != null
-              ? onError!(error, stackTrace)
-              : Center(child: Text('Error: $error')),
-        );
-      },
+      builder: (context, _) => notifier.when(
+        initial: () => onInitial?.call() ?? const SizedBox.shrink(),
+        loading: () => onLoading?.call() ?? const Center(child: CircularProgressIndicator.adaptive()),
+        success: (data) => onSuccess(data),
+        empty: () => onEmpty?.call() ?? const SizedBox.shrink(),
+        error: (error, stackTrace) => onError != null ? onError!(error, stackTrace) : Center(child: Text('Error: $error')),
+      ),
     );
   }
 }
