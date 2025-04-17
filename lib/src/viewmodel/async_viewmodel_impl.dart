@@ -56,6 +56,10 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   }
 
   void transformState(AsyncState<T> Function(AsyncState<T> data) data) {
+    final dataNotifier = data(_state);
+    if (dataNotifier.hashCode == _state.hashCode) {
+      return;
+    }
 
     if(isEmpty(data(_state))){
       _state = AsyncState.empty();
@@ -67,6 +71,10 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   }
 
   void transformStateSilently(AsyncState<T> Function(AsyncState<T> data) data) {
+    final dataNotifier = data(_state);
+    if (dataNotifier.hashCode == _state.hashCode) {
+      return;
+    }
 
     if(isEmpty(data(_state))){
       _state = AsyncState.empty();
@@ -162,14 +170,14 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   /// Get the current data (may be null if not in success state)
   T? get data => _state.isSuccess ? _state.data : null;
 
-  R when<R>({
+  R match<R>({
     required R Function() initial,
     required R Function() loading,
     required R Function(T data) success,
     required R Function() empty,
     required R Function(Object? err, StackTrace? stackTrace) error,
   }) {
-    return _state.when(
+    return _state.match(
       initial: initial,
       loading: loading,
       success: (infoData) => success(infoData),
@@ -177,4 +185,20 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
       error: error,
     );
   }
+
+  R when<R>({
+    required R Function() initial,
+    required R Function() loading,
+    required R Function(T data) success,
+    required R Function(Object? err, StackTrace? stackTrace) error,
+  }) {
+    return _state.when(
+      initial: initial,
+      loading: loading,
+      success: (infoData) => success(infoData),
+      error: error,
+    );
+  }
+
+
 }

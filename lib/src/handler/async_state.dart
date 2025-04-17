@@ -21,7 +21,7 @@ class AsyncState<T> {
   bool get isError => status == AsyncStatus.error;
   bool get isEmpty => status == AsyncStatus.empty;
 
-  R when<R>({
+  R match<R>({
     required R Function() initial,
     required R Function() loading,
     required R Function(T data) success,
@@ -38,6 +38,24 @@ class AsyncState<T> {
       case AsyncStatus.empty:
         return empty();
       case AsyncStatus.error:
+        return error(this.error, this.stackTrace);
+    }
+  }
+
+  R when<R>({
+    required R Function() initial,
+    required R Function() loading,
+    required R Function(T data) success,
+    required R Function(Object? err, StackTrace? stackTrace) error,
+  }) {
+    switch (status) {
+      case AsyncStatus.initial:
+        return initial();
+      case AsyncStatus.loading:
+        return loading();
+      case AsyncStatus.success:
+        return success(data as T);
+      default:
         return error(this.error, this.stackTrace);
     }
   }
