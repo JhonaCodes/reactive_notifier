@@ -48,30 +48,15 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   }
 
   void updateSilently(T newState) {
-    if(isEmpty(newState)){
-      _state = AsyncState.empty();
-      return;
-    }
     _state = AsyncState.success(newState);
   }
 
   void transformState(AsyncState<T> Function(AsyncState<T> data) data) {
-
-    if(isEmpty(data(_state))){
-      _state = AsyncState.empty();
-      notifyListeners();
-      return;
-    }
     _state = data(_state);
     notifyListeners();
   }
 
   void transformStateSilently(AsyncState<T> Function(AsyncState<T> data) data) {
-
-    if(isEmpty(data(_state))){
-      _state = AsyncState.empty();
-      return;
-    }
     _state = data(_state);
   }
 
@@ -82,11 +67,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   /// Update data directly
 
   void updateState(T data) {
-    if(isEmpty(data)){
-      _state = AsyncState.empty();
-      notifyListeners();
-      return;
-    }
     _state = AsyncState.success(data);
     notifyListeners();
   }
