@@ -56,10 +56,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   }
 
   void transformState(AsyncState<T> Function(AsyncState<T> data) data) {
-    final dataNotifier = data(_state);
-    if (dataNotifier.hashCode == _state.hashCode) {
-      return;
-    }
 
     if(isEmpty(data(_state))){
       _state = AsyncState.empty();
@@ -71,10 +67,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   }
 
   void transformStateSilently(AsyncState<T> Function(AsyncState<T> data) data) {
-    final dataNotifier = data(_state);
-    if (dataNotifier.hashCode == _state.hashCode) {
-      return;
-    }
 
     if(isEmpty(data(_state))){
       _state = AsyncState.empty();
