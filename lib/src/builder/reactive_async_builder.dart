@@ -5,7 +5,6 @@ class ReactiveAsyncBuilder<T> extends StatelessWidget {
   final AsyncViewModelImpl<T> notifier;
   final Widget Function(T data) onSuccess;
   final Widget Function()? onLoading;
-  final Widget Function()? onEmpty;
   final Widget Function(Object? error, StackTrace? stackTrace)? onError;
   final Widget Function()? onInitial;
 
@@ -13,7 +12,6 @@ class ReactiveAsyncBuilder<T> extends StatelessWidget {
     super.key,
     required this.notifier,
     required this.onSuccess,
-    this.onEmpty,
     this.onLoading,
     this.onError,
     this.onInitial,
@@ -23,20 +21,12 @@ class ReactiveAsyncBuilder<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: notifier,
-      builder: (context, _) => onEmpty == null
-          ? notifier.when(
-              initial: () => onInitial?.call() ?? const SizedBox.shrink(),
-              loading: () => onLoading?.call() ?? const Center(child: CircularProgressIndicator.adaptive()),
-              success: (data) => onSuccess(data),
-              error: (error, stackTrace) => onError != null ? onError!(error, stackTrace) : Center(child: Text('Error: $error')),
-            )
-          : notifier.match(
-              initial: () => onInitial?.call() ?? const SizedBox.shrink(),
-              loading: () => onLoading?.call() ?? const Center(child: CircularProgressIndicator.adaptive()),
-              success: (data) => onSuccess(data),
-              empty: () => onEmpty?.call() ?? const SizedBox.shrink(),
-              error: (error, stackTrace) => onError != null ? onError!(error, stackTrace) : Center(child: Text('Error: $error')),
-            ),
+      builder: (context, _) => notifier.when(
+        initial: () => onInitial?.call() ?? const SizedBox.shrink(),
+        loading: () => onLoading?.call() ?? const Center(child: CircularProgressIndicator.adaptive()),
+        success: (data) => onSuccess(data),
+        error: (error, stackTrace) => onError != null ? onError!(error, stackTrace) : Center(child: Text('Error: $error')),
+      ),
     );
   }
 }
