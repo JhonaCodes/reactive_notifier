@@ -23,7 +23,7 @@ class ReactiveAsyncBuilder<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: notifier,
-      builder: (context, _) => onEmpty != null
+      builder: (context, _) => onEmpty == null
           ? notifier.when(
               initial: () => onInitial?.call() ?? const SizedBox.shrink(),
               loading: () => onLoading?.call() ?? const Center(child: CircularProgressIndicator.adaptive()),
