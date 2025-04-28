@@ -80,8 +80,11 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   /// Set error state
 
   void errorState(Object error, [StackTrace? stackTrace]) {
+    final errorToThrow = error;
     _state = AsyncState.error(error, stackTrace);
     notifyListeners();
+
+    throw errorToThrow;
   }
 
   @protected
@@ -142,15 +145,19 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   /// Get the current data (may be null if not in success state)
   T get data {
 
-    if(_state.isSuccess){
-      return _state.data!;
+    if (_state.error != null) {
+      throw _state.error!;
     }
 
-    if (_state.stackTrace != null && error != null) {
-      Error.throwWithStackTrace(error!, _state.stackTrace!);
+
+    if (_state.data == null) {
+      final error = _state.error ?? "Not found data";
+      _state = AsyncState.error(error, _state.stackTrace);
+      throw error;
     }
 
-    throw Exception(_state.error);
+
+    return _state.data!;
   }
 
   R match<R>({
