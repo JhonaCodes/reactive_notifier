@@ -87,9 +87,10 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
     throw errorToThrow;
   }
 
-  @protected
   void cleanState() {
     _state = AsyncState.initial();
+    loadData();
+    notifyListeners();
   }
 
   /// [loadNotifier]
