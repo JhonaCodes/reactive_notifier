@@ -140,7 +140,18 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   bool get hasData => _state.isSuccess;
 
   /// Get the current data (may be null if not in success state)
-  T? get data => _state.isSuccess ? _state.data : null;
+  T get data {
+
+    if(_state.isSuccess){
+      return _state.data!;
+    }
+
+    if (_state.stackTrace != null && error != null) {
+      Error.throwWithStackTrace(error!, _state.stackTrace!);
+    }
+
+    throw Exception(_state.error);
+  }
 
   R match<R>({
     required R Function() initial,
