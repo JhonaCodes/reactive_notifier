@@ -128,6 +128,11 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
 ''', level: 10);
       return true;
     }());
+
+    if(_state.data == null && loadOnInit){
+      await _initializeAsync();
+      return;
+    }
     return Future.value();
   }
 
