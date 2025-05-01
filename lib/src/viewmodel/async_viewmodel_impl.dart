@@ -44,7 +44,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
     try {
 
       /// If it is the first initialization we do not have listeners to remove.
-      if(!loadOnInit){
+      if(loadOnInit){
         await removeListeners();
       }
 
