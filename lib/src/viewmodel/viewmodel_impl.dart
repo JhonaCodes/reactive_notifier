@@ -22,6 +22,9 @@ abstract class ViewModel<T> extends ChangeNotifier {
 
     _safeInitialization();
 
+    /// Yes and only if it is changed to true when the entire initialization process is finished.
+    hasInitializedListenerExecution = true;
+
     assert(() {
       log('''
 🔧 ViewModel<${T.toString()}> created
@@ -34,6 +37,27 @@ Initial state hash: ${_data.hashCode}
       return true;
     }());
   }
+
+
+  /// [hasInitializedListenerExecution]
+  /// When registering the listener from an external function, you must first validate if all the loadData has already been initialized,
+  /// to avoid duplication when initializing our listener, because when we create a listener it executes the internal code.
+  /// We don't use [loadOnInit], because we need a way to be sure that the entire cycle of our viewmodel has already been executed.
+  ///
+  /// Create fetch function
+  ///  Future<void> _myFunctionWithFetchForListener() async{
+  ///     if (hasInitializedListenerExecution) {
+  ///       _reloadDataForListener();
+  ///     }
+  ///   }
+  ///
+  /// Register listener
+  ///   @override
+  ///   Future<void> setupListeners()async{
+  ///     MyNotifierService.instance.notifier.addListener(_myFunctionWithFetchForListener);
+  ///   }
+  ///
+  bool hasInitializedListenerExecution = false;
 
   @mustCallSuper
   Future<void> removeListeners() async {
@@ -78,6 +102,11 @@ ID: $_instanceId
 
   /// Safe initialization that handles errors
   void _safeInitialization() {
+
+
+    /// We make sure it is always false before any full initialization.
+    hasInitializedListenerExecution = false;
+
     if (_initialized || _disposed) return;
 
     try {

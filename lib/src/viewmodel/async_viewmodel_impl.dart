@@ -21,17 +21,44 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
 
     if (loadOnInit) {
       _initializeAsync();
+
+      /// Yes and only if it is changed to true when the entire initialization process is finished.
+      hasInitializedListenerExecution = true;
     }
   }
 
   /// Internal initialization method that properly handles async initialization
   Future<void> _initializeAsync() async {
+
+    /// We make sure it is always false before any full initialization.
+    hasInitializedListenerExecution = false;
+
     try {
       await reload();
     } catch (error, stackTrace) {
       errorState(error, stackTrace);
     }
   }
+
+  /// [hasInitializedListenerExecution]
+  /// When registering the listener from an external function, you must first validate if all the loadData has already been initialized,
+  /// to avoid duplication when initializing our listener, because when we create a listener it executes the internal code.
+  /// We don't use [loadOnInit], because we need a way to be sure that the entire cycle of our viewmodel has already been executed.
+  ///
+  /// Create fetch function
+  ///  Future<void> _myFunctionWithFetchForListener() async{
+  ///     if (hasInitializedListenerExecution) {
+  ///       _reloadDataForListener();
+  ///     }
+  ///   }
+  ///
+  /// Register listener
+  ///   @override
+  ///   Future<void> setupListeners()async{
+  ///     MyNotifierService.instance.notifier.addListener(_myFunctionWithFetchForListener);
+  ///   }
+  ///
+  bool hasInitializedListenerExecution = false;
 
 
 
