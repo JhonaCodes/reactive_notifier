@@ -38,16 +38,15 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
 
   /// Public method to reload data
   Future<void> reload() async {
-    loadOnInit = false;
-    if (_state.isLoading) return;
-
     try {
 
       /// If it is the first initialization we do not have listeners to remove.
-      if(loadOnInit){
+      if(!loadOnInit){
         await removeListeners();
       }
 
+      loadOnInit = false;
+      if (_state.isLoading) return;
 
       loadingState();
       final result = await loadData();
