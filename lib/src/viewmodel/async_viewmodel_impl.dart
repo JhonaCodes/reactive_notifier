@@ -178,8 +178,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
 
     if(_state.data == null || loadOnInit){
       await loadData();
-
-      await removeListeners();
       await setupListeners();
       return;
     }
