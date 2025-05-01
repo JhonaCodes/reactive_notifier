@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -34,6 +35,32 @@ Initial state hash: ${_data.hashCode}
     }());
   }
 
+  Future<void> removeListeners() async {
+    assert(() {
+      log('''
+🔕 ViewModel<${T.toString()}> removing listeners
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ID: $_instanceId
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+  }
+
+  Future<void> setupListeners() async {
+    _checkDisposed();
+
+    assert(() {
+      log('''
+🎧 ViewModel<${T.toString()}> setting up listeners
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ID: $_instanceId
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+  }
+
   /// Abstract method that returns an empty/clean state of type T
   /// Must be implemented by subclasses
   T _createEmptyState();
@@ -55,6 +82,8 @@ Initial state hash: ${_data.hashCode}
       init();
       _initialized = true;
       _initTime = DateTime.now();
+
+      unawaited(setupListeners());
     } catch (e, stack) {
       assert(() {
         log('''
@@ -234,6 +263,8 @@ New state hash: ${_data.hashCode}
   void dispose() {
     if (_disposed) return;
 
+    removeListeners();
+
     _disposed = true;
     _disposeTime = DateTime.now();
 
@@ -327,7 +358,8 @@ Is disposed: $_disposed
   void cleanState() {
     _checkDisposed();
 
-    // Use the subclass implementation to create a clean state
+    unawaited(removeListeners());
+
     final emptyState = _createEmptyState();
 
     // Update to the empty state

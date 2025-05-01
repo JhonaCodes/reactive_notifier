@@ -28,6 +28,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   Future<void> _initializeAsync() async {
     try {
       await reload();
+      await setupListeners();
     } catch (error, stackTrace) {
       errorState(error, stackTrace);
     }
@@ -38,14 +39,31 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
     loadOnInit = false;
     if (_state.isLoading) return;
 
-    loadingState();
     try {
+
+      await removeListeners();
+
+      loadingState();
+
       final result = await loadData();
       updateState(result);
+
+      await setupListeners();
     } catch (error, stackTrace) {
       errorState(error, stackTrace);
+      try {
+        await setupListeners();
+      } catch (listenerError) {
+        // Manejar errores al restablecer listeners, por ejemplo, loguearlos
+        print('Error on restart listeners: $listenerError');
+      }
     }
   }
+
+
+  Future<void> setupListeners();
+
+  Future<void> removeListeners();
 
   void updateSilently(T newState) {
     _state = AsyncState.success(newState);
@@ -89,7 +107,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
 
   void cleanState() {
     _state = AsyncState.initial();
+    unawaited(removeListeners());
     loadData();
+    unawaited(setupListeners());
     notifyListeners();
   }
 
@@ -131,6 +151,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
 
     if(_state.data == null || loadOnInit){
       await loadData();
+      await setupListeners();
       return;
     }
     return Future.value();
