@@ -61,9 +61,25 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   }
 
 
-  Future<void> setupListeners();
+  @mustCallSuper
+  Future<void> removeListeners() async {
+    assert(() {
+      log('''
+🔕 ViewModel<${T.toString()}> removing listeners
+''', level: 10);
+      return true;
+    }());
+  }
 
-  Future<void> removeListeners();
+  @mustCallSuper
+  Future<void> setupListeners() async {
+    assert(() {
+      log('''
+🎧 ViewModel<${T.toString()}> setting up listeners
+''', level: 10);
+      return true;
+    }());
+  }
 
   void updateSilently(T newState) {
     _state = AsyncState.success(newState);

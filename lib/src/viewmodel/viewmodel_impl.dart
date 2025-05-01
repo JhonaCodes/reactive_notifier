@@ -35,6 +35,7 @@ Initial state hash: ${_data.hashCode}
     }());
   }
 
+  @mustCallSuper
   Future<void> removeListeners() async {
     assert(() {
       log('''
@@ -47,6 +48,7 @@ ID: $_instanceId
     }());
   }
 
+  @mustCallSuper
   Future<void> setupListeners() async {
     _checkDisposed();
 
