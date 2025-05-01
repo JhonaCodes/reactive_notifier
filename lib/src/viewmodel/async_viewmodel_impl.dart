@@ -34,6 +34,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
     }
   }
 
+
+
+
   /// Public method to reload data
   Future<void> reload() async {
     loadOnInit = false;
@@ -41,10 +44,13 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
 
     try {
 
-      await removeListeners();
+      /// If it is the first initialization we do not have listeners to remove.
+      if(!loadOnInit){
+        await removeListeners();
+      }
+
 
       loadingState();
-
       final result = await loadData();
       updateState(result);
 
@@ -61,6 +67,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   }
 
 
+  /// [removeListeners]
+  /// We remove the listeners registered in [setupListeners] to avoid memory problems.
+  ///
   @mustCallSuper
   Future<void> removeListeners() async {
     assert(() {
@@ -71,6 +80,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
     }());
   }
 
+  /// [setupListeners]
+  /// We register our listeners coming from the notifiers.
+  ///
   @mustCallSuper
   Future<void> setupListeners() async {
     assert(() {
