@@ -28,7 +28,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   Future<void> _initializeAsync() async {
     try {
       await reload();
-      await setupListeners();
     } catch (error, stackTrace) {
       errorState(error, stackTrace);
     }
@@ -179,6 +178,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
 
     if(_state.data == null || loadOnInit){
       await loadData();
+
+      await removeListeners();
       await setupListeners();
       return;
     }
