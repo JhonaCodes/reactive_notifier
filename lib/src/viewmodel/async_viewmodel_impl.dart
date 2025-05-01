@@ -10,7 +10,8 @@ import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 /// Provides a standardized way to handle loading, success, and error states for async data.
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
-abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier {
+abstract class AsyncViewModelImpl<T> extends ChangeNotifier
+    with HelperNotifier {
   late AsyncState<T> _state;
   late bool loadOnInit;
 
@@ -80,8 +81,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier 
       try {
         await setupListeners();
       } catch (listenerError) {
-        // Manejar errores al restablecer listeners, por ejemplo, loguearlos
-        print('Error on restart listeners: $listenerError');
+        log('Error on restart listeners: $listenerError');
       }
     }
   }
@@ -90,7 +90,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier 
   /// We remove the listeners registered in [setupListeners] to avoid memory problems.
   ///
   @mustCallSuper
-  Future<void> removeListeners({List<String> currentListeners = const []}) async {
+  Future<void> removeListeners(
+      {List<String> currentListeners = const []}) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
         logRemove<T>(listeners: currentListeners);
@@ -103,7 +104,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier 
   /// We register our listeners coming from the notifiers.
   ///
   @mustCallSuper
-  Future<void> setupListeners({List<String> currentListeners = const []}) async {
+  Future<void> setupListeners(
+      {List<String> currentListeners = const []}) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
         logSetup<T>(listeners: currentListeners);

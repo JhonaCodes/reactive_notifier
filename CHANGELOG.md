@@ -1,3 +1,33 @@
+# 2.8.0
+## 🎧 ViewModel Listeners
+
+### 🚀 Enhancements
+- Introduced formal ViewModel Lifecycle management through the new Listeners system
+- Added automatic listener registration and cleanup tied to ViewModel lifecycle
+- Enhanced debugging experience with formatted listener logs
+- Optimized memory management by preventing listener leaks
+- Improved separation of UI and business logic with centralized reactivity
+
+### 🛠 New Features
+- Added `setupListeners()` method for registering reactive dependencies
+- Added `removeListeners()` method for automatic cleanup
+- Implemented `hasInitializedListenerExecution` guard for preventing premature updates
+- Integrated listeners with existing lifecycle events (dispose, reload, cleanState)
+- Added debug logging system for monitoring listener activity
+
+### 🧹 Code Quality
+- Improved memory management with automatic listener cleanup
+- Enhanced predictability by centralizing reactive code
+- Reduced widget complexity by moving reactivity to ViewModels
+- Better separation of concerns between UI and business logic
+
+### 📚 Documentation
+- Added comprehensive examples for implementing ViewModel Listeners
+- Updated best practices for reactive programming in Flutter
+- Included debugging tips for listener management
+- Expanded API reference with new listener-related methods
+
+
 # 2.7.4
 - `loadNotifier` for `AsyncViewModelImpl`.
 

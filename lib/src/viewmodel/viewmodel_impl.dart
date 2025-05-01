@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 
 /// Se usa en las clases Viewmodel donde debe estar toda la logica de mi negocio
-abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier  {
+abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier {
   // Internal state
   T _data;
   bool _initialized = false;
@@ -39,7 +39,6 @@ Initial state hash: ${_data.hashCode}
     }());
   }
 
-
   /// [hasInitializedListenerExecution]
   /// When registering the listener from an external function, you must first validate if all the loadData has already been initialized,
   /// to avoid duplication when initializing our listener, because when we create a listener it executes the internal code.
@@ -64,7 +63,8 @@ Initial state hash: ${_data.hashCode}
   /// We remove the listeners registered in [setupListeners] to avoid memory problems.
   ///
   @mustCallSuper
-  Future<void> removeListeners({List<String> currentListeners = const []}) async {
+  Future<void> removeListeners(
+      {List<String> currentListeners = const []}) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
         logRemove<T>(listeners: currentListeners);
@@ -77,7 +77,8 @@ Initial state hash: ${_data.hashCode}
   /// We register our listeners coming from the notifiers.
   ///
   @mustCallSuper
-  Future<void> setupListeners({List<String> currentListeners = const []}) async {
+  Future<void> setupListeners(
+      {List<String> currentListeners = const []}) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
         logSetup<T>(listeners: currentListeners);
@@ -101,8 +102,6 @@ Initial state hash: ${_data.hashCode}
 
   /// Safe initialization that handles errors
   void _safeInitialization() {
-
-
     /// We make sure it is always false before any full initialization.
     hasInitializedListenerExecution = false;
 

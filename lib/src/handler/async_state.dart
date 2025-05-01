@@ -11,9 +11,12 @@ class AsyncState<T> {
 
   factory AsyncState.initial() => AsyncState._(status: AsyncStatus.initial);
   factory AsyncState.loading() => AsyncState._(status: AsyncStatus.loading);
-  factory AsyncState.success(T data) => AsyncState._(status: AsyncStatus.success, data: data);
+  factory AsyncState.success(T data) =>
+      AsyncState._(status: AsyncStatus.success, data: data);
   factory AsyncState.empty() => AsyncState._(status: AsyncStatus.empty);
-  factory AsyncState.error(Object error, [StackTrace? stackTrace]) => AsyncState._(status: AsyncStatus.error, error: error, stackTrace: stackTrace);
+  factory AsyncState.error(Object error, [StackTrace? stackTrace]) =>
+      AsyncState._(
+          status: AsyncStatus.error, error: error, stackTrace: stackTrace);
 
   bool get isInitial => status == AsyncStatus.initial;
   bool get isLoading => status == AsyncStatus.loading;

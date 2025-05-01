@@ -39,7 +39,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  reactive_notifier: ^2.7.4
+  reactive_notifier: ^2.8.0
 ```
 
 ## Core Concepts
@@ -223,83 +223,103 @@ void dispose() {
 }
 ```
 
-### Managing Listeners
-ReactiveNotifier provides a robust system for handling listeners in ViewModels through the `setupListeners` and `removeListeners` methods. This pattern ensures that listeners are properly managed throughout the ViewModel lifecycle to prevent memory leaks and unnecessary updates.
+# Listener Management in ReactiveNotifier
+
+ReactiveNotifier provides a sophisticated system for managing listeners in ViewModels through the `setupListeners` and `removeListeners` methods. This pattern ensures proper listener lifecycle management to prevent memory leaks and unnecessary updates.
+
+## Implementation Pattern
 
 ```dart
 class ProductsViewModel extends AsyncViewModelImpl<List<Product>> {
-  // References to listeners (important for proper cleanup)
-  VoidCallback? _categoryListener;
-  VoidCallback? _priceListener;
+  // Store listener methods as class properties for reference and cleanup
+  Future<void> _categoryListener() async {
+    // Always check hasInitializedListenerExecution to prevent premature updates
+    if (hasInitializedListenerExecution) {
+      // Update logic here when category changes
+    }
+  }
+  
+  Future<void> _priceListener() async {
+    if (hasInitializedListenerExecution) {
+      // Update logic here when price changes
+    }
+  }
+  
+  // Define listener names for debugging (recommended practice)
+  final List<String> _listenersName = ["_categoryListener", "_priceListener"];
   
   ProductsViewModel(this.repository) 
       : super(AsyncState.initial(), loadOnInit: true);
 
   @override
   Future<List<Product>> loadData() async {
-    // Load data implementation
     return await repository.getProducts();
   }
   
   @override
-  Future<void> setupListeners() async {
-    // First clean up any existing listeners
-    await super.setupListeners();
+  Future<void> setupListeners([List<String> currentListeners = const []]) async {
+    // Register listeners with their respective services
+    CategoryService.instance.notifier.addListener(_categoryListener);
+    PriceService.instance.notifier.addListener(_priceListener);
     
-    // Define listeners
-    _categoryListener = () async {
-      print("Category filter changed - reloading products");
-      await reload();
-    };
-    
-    _priceListener = () {
-      print("Price range changed - updating filter");
-      transformState((state) => filterByPrice(state));
-    };
-    
-    // Register listeners with their services
-    CategoryService.instance.notifier.addListener(_categoryListener!);
-    PriceService.instance.notifier.addListener(_priceListener!);
+    // Call super with your listeners list for logging and lifecycle management
+    await super.setupListeners(_listenersName);
   }
   
   @override
-  Future<void> removeListeners() async {
-    // Clean up listeners when they're no longer needed
-    await super.removeListeners();
+  Future<void> removeListeners([List<String> currentListeners = const []]) async {
+    // Unregister all listeners
+    CategoryService.instance.notifier.removeListener(_categoryListener);
+    PriceService.instance.notifier.removeListener(_priceListener);
     
-    if (_categoryListener != null) {
-      CategoryService.instance.notifier.removeListener(_categoryListener!);
-      _categoryListener = null;
-    }
-    
-    if (_priceListener != null) {
-      PriceService.instance.notifier.removeListener(_priceListener!);
-      _priceListener = null;
-    }
+    // Call super with your listeners list for logging and lifecycle cleanup
+    await super.removeListeners(_listenersName);
   }
 }
 ```
 
-#### Key Concepts for Listener Management:
+## Key Concepts
 
-1. **Lifecycle Integration**: Listeners are automatically managed as part of the ViewModel lifecycle:
-   - `setupListeners()` is called after initial data is loaded
-   - `removeListeners()` is called during `dispose()` and before `reload()`
-   - Both are called in the correct sequence during `cleanState()`
+### 1. Listener Method Definition
+- Create dedicated methods for each listener
+- Store them as class properties (not anonymous functions)
+- Use `hasInitializedListenerExecution` guard to prevent premature updates
 
-2. **Memory Leak Prevention**: The pattern ensures listeners are properly removed when:
-   - Data is being reloaded to prevent multiple callbacks
-   - The ViewModel is being disposed
-   - The state is being cleaned
+### 2. Debugging Support
+- Define a `_listenersName` list to track active listeners
+- Pass this list to the parent methods for standardized logging
+- Logs will show formatted information about listener setup and removal
 
-3. **Safe Implementation Pattern**:
-   - Store listener callbacks as class properties (with nullable types)
-   - Always check if listeners exist before removing them
-   - Always set listeners to null after removing them
-   - Call the superclass methods to maintain the lifecycle chain
+### 3. Lifecycle Integration
+Listeners are automatically managed at specific points:
+- **Setup**: After initial data loading completes
+- **Removal**: During `dispose()`, before `reload()`, and during `cleanState()`
+- **Cleanup**: Automatically handled in superclass implementations
 
-This approach provides a clean, consistent way to make ViewModels react to external state changes without creating memory leaks or causing unnecessary rebuilds.
+### 4. Memory Leak Prevention
+The pattern prevents common memory leaks by ensuring:
+- Listeners are properly removed when data is reloaded
+- Listeners are cleaned up when the ViewModel is disposed
+- No duplicate listeners are created when a ViewModel is reused
 
+### 5. Implementation Best Practices
+- Always call `super.setupListeners()` and `super.removeListeners()`
+- Pass your listeners list to these methods for proper logging
+- Use strong references to listener methods (not anonymous functions)
+- Implement both methods as a pair to ensure proper cleanup
+
+## Automatic Lifecycle Hooks
+
+The framework automatically calls these methods at the right times:
+
+| Event | setupListeners | removeListeners |
+|-------|----------------|-----------------|
+| Initial load completion | ✓ | |
+| Before reload() | | ✓ |
+| During cleanState() | ✓ | ✓ |
+| During dispose() | | ✓ |
+
+This structured approach allows ViewModels to react to external state changes without creating memory leaks or causing unnecessary widget rebuilds.
 ## State Update Methods
 
 ReactiveNotifier provides multiple ways to update state with precise control:

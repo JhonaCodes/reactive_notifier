@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 
-mixin HelperNotifier{
+mixin HelperNotifier {
   bool isEmpty(dynamic value) {
     // Si es null
     if (value == null) {
@@ -103,6 +103,3 @@ $divider''', level: level);
     );
   }
 }
-
-
-
