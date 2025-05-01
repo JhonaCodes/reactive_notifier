@@ -10,7 +10,7 @@ import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 /// Provides a standardized way to handle loading, success, and error states for async data.
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
-abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
+abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier {
   late AsyncState<T> _state;
   late bool loadOnInit;
 
@@ -29,7 +29,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
 
   /// Internal initialization method that properly handles async initialization
   Future<void> _initializeAsync() async {
-
     /// We make sure it is always false before any full initialization.
     hasInitializedListenerExecution = false;
 
@@ -60,21 +59,16 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
   ///
   bool hasInitializedListenerExecution = false;
 
-
-
-
   /// Public method to reload data
   Future<void> reload() async {
     if (_state.isLoading) return;
     try {
-
       /// If it is the first initialization we do not have listeners to remove.
-      if(!loadOnInit){
+      if (!loadOnInit) {
         await removeListeners();
       }
 
       loadOnInit = false;
-
 
       loadingState();
       final result = await loadData();
@@ -92,31 +86,30 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
     }
   }
 
-
   /// [removeListeners]
   /// We remove the listeners registered in [setupListeners] to avoid memory problems.
   ///
   @mustCallSuper
-  Future<void> removeListeners() async {
-    assert(() {
-      log('''
-🔕 ViewModel<${T.toString()}> removing listeners
-''', level: 10);
-      return true;
-    }());
+  Future<void> removeListeners({List<String> currentListeners = const []}) async {
+    if (currentListeners.isNotEmpty) {
+      assert(() {
+        logRemove<T>(listeners: currentListeners);
+        return true;
+      }());
+    }
   }
 
   /// [setupListeners]
   /// We register our listeners coming from the notifiers.
   ///
   @mustCallSuper
-  Future<void> setupListeners() async {
-    assert(() {
-      log('''
-🎧 ViewModel<${T.toString()}> setting up listeners
-''', level: 10);
-      return true;
-    }());
+  Future<void> setupListeners({List<String> currentListeners = const []}) async {
+    if (currentListeners.isNotEmpty) {
+      assert(() {
+        logSetup<T>(listeners: currentListeners);
+        return true;
+      }());
+    }
   }
 
   void updateSilently(T newState) {
@@ -203,7 +196,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
       return true;
     }());
 
-    if(_state.data == null || loadOnInit){
+    if (_state.data == null || loadOnInit) {
       await loadData();
       await setupListeners();
       return;
@@ -225,18 +218,15 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
 
   /// Get the current data (may be null if not in success state)
   T get data {
-
     if (_state.error != null) {
       throw _state.error!;
     }
-
 
     if (_state.data == null) {
       final error = _state.error ?? "Not found data";
       _state = AsyncState.error(error, _state.stackTrace);
       throw error;
     }
-
 
     return _state.data!;
   }
@@ -270,6 +260,4 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier{
       error: error,
     );
   }
-
-
 }

@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
+import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 
 /// Se usa en las clases Viewmodel donde debe estar toda la logica de mi negocio
-abstract class ViewModel<T> extends ChangeNotifier {
+abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier  {
   // Internal state
   T _data;
   bool _initialized = false;
@@ -59,32 +60,30 @@ Initial state hash: ${_data.hashCode}
   ///
   bool hasInitializedListenerExecution = false;
 
+  /// [removeListeners]
+  /// We remove the listeners registered in [setupListeners] to avoid memory problems.
+  ///
   @mustCallSuper
-  Future<void> removeListeners() async {
-    assert(() {
-      log('''
-🔕 ViewModel<${T.toString()}> removing listeners
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ID: $_instanceId
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-''', level: 10);
-      return true;
-    }());
+  Future<void> removeListeners({List<String> currentListeners = const []}) async {
+    if (currentListeners.isNotEmpty) {
+      assert(() {
+        logRemove<T>(listeners: currentListeners);
+        return true;
+      }());
+    }
   }
 
+  /// [setupListeners]
+  /// We register our listeners coming from the notifiers.
+  ///
   @mustCallSuper
-  Future<void> setupListeners() async {
-    _checkDisposed();
-
-    assert(() {
-      log('''
-🎧 ViewModel<${T.toString()}> setting up listeners
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ID: $_instanceId
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-''', level: 10);
-      return true;
-    }());
+  Future<void> setupListeners({List<String> currentListeners = const []}) async {
+    if (currentListeners.isNotEmpty) {
+      assert(() {
+        logSetup<T>(listeners: currentListeners);
+        return true;
+      }());
+    }
   }
 
   /// Abstract method that returns an empty/clean state of type T

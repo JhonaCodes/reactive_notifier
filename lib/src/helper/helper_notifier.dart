@@ -44,4 +44,65 @@ mixin HelperNotifier{
       }
     }
   }
+
+  void _logListeners<T>({
+    String? typeName,
+    required List<String> listeners,
+    int level = 10,
+    String action = 'setup',
+    String emoji = '🎧',
+  }) {
+    if (listeners.isEmpty) return;
+
+    final typeStr = typeName ?? T.toString();
+    final actionCapitalized = action[0].toUpperCase() + action.substring(1);
+    final header = '$emoji ViewModel<$typeStr> Listeners $actionCapitalized';
+    final divider = '=' * (header.length - 2);
+
+    final formattedListeners = listeners
+        .asMap()
+        .entries
+        .map((entry) => '  ${entry.key + 1}. ${entry.value}')
+        .join('\n');
+
+    log('''
+$divider
+$header
+$divider
+• Count: ${listeners.length}
+• Listeners:
+$formattedListeners
+$divider''', level: level);
+  }
+
+  void logSetup<T>({
+    String? typeName,
+    required List<String> listeners,
+    int level = 10,
+  }) {
+    _logListeners<T>(
+      typeName: typeName,
+      listeners: listeners,
+      level: level,
+      action: 'setup',
+      emoji: '🎧',
+    );
+  }
+
+  void logRemove<T>({
+    String? typeName,
+    required List<String> listeners,
+    int level = 10,
+  }) {
+    _logListeners<T>(
+      typeName: typeName,
+      listeners: listeners,
+      level: level,
+      action: 'remove',
+      emoji: '🔕',
+    );
+  }
 }
+
+
+
