@@ -45,17 +45,21 @@ Initial state hash: ${_data.hashCode}
   /// We don't use [loadOnInit], because we need a way to be sure that the entire cycle of our viewmodel has already been executed.
   ///
   /// Create fetch function
-  ///  Future<void> _myFunctionWithFetchForListener() async{
+  /// ```dart
+  /// Future<void> _myFunctionWithFetchForListener() async{
   ///     if (hasInitializedListenerExecution) {
   ///       _reloadDataForListener();
   ///     }
   ///   }
+  /// ```
   ///
   /// Register listener
+  /// ```dart
   ///   @override
   ///   Future<void> setupListeners()async{
   ///     MyNotifierService.instance.notifier.addListener(_myFunctionWithFetchForListener);
   ///   }
+  /// ```
   ///
   bool hasInitializedListenerExecution = false;
 
