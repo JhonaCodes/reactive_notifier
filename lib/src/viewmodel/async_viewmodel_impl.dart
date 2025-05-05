@@ -223,18 +223,12 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   bool get hasData => _state.isSuccess;
 
   /// Get the current data (may be null if not in success state)
-  T get data {
+  T? get data {
     if (_state.error != null) {
       throw _state.error!;
     }
 
-    if (_state.data == null) {
-      final error = _state.error ?? "Not found data";
-      _state = AsyncState.error(error, _state.stackTrace);
-      throw error;
-    }
-
-    return _state.data!;
+    return _state.data;
   }
 
   R match<R>({
