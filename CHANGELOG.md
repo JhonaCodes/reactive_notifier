@@ -1,3 +1,36 @@
+# 2.9.0
+## 🔄 Reactive State Management
+
+### 🚀 Enhancements
+- Introduced `ReactiveFutureBuilder` for seamless data loading without flickering
+- Enhanced navigation experience with persistent state between screens
+- Optimized memory usage by avoiding redundant rebuilds
+- Improved UI responsiveness with immediate data display
+- Streamlined integration with existing ReactiveNotifier system
+
+### 🛠 New Features
+- Added `ReactiveFutureBuilder<T>` widget with automatic state persistence
+- Implemented `defaultData` parameter for flickerless navigation
+- Added reactive notifier integration via `createStateNotifier` parameter
+- Introduced state update control with `notifyChangesFromNewState` flag
+- Enhanced error and loading state handling with customizable builders
+- Added comprehensive documentation with usage examples
+
+### 🐛 Bug Fixes
+- Fixed UI flickering when navigating back to previously loaded screens
+- Resolved state loss issues during navigation transitions
+- Fixed race conditions between default data and async data loading
+- Modified `AsyncViewModelImpl` to support nullable data types, enabling safer initialization validation 
+- Added proper null checks to prevent errors during state updates 
+- Improved type safety with stronger null handling throughout the reactive system
+
+### 💻 Developer Experience
+- Simplified state management code for async operations
+- Reduced boilerplate when implementing loading/success/error states
+- Improved code readability with clear separation of UI and data concerns
+- Added type safety with generic parameter support
+
+
 # 2.8.1
 - Update documentation
 - Comment format

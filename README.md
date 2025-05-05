@@ -509,6 +509,61 @@ ReactiveStreamBuilder<Message>(
 )
 ```
 
+### ReactiveFutureBuilder: Improving Flutter's FutureBuilder
+
+Our `ReactiveFutureBuilder` addresses some limitations of Flutter's standard `FutureBuilder`:
+
+#### Key Advantages
+
+- **No Flickering During Navigation**: Unlike regular `FutureBuilder` which resets its state during rebuilds, `ReactiveFutureBuilder` maintains visual continuity by displaying cached data instantly.
+
+- **Seamless State Access**: Connects with a `ReactiveNotifier` to provide global access to the element's state from anywhere in the app.
+
+- **Immediate Data Display**: Uses `defaultData` to show content immediately while fresh data loads in the background.
+
+- **Smart Updates**: Controls whether state changes trigger UI rebuilds with the `notifyChangesFromNewState` parameter.
+
+- **Perfect for Detail Views**: Ideal for master-detail patterns where you need to:
+   - View details of an item from a list
+   - Edit those details from anywhere in the app
+   - See changes reflected immediately in all related UI components
+
+```dart
+// Standard FutureBuilder approach (shows loading indicator on every rebuild)
+FutureBuilder<Product>(
+  future: MyNotifier.instance.getProduct(id),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return CircularProgressIndicator(); // Flickers on navigation
+    }
+    // ...
+  }
+)
+
+// ReactiveFutureBuilder approach (no flickering)
+ReactiveFutureBuilder<Product>(
+  future: MyNotifier.instance.getProduct(id),
+  defaultData: MyNotifierCurrentData.instance.data, // Shows immediately
+  createStateNotifier: ProductService.currentProductDetails, // Connect to global state
+  onSuccess: (product) => ReactiveBuilder(
+    notifier: ProductService.currentProductDetails,
+    // Update UI when product changes when use ProductService.currentProductDetails.updateState
+  ),
+)
+```
+
+#### When to Use
+
+`ReactiveFutureBuilder` is especially valuable when:
+
+1. **Detail screens need immediate data**: Users shouldn't see loading indicators when returning to previously loaded screens.
+
+2. **Elements need their own reactive state**: When you want to update a specific element globally and have all views of that element update automatically.
+
+3. **UI consistency is critical**: Applications where a professional, native feel is important benefit from the flickerless navigation experience.
+
+This simple implementation provides a significant UX improvement with minimal added complexity.
+
 ## Performance Optimization with keep
 
 The `keep` function is a powerful way to prevent unnecessary rebuilds, even for complex widgets containing other reactive components:
