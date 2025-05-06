@@ -165,21 +165,6 @@ Was disposed for: ${DateTime.now().difference(_disposeTime!).inMilliseconds}ms
   void updateState(T newState) {
     _checkDisposed();
 
-    // Skip if state hasn't changed
-    if (_data.hashCode == newState.hashCode) {
-      assert(() {
-        log('''
-ℹ️ ViewModel<${T.toString()}> update skipped - state unchanged
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ID: $_instanceId
-Hash: ${_data.hashCode}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-''', level: 5);
-        return true;
-      }());
-      return;
-    }
-
     _data = newState;
     _updateCount++;
     notifyListeners();
@@ -203,21 +188,6 @@ New state hash: ${_data.hashCode}
 
     final newState = transformer(_data);
 
-    // Skip if state hasn't changed
-    if (_data.hashCode == newState.hashCode) {
-      assert(() {
-        log('''
-ℹ️ ViewModel<${T.toString()}> transform skipped - state unchanged
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ID: $_instanceId
-Hash: ${_data.hashCode}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-''', level: 5);
-        return true;
-      }());
-      return;
-    }
-
     _data = newState;
     _updateCount++;
     notifyListeners();
@@ -240,21 +210,6 @@ New state hash: ${_data.hashCode}
     _checkDisposed();
 
     final newState = transformer(_data);
-
-    // Skip if state hasn't changed
-    if (_data.hashCode == newState.hashCode) {
-      assert(() {
-        log('''
-ℹ️ ViewModel<${T.toString()}> transform skipped - state unchanged
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ID: $_instanceId
-Hash: ${_data.hashCode}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-''', level: 5);
-        return true;
-      }());
-      return;
-    }
 
     _data = newState;
     _updateCount++;
