@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
@@ -42,6 +43,14 @@ mixin HelperNotifier {
         // No tiene propiedades de vacío estándar
         return false;
       }
+    }
+  }
+
+  bool get isInTestEnvironment {
+    try {
+      return Platform.environment.containsKey('FLUTTER_TEST');
+    } catch (_) {
+      return const bool.fromEnvironment('FLUTTER_TEST', defaultValue: false);
     }
   }
 

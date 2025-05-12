@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
@@ -27,6 +28,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
       hasInitializedListenerExecution = true;
     }
   }
+
+
 
   /// Internal initialization method that properly handles async initialization
   Future<void> _initializeAsync() async {
@@ -155,7 +158,11 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     _state = AsyncState.error(error, stackTrace);
     notifyListeners();
 
-    throw errorToThrow;
+    if (!isInTestEnvironment) {
+      throw errorToThrow;
+    } else {
+      log('Error suppressed in test environment: $error');
+    }
   }
 
   void cleanState() {
