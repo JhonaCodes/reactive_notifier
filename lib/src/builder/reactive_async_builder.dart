@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
-class ReactiveAsyncBuilder<T> extends StatelessWidget {
+class ReactiveAsyncBuilder<T> extends StatefulWidget {
   final AsyncViewModelImpl<T> notifier;
   final Widget Function(T data) onSuccess;
   final Widget Function()? onLoading;
@@ -18,19 +18,50 @@ class ReactiveAsyncBuilder<T> extends StatelessWidget {
   });
 
   @override
+  State<ReactiveAsyncBuilder<T>> createState() => _ReactiveAsyncBuilderState<T>();
+}
+
+class _ReactiveAsyncBuilderState<T> extends State<ReactiveAsyncBuilder<T>> {
+
+  @override
+  void initState() {
+    super.initState();
+    widget.notifier.addListener(_valueChanged);
+  }
+
+  @override
+  void didUpdateWidget(ReactiveAsyncBuilder<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.notifier != widget.notifier) {
+      oldWidget.notifier.removeListener(_valueChanged);
+      widget.notifier.addListener(_valueChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.notifier.removeListener(_valueChanged);
+    super.dispose();
+  }
+
+  void _valueChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+
+  @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: notifier,
-      builder: (context, _) => notifier.when(
-        initial: () => onInitial?.call() ?? const SizedBox.shrink(),
-        loading: () =>
-            onLoading?.call() ??
-            const Center(child: CircularProgressIndicator.adaptive()),
-        success: (data) => onSuccess(data),
-        error: (error, stackTrace) => onError != null
-            ? onError!(error, stackTrace)
-            : Center(child: Text('Error: $error')),
-      ),
+    return widget.notifier.when(
+      initial: () => widget.onInitial?.call() ?? const SizedBox.shrink(),
+      loading: () =>
+      widget.onLoading?.call() ??
+          const Center(child: CircularProgressIndicator.adaptive()),
+      success: (data) => widget.onSuccess(data),
+      error: (error, stackTrace) => widget.onError != null
+          ? widget.onError!(error, stackTrace)
+          : Center(child: Text('Error: $error')),
     );
   }
 }
