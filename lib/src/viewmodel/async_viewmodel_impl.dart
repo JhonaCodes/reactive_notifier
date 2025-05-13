@@ -154,15 +154,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// Set error state
 
   void errorState(Object error, [StackTrace? stackTrace]) {
-    final errorToThrow = error;
     _state = AsyncState.error(error, stackTrace);
     notifyListeners();
-
-    if (!isInTestEnvironment) {
-      throw errorToThrow;
-    } else {
-      log('Error suppressed in test environment: $error');
-    }
   }
 
   void cleanState() {

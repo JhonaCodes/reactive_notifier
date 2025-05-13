@@ -46,14 +46,6 @@ mixin HelperNotifier {
     }
   }
 
-  bool get isInTestEnvironment {
-    try {
-      return Platform.environment.containsKey('FLUTTER_TEST');
-    } catch (_) {
-      return const bool.fromEnvironment('FLUTTER_TEST', defaultValue: false);
-    }
-  }
-
   void _logListeners<T>({
     String? typeName,
     required List<String> listeners,
