@@ -364,4 +364,24 @@ New empty state hash: ${_data.hashCode}
       return true;
     }());
   }
+
+  Future<void> reload() async {
+    try {
+
+      if(_initialized){
+        await removeListeners();
+      }
+
+      init();
+      await setupListeners();
+    } catch (error, stackTrace) {
+      log(error.toString());
+      log(stackTrace.toString());
+      try {
+        await setupListeners();
+      } catch (listenerError) {
+        log('Error on restart listeners: $listenerError');
+      }
+    }
+  }
 }
