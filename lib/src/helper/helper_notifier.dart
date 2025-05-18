@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 mixin HelperNotifier {
-  bool isEmpty(dynamic value) {
+  bool isEmptyData(dynamic value) {
     // Si es null
     if (value == null) {
       log("Your current result is null");
