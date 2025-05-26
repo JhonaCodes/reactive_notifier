@@ -95,7 +95,7 @@ Location: $trace
       throw StateError('''
 ⚠️ ReactiveNotifier Creation Failed!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Type: $T
+Type: ${T.runtimeType}
 Error: $e
 
 🔍 Check:
