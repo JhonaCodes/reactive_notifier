@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 
 /// [NotifierImpl]
@@ -52,4 +54,28 @@ abstract class NotifierImpl<T> extends ChangeNotifier {
 
   @override
   bool get hasListeners => super.hasListeners;
+
+  VoidCallback? _currentListener;
+
+  Future<void> listen(void Function(T data) data) async {
+    log("Listen notifier is active");
+    if (_currentListener != null) {
+      removeListener(_currentListener!);
+    }
+    _currentListener = () => data(_notifier);
+    addListener(_currentListener!);
+  }
+
+  void stopListening() {
+    if (_currentListener != null) {
+      removeListener(_currentListener!);
+      _currentListener = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    stopListening();
+    super.dispose();
+  }
 }

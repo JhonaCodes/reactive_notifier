@@ -250,8 +250,8 @@ New state hash: ${_data.hashCode}
   @override
   void dispose() {
     if (_disposed) return;
-
     removeListeners();
+    stopListeningVM();
 
     _disposed = true;
     _disposeTime = DateTime.now();
@@ -384,4 +384,24 @@ New empty state hash: ${_data.hashCode}
       }
     }
   }
+
+  VoidCallback? _currentListener;
+
+  void listenVM(void Function(T data) value) {
+    log("Listen notifier is active");
+    if (_currentListener != null) {
+      removeListener(_currentListener!);
+    }
+    _currentListener = () => value(_data);
+    addListener(_currentListener!);
+
+  }
+
+  void stopListeningVM() {
+    if (_currentListener != null) {
+      removeListener(_currentListener!);
+      _currentListener = null;
+    }
+  }
+
 }

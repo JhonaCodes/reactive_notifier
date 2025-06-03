@@ -260,4 +260,30 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
       error: error,
     );
   }
+
+
+  VoidCallback? _currentListener;
+
+  Future<void> listenVM(void Function(AsyncState<T> data) value) async {
+    log("Listen notifier is active");
+    if (_currentListener != null) {
+      removeListener(_currentListener!);
+    }
+    _currentListener = () => value(_state);
+    addListener(_currentListener!);
+  }
+
+  void stopListeningVM() {
+    if (_currentListener != null) {
+      removeListener(_currentListener!);
+      _currentListener = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    stopListeningVM();
+    removeListeners();
+    super.dispose();
+  }
 }

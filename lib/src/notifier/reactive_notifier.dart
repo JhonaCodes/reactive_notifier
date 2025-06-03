@@ -806,4 +806,18 @@ Count: $removedCount
       _instances.values.map((e) => e as ReactiveNotifier).toList();
   static ReactiveNotifier<T> getInstanceByKey<T>(Key key) =>
       _instances[key]! as ReactiveNotifier<T>;
+
+
+  @override
+  void dispose() {
+    _instances.forEach((k,v){
+      if(v is ReactiveNotifier<T>){
+        if (v.hasListeners) {
+          v.stopListening();
+        }
+      }
+    });
+
+    super.dispose();
+  }
 }
