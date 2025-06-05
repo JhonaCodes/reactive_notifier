@@ -29,7 +29,7 @@ class ReactiveViewModelBuilder<VM, T> extends StatefulWidget {
     T state,
 
     /// The ViewModel that manages the internal logic and state updates.
-      VM viewmodel,
+    VM viewmodel,
 
     /// Function used to wrap widgets that should remain stable across rebuilds.
     Widget Function(Widget child) keep,
@@ -116,7 +116,8 @@ class _ReactiveBuilderStateViewModel<VM, T>
   @override
   Widget build(BuildContext context) {
     return widget.build?.call(value, (widget.viewmodel as VM), _noRebuild) ??
-        widget.builder?.call(value, _noRebuild) ?? const SizedBox.shrink();
+        widget.builder?.call(value, _noRebuild) ??
+        const SizedBox.shrink();
   }
 }
 

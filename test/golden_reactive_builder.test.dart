@@ -19,7 +19,7 @@ void main() {
             name: 'Change value 0',
             child: ReactiveBuilder(
                 notifier: state,
-                builder: (value, child) {
+                build: (value, vm, child) {
                   return Column(
                     children: [
                       Text("Widget que se recontruye $value"),
@@ -46,7 +46,7 @@ void main() {
             name: 'Change value 200',
             child: ReactiveBuilder<int>(
                 notifier: state,
-                builder: (value, child) {
+                build: (value, vm, child) {
                   if (value == 0) {
                     state.updateState(200);
                   }
@@ -69,7 +69,7 @@ void main() {
         home: Scaffold(
           body: ReactiveBuilder<int>(
             notifier: valueNotifier,
-            builder: (value, noRebuildable) {
+            build: (value, vm, noRebuildable) {
               rebuildCount++; // Contador para verificar reconstrucciones
               log("Widget que se reconstruye: $value");
               log("Widget que se reconstruye: $value");

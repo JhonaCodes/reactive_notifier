@@ -35,7 +35,9 @@ class ReactiveBuilder<T> extends StatefulWidget {
   const ReactiveBuilder(
       {super.key,
       required this.notifier,
-      @Deprecated("Use 'build' instead. 'builder' will be removed in version 3.0.0.") this.builder,
+      @Deprecated(
+          "Use 'build' instead. 'builder' will be removed in version 3.0.0.")
+      this.builder,
       this.build});
 
   @override

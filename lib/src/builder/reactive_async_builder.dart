@@ -25,8 +25,8 @@ class ReactiveAsyncBuilder<VM, T> extends StatefulWidget {
   ///   );
   /// }
   /// ```
-  final Widget Function(T data, VM viewmodel, Widget Function(Widget child) keep)?
-      onData;
+  final Widget Function(
+      T data, VM viewmodel, Widget Function(Widget child) keep)? onData;
   final Widget Function()? onLoading;
   final Widget Function(Object? error, StackTrace? stackTrace)? onError;
   final Widget Function()? onInitial;
@@ -39,7 +39,8 @@ class ReactiveAsyncBuilder<VM, T> extends StatefulWidget {
     ///
     /// **Deprecated:** Use [onData] instead.
     /// This field will be removed in version **3.0.0**.
-    @Deprecated("Use 'onData' instead. 'onSuccess' will be removed in version 3.0.0.")
+    @Deprecated(
+        "Use 'onData' instead. 'onSuccess' will be removed in version 3.0.0.")
     this.onSuccess,
     this.onData,
     this.onLoading,
@@ -48,10 +49,12 @@ class ReactiveAsyncBuilder<VM, T> extends StatefulWidget {
   });
 
   @override
-  State<ReactiveAsyncBuilder<VM, T>> createState() => _ReactiveAsyncBuilderState<VM, T>();
+  State<ReactiveAsyncBuilder<VM, T>> createState() =>
+      _ReactiveAsyncBuilderState<VM, T>();
 }
 
-class _ReactiveAsyncBuilderState<VM, T> extends State<ReactiveAsyncBuilder<VM, T>> {
+class _ReactiveAsyncBuilderState<VM, T>
+    extends State<ReactiveAsyncBuilder<VM, T>> {
   final Map<String, NoRebuildWrapper> _noRebuildWidgets = {};
 
   @override
@@ -94,7 +97,8 @@ class _ReactiveAsyncBuilderState<VM, T> extends State<ReactiveAsyncBuilder<VM, T
     return widget.notifier.when(
       initial: () => widget.onInitial?.call() ?? const SizedBox.shrink(),
       loading: () =>
-          widget.onLoading?.call() ?? const Center(child: CircularProgressIndicator.adaptive()),
+          widget.onLoading?.call() ??
+          const Center(child: CircularProgressIndicator.adaptive()),
       success: (data) =>
           widget.onData?.call(data, (widget.notifier as VM), _noRebuild) ??
           widget.onSuccess?.call(data) ??
@@ -193,7 +197,8 @@ class ReactiveFutureBuilder<T> extends StatefulWidget {
   });
 
   @override
-  State<ReactiveFutureBuilder<T>> createState() => _ReactiveFutureBuilderState<T>();
+  State<ReactiveFutureBuilder<T>> createState() =>
+      _ReactiveFutureBuilderState<T>();
 }
 
 class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
@@ -265,7 +270,8 @@ class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
         if (snapshot.hasData) {
           final response = snapshot.data as T;
           _onCreateNotify(response);
-          return widget.onData?.call(response, _noRebuild) ?? widget.onSuccess(response);
+          return widget.onData?.call(response, _noRebuild) ??
+              widget.onSuccess(response);
         } else {
           // Unexpected state (should rarely occur)
           return const Center(child: Text('Unexpected state'));

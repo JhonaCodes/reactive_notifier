@@ -22,7 +22,7 @@ class ReactiveStreamBuilder<VM, T> extends StatefulWidget {
     T data,
 
     /// The reactive state that wraps the stream and handles updates.
-      VM viewmodel,
+    VM viewmodel,
 
     /// Function to prevent unnecessary widget rebuilds.
     /// Wrap stable child widgets with this to preserve identity across builds.
@@ -48,7 +48,8 @@ class ReactiveStreamBuilder<VM, T> extends StatefulWidget {
       _ReactiveStreamBuilderState<VM, T>();
 }
 
-class _ReactiveStreamBuilderState<VM, T> extends State<ReactiveStreamBuilder<VM, T>> {
+class _ReactiveStreamBuilderState<VM, T>
+    extends State<ReactiveStreamBuilder<VM, T>> {
   StreamSubscription<T>? _subscription;
   StreamState<T> _state = StreamState<T>.initial();
   final Map<String, NoRebuildWrapper> _noRebuildWidgets = {};

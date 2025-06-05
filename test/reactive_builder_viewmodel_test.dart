@@ -32,7 +32,7 @@ void main() {
         MaterialApp(
           home: ReactiveViewModelBuilder<MockStateNotifier, String>(
             viewmodel: mockNotifier,
-            builder: (state, keep) {
+            build: (state, vm, keep) {
               capturedState = state;
               return Text(state);
             },
@@ -52,7 +52,7 @@ void main() {
         MaterialApp(
           home: ReactiveViewModelBuilder<MockStateNotifier, String>(
             viewmodel: mockNotifier,
-            builder: (state, keep) => Text(state),
+            build: (state, vm, keep) => Text(state),
           ),
         ),
       );
@@ -74,7 +74,7 @@ void main() {
         MaterialApp(
           home: ReactiveViewModelBuilder<MockStateNotifier, String>(
             viewmodel: mockNotifier,
-            builder: (state, keep) {
+            build: (state, vm, keep) {
               return Column(
                 children: [
                   Text(state),
@@ -145,7 +145,7 @@ void main() {
           home: ReactiveViewModelBuilder<MockStateNotifier, String>(
             key: key,
             viewmodel: mockNotifier,
-            builder: (state, keep) => Text(state),
+            build: (state, vm, keep) => Text(state),
           ),
         ),
       );
@@ -169,7 +169,7 @@ void main() {
         MaterialApp(
           home: ReactiveViewModelBuilder<MockStateNotifier, String>(
             viewmodel: mockNotifier,
-            builder: (state, keep) => Text(state),
+            build: (state, vm, keep) => Text(state),
           ),
         ),
       );
@@ -179,7 +179,7 @@ void main() {
         MaterialApp(
           home: ReactiveViewModelBuilder<MockStateNotifier, String>(
             viewmodel: newNotifier,
-            builder: (state, keep) => Text(state),
+            build: (state, vm, keep) => Text(state),
           ),
         ),
       );
