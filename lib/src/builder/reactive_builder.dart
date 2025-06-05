@@ -10,7 +10,7 @@ class ReactiveBuilder<T> extends StatefulWidget {
   final Widget Function(
     T state,
     Widget Function(Widget child) keep,
-  ) builder;
+  )? builder;
 
   /// Builds the widget based on the current reactive state.
   ///
@@ -35,9 +35,7 @@ class ReactiveBuilder<T> extends StatefulWidget {
   const ReactiveBuilder(
       {super.key,
       required this.notifier,
-      @Deprecated(
-          "Use 'build' instead. 'builder' will be removed in version 3.0.0.")
-      required this.builder,
+      @Deprecated("Use 'build' instead. 'builder' will be removed in version 3.0.0.") this.builder,
       this.build});
 
   @override
@@ -99,6 +97,7 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
   @override
   Widget build(BuildContext context) {
     return widget.build?.call(value, widget.notifier, _noRebuild) ??
-        widget.builder(value, _noRebuild);
+        widget.builder?.call(value, _noRebuild) ??
+        const SizedBox.shrink();
   }
 }

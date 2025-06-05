@@ -22,7 +22,7 @@ class ReactiveStreamBuilder<T> extends StatefulWidget {
     T data,
 
     /// The reactive state that wraps the stream and handles updates.
-    ReactiveNotifier<Stream<T>> state,
+    ReactiveNotifier<Stream<T>> viewmodel,
 
     /// Function to prevent unnecessary widget rebuilds.
     /// Wrap stable child widgets with this to preserve identity across builds.

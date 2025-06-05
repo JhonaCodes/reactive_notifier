@@ -12,9 +12,9 @@ class ReactiveViewModelBuilder<T> extends StatefulWidget {
 
   /// Builder function that creates the widget tree
   final Widget Function(
-    T state,
+    T viewmodel,
     Widget Function(Widget child) keep,
-  ) builder;
+  )? builder;
 
   /// Builds the widget based on the current [ViewModel] state.
   ///
@@ -41,7 +41,7 @@ class ReactiveViewModelBuilder<T> extends StatefulWidget {
     required this.viewmodel,
     @Deprecated(
         "Use 'build' instead. 'builder' will be removed in version 3.0.0.")
-    required this.builder,
+    this.builder,
     this.build,
   });
 
@@ -116,7 +116,7 @@ class _ReactiveBuilderStateViewModel<T>
   @override
   Widget build(BuildContext context) {
     return widget.build?.call(value, widget.viewmodel, _noRebuild) ??
-        widget.builder(value, _noRebuild);
+        widget.builder?.call(value, _noRebuild) ?? const SizedBox.shrink();
   }
 }
 

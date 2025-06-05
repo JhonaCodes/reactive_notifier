@@ -1,3 +1,8 @@
+# 2.9.1
+## 🔄 Reactive State Management
+- `builder`, `onSucess` optional.
+- `onData` optional and more.
+
 # 2.9.0
 ## 🔄 Reactive State Management
 

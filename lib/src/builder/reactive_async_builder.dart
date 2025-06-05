@@ -5,7 +5,7 @@ import 'no_rebuild_wrapper.dart';
 
 class ReactiveAsyncBuilder<T> extends StatefulWidget {
   final AsyncViewModelImpl<T> notifier;
-  final Widget Function(T data) onSuccess;
+  final Widget Function(T data)? onSuccess;
 
   /// Called when the asynchronous state is available and ready to render.
   ///
@@ -25,8 +25,8 @@ class ReactiveAsyncBuilder<T> extends StatefulWidget {
   ///   );
   /// }
   /// ```
-  final Widget Function(T data, AsyncViewModelImpl<T> state,
-      Widget Function(Widget child) keep)? onData;
+  final Widget Function(T data, AsyncViewModelImpl<T> viewmodel, Widget Function(Widget child) keep)?
+      onData;
   final Widget Function()? onLoading;
   final Widget Function(Object? error, StackTrace? stackTrace)? onError;
   final Widget Function()? onInitial;
@@ -39,9 +39,8 @@ class ReactiveAsyncBuilder<T> extends StatefulWidget {
     ///
     /// **Deprecated:** Use [onData] instead.
     /// This field will be removed in version **3.0.0**.
-    @Deprecated(
-        "Use 'onData' instead. 'onSuccess' will be removed in version 3.0.0.")
-    required this.onSuccess,
+    @Deprecated("Use 'onData' instead. 'onSuccess' will be removed in version 3.0.0.")
+    this.onSuccess,
     this.onData,
     this.onLoading,
     this.onError,
@@ -49,8 +48,7 @@ class ReactiveAsyncBuilder<T> extends StatefulWidget {
   });
 
   @override
-  State<ReactiveAsyncBuilder<T>> createState() =>
-      _ReactiveAsyncBuilderState<T>();
+  State<ReactiveAsyncBuilder<T>> createState() => _ReactiveAsyncBuilderState<T>();
 }
 
 class _ReactiveAsyncBuilderState<T> extends State<ReactiveAsyncBuilder<T>> {
@@ -96,11 +94,11 @@ class _ReactiveAsyncBuilderState<T> extends State<ReactiveAsyncBuilder<T>> {
     return widget.notifier.when(
       initial: () => widget.onInitial?.call() ?? const SizedBox.shrink(),
       loading: () =>
-          widget.onLoading?.call() ??
-          const Center(child: CircularProgressIndicator.adaptive()),
+          widget.onLoading?.call() ?? const Center(child: CircularProgressIndicator.adaptive()),
       success: (data) =>
           widget.onData?.call(data, widget.notifier, _noRebuild) ??
-          widget.onSuccess(data),
+          widget.onSuccess?.call(data) ??
+          const SizedBox.shrink(),
       error: (error, stackTrace) => widget.onError != null
           ? widget.onError!(error, stackTrace)
           : Center(child: Text('Error: $error')),
@@ -195,8 +193,7 @@ class ReactiveFutureBuilder<T> extends StatefulWidget {
   });
 
   @override
-  State<ReactiveFutureBuilder<T>> createState() =>
-      _ReactiveFutureBuilderState<T>();
+  State<ReactiveFutureBuilder<T>> createState() => _ReactiveFutureBuilderState<T>();
 }
 
 class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
@@ -268,8 +265,7 @@ class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
         if (snapshot.hasData) {
           final response = snapshot.data as T;
           _onCreateNotify(response);
-          return widget.onData?.call(response, _noRebuild) ??
-              widget.onSuccess(response);
+          return widget.onData?.call(response, _noRebuild) ?? widget.onSuccess(response);
         } else {
           // Unexpected state (should rarely occur)
           return const Center(child: Text('Unexpected state'));
