@@ -6,6 +6,7 @@ import 'no_rebuild_wrapper.dart';
 class ReactiveAsyncBuilder<T> extends StatefulWidget {
   final AsyncViewModelImpl<T> notifier;
   final Widget Function(T data) onSuccess;
+
   /// Called when the asynchronous state is available and ready to render.
   ///
   /// - [data]: The latest data value emitted by the state (typically a model or primitive).
@@ -24,11 +25,8 @@ class ReactiveAsyncBuilder<T> extends StatefulWidget {
   ///   );
   /// }
   /// ```
-  final Widget Function(
-      T data,
-      AsyncViewModelImpl<T> state,
-      Widget Function(Widget child) keep
-      )? onData;
+  final Widget Function(T data, AsyncViewModelImpl<T> state,
+      Widget Function(Widget child) keep)? onData;
   final Widget Function()? onLoading;
   final Widget Function(Object? error, StackTrace? stackTrace)? onError;
   final Widget Function()? onInitial;
@@ -36,11 +34,13 @@ class ReactiveAsyncBuilder<T> extends StatefulWidget {
   const ReactiveAsyncBuilder({
     super.key,
     required this.notifier,
+
     /// Called when the data has been successfully loaded.
     ///
     /// **Deprecated:** Use [onData] instead.
     /// This field will be removed in version **3.0.0**.
-    @Deprecated("Use 'onData' instead. 'onSuccess' will be removed in version 3.0.0.")
+    @Deprecated(
+        "Use 'onData' instead. 'onSuccess' will be removed in version 3.0.0.")
     required this.onSuccess,
     this.onData,
     this.onLoading,
@@ -49,11 +49,11 @@ class ReactiveAsyncBuilder<T> extends StatefulWidget {
   });
 
   @override
-  State<ReactiveAsyncBuilder<T>> createState() => _ReactiveAsyncBuilderState<T>();
+  State<ReactiveAsyncBuilder<T>> createState() =>
+      _ReactiveAsyncBuilderState<T>();
 }
 
 class _ReactiveAsyncBuilderState<T> extends State<ReactiveAsyncBuilder<T>> {
-
   final Map<String, NoRebuildWrapper> _noRebuildWidgets = {};
 
   @override
@@ -91,22 +91,22 @@ class _ReactiveAsyncBuilderState<T> extends State<ReactiveAsyncBuilder<T>> {
     return _noRebuildWidgets[key]!;
   }
 
-
   @override
   Widget build(BuildContext context) {
     return widget.notifier.when(
       initial: () => widget.onInitial?.call() ?? const SizedBox.shrink(),
       loading: () =>
-      widget.onLoading?.call() ??
+          widget.onLoading?.call() ??
           const Center(child: CircularProgressIndicator.adaptive()),
-      success: (data) => widget.onData?.call(data, widget.notifier, _noRebuild) ?? widget.onSuccess(data),
+      success: (data) =>
+          widget.onData?.call(data, widget.notifier, _noRebuild) ??
+          widget.onSuccess(data),
       error: (error, stackTrace) => widget.onError != null
           ? widget.onError!(error, stackTrace)
           : Center(child: Text('Error: $error')),
     );
   }
 }
-
 
 /// A widget that handles a Future and provides reactive notification
 /// through a ReactiveNotifier to avoid flickering when navigating between screens.
@@ -164,7 +164,8 @@ class ReactiveFutureBuilder<T> extends StatefulWidget {
 
   /// Optional ReactiveNotifier that will be updated with the data from the Future.
   /// This allows other widgets to react to data changes.
-  final ReactiveNotifier<T>? createStateNotifier;// Not sure if we need for AsyncViewmodelImpl, maybe just use ReactiveNotifier
+  final ReactiveNotifier<T>?
+      createStateNotifier; // Not sure if we need for AsyncViewmodelImpl, maybe just use ReactiveNotifier
 
   /// Controls whether state updates should trigger UI rebuilds.
   /// - If true, updates will notify listeners and trigger rebuilds.
@@ -183,8 +184,7 @@ class ReactiveFutureBuilder<T> extends StatefulWidget {
   const ReactiveFutureBuilder({
     super.key,
     required this.future,
-    @Deprecated("Use onData, contain keep function")
-    required this.onSuccess,
+    @Deprecated("Use onData, contain keep function") required this.onSuccess,
     this.onData,
     this.onLoading,
     this.onError,
@@ -195,11 +195,11 @@ class ReactiveFutureBuilder<T> extends StatefulWidget {
   });
 
   @override
-  State<ReactiveFutureBuilder<T>> createState() => _ReactiveFutureBuilderState<T>();
+  State<ReactiveFutureBuilder<T>> createState() =>
+      _ReactiveFutureBuilderState<T>();
 }
 
 class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
-
   final Map<String, NoRebuildWrapper> _noRebuildWidgets = {};
 
   /// Updates the ReactiveNotifier with new data.
@@ -214,7 +214,6 @@ class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
     }
   }
 
-
   Widget _noRebuild(Widget keep) {
     final key = keep.hashCode.toString();
     if (!_noRebuildWidgets.containsKey(key)) {
@@ -225,7 +224,7 @@ class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
 
   @override
   void dispose() {
-    if(widget.createStateNotifier != null){
+    if (widget.createStateNotifier != null) {
       widget.createStateNotifier!.cleanCurrentNotifier();
     }
     super.dispose();
@@ -237,7 +236,7 @@ class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
     if (widget.defaultData != null) {
       final defaultData = (widget.defaultData as T);
       _onCreateNotify(defaultData);
-      if(widget.onData != null) return widget.onData!(defaultData, _noRebuild);
+      if (widget.onData != null) return widget.onData!(defaultData, _noRebuild);
       return widget.onSuccess(defaultData);
     }
 
@@ -246,7 +245,8 @@ class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
       future: widget.future,
       builder: (context, snapshot) {
         // Initial state - Future hasn't started processing
-        if (!snapshot.hasData && !snapshot.hasError &&
+        if (!snapshot.hasData &&
+            !snapshot.hasError &&
             snapshot.connectionState == ConnectionState.none) {
           return widget.onInitial?.call() ?? const SizedBox.shrink();
         }
@@ -268,7 +268,8 @@ class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
         if (snapshot.hasData) {
           final response = snapshot.data as T;
           _onCreateNotify(response);
-          if(widget.onData != null) return widget.onData!(response, _noRebuild);
+          if (widget.onData != null)
+            return widget.onData!(response, _noRebuild);
           return widget.onSuccess(response);
         } else {
           // Unexpected state (should rarely occur)

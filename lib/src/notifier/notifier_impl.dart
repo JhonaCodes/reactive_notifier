@@ -93,7 +93,6 @@ abstract class NotifierImpl<T> extends ChangeNotifier {
     }
   }
 
-
   @override
   void dispose() {
     stopListening();

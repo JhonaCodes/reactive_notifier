@@ -29,8 +29,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     }
   }
 
-
-
   /// Internal initialization method that properly handles async initialization
   Future<void> _initializeAsync() async {
     /// We make sure it is always false before any full initialization.
@@ -261,7 +259,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     );
   }
 
-
   /// Holds the currently active listener callback.
   /// Ensures only one listener is attached at any given time.
   VoidCallback? _currentListener;
@@ -275,7 +272,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// The [value] callback receives the current [AsyncState<T>] whenever the state updates.
   ///
   /// Returns a [Future] that completes once the listener is registered.
-  Future<AsyncState<T>> listenVM(void Function(AsyncState<T> data) value) async {
+  Future<AsyncState<T>> listenVM(
+      void Function(AsyncState<T> data) value) async {
     log("Listen notifier is active");
 
     if (_currentListener != null) {
@@ -298,7 +296,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
       _currentListener = null;
     }
   }
-
 
   @override
   void dispose() {

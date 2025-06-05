@@ -8,6 +8,7 @@ import 'no_rebuild_wrapper.dart';
 
 class ReactiveStreamBuilder<T> extends StatefulWidget {
   final ReactiveNotifier<Stream<T>> notifier;
+
   /// Called when the reactive [Stream] emits a new data event.
   ///
   /// This function provides:
@@ -17,16 +18,16 @@ class ReactiveStreamBuilder<T> extends StatefulWidget {
   ///
   /// Use this builder to render UI based on live stream data while keeping performance optimizations in place.
   final Widget Function(
-      /// Latest value emitted by the stream.
-      T data,
+    /// Latest value emitted by the stream.
+    T data,
 
-      /// The reactive state that wraps the stream and handles updates.
-      ReactiveNotifier<Stream<T>> state,
+    /// The reactive state that wraps the stream and handles updates.
+    ReactiveNotifier<Stream<T>> state,
 
-      /// Function to prevent unnecessary widget rebuilds.
-      /// Wrap stable child widgets with this to preserve identity across builds.
-      Widget Function(Widget child) keep,
-      ) onData;
+    /// Function to prevent unnecessary widget rebuilds.
+    /// Wrap stable child widgets with this to preserve identity across builds.
+    Widget Function(Widget child) keep,
+  ) onData;
   final Widget Function()? onLoading;
   final Widget Function(Object error)? onError;
   final Widget Function()? onEmpty;

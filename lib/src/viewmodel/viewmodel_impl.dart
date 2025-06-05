@@ -367,8 +367,7 @@ New empty state hash: ${_data.hashCode}
 
   Future<void> reload() async {
     try {
-
-      if(_initialized){
+      if (_initialized) {
         await removeListeners();
       }
 
@@ -422,6 +421,4 @@ New empty state hash: ${_data.hashCode}
       _currentListener = null;
     }
   }
-
-
 }
