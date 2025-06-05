@@ -268,9 +268,8 @@ class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
         if (snapshot.hasData) {
           final response = snapshot.data as T;
           _onCreateNotify(response);
-          if (widget.onData != null)
-            return widget.onData!(response, _noRebuild);
-          return widget.onSuccess(response);
+          return widget.onData?.call(response, _noRebuild) ??
+              widget.onSuccess(response);
         } else {
           // Unexpected state (should rarely occur)
           return const Center(child: Text('Unexpected state'));

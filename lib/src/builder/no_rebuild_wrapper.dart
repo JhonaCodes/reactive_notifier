@@ -6,10 +6,10 @@ class NoRebuildWrapper extends StatefulWidget {
   const NoRebuildWrapper({super.key, required this.builder});
 
   @override
-  _NoRebuildWrapperState createState() => _NoRebuildWrapperState();
+  NoRebuildWrapperState createState() => NoRebuildWrapperState();
 }
 
-class _NoRebuildWrapperState extends State<NoRebuildWrapper> {
+class NoRebuildWrapperState extends State<NoRebuildWrapper> {
   late Widget child;
 
   @override
