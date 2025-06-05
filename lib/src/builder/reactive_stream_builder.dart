@@ -6,7 +6,7 @@ import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 import 'no_rebuild_wrapper.dart';
 
-class ReactiveStreamBuilder<T, VM> extends StatefulWidget {
+class ReactiveStreamBuilder<VM, T> extends StatefulWidget {
   final ReactiveNotifier<Stream<T>> notifier;
 
   /// Called when the reactive [Stream] emits a new data event.
@@ -44,11 +44,11 @@ class ReactiveStreamBuilder<T, VM> extends StatefulWidget {
   });
 
   @override
-  State<ReactiveStreamBuilder<T, VM>> createState() =>
-      _ReactiveStreamBuilderState<T, VM>();
+  State<ReactiveStreamBuilder<VM, T>> createState() =>
+      _ReactiveStreamBuilderState<VM, T>();
 }
 
-class _ReactiveStreamBuilderState<T, VM> extends State<ReactiveStreamBuilder<T, VM>> {
+class _ReactiveStreamBuilderState<VM, T> extends State<ReactiveStreamBuilder<VM, T>> {
   StreamSubscription<T>? _subscription;
   StreamState<T> _state = StreamState<T>.initial();
   final Map<String, NoRebuildWrapper> _noRebuildWidgets = {};

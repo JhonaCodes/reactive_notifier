@@ -3,7 +3,7 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 
 import 'no_rebuild_wrapper.dart';
 
-class ReactiveAsyncBuilder<T, VM> extends StatefulWidget {
+class ReactiveAsyncBuilder<VM, T> extends StatefulWidget {
   final AsyncViewModelImpl<T> notifier;
   final Widget Function(T data)? onSuccess;
 
@@ -48,10 +48,10 @@ class ReactiveAsyncBuilder<T, VM> extends StatefulWidget {
   });
 
   @override
-  State<ReactiveAsyncBuilder<T, VM>> createState() => _ReactiveAsyncBuilderState<T, VM>();
+  State<ReactiveAsyncBuilder<VM, T>> createState() => _ReactiveAsyncBuilderState<VM, T>();
 }
 
-class _ReactiveAsyncBuilderState<T, VM> extends State<ReactiveAsyncBuilder<T, VM>> {
+class _ReactiveAsyncBuilderState<VM, T> extends State<ReactiveAsyncBuilder<VM, T>> {
   final Map<String, NoRebuildWrapper> _noRebuildWidgets = {};
 
   @override
@@ -61,7 +61,7 @@ class _ReactiveAsyncBuilderState<T, VM> extends State<ReactiveAsyncBuilder<T, VM
   }
 
   @override
-  void didUpdateWidget(ReactiveAsyncBuilder<T, VM> oldWidget) {
+  void didUpdateWidget(ReactiveAsyncBuilder<VM, T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.notifier != widget.notifier) {
       oldWidget.notifier.removeListener(_valueChanged);
