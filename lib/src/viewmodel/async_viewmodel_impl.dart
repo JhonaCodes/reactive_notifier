@@ -262,23 +262,43 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   }
 
 
+  /// Holds the currently active listener callback.
+  /// Ensures only one listener is attached at any given time.
   VoidCallback? _currentListener;
 
-  Future<void> listenVM(void Function(AsyncState<T> data) value) async {
+  /// Starts listening for changes in the ViewModel's asynchronous state.
+  ///
+  /// This method:
+  /// - Cancels any previously registered listener to prevent duplication.
+  /// - Registers a new listener that invokes the given [value] callback whenever [_state] changes.
+  ///
+  /// The [value] callback receives the current [AsyncState<T>] whenever the state updates.
+  ///
+  /// Returns a [Future] that completes once the listener is registered.
+  Future<AsyncState<T>> listenVM(void Function(AsyncState<T> data) value) async {
     log("Listen notifier is active");
+
     if (_currentListener != null) {
       removeListener(_currentListener!);
     }
+
     _currentListener = () => value(_state);
     addListener(_currentListener!);
+
+    return _state;
   }
 
+  /// Stops listening for changes in the ViewModel.
+  ///
+  /// If a listener is currently registered, it is removed and
+  /// [_currentListener] is set to null to avoid memory leaks.
   void stopListeningVM() {
     if (_currentListener != null) {
       removeListener(_currentListener!);
       _currentListener = null;
     }
   }
+
 
   @override
   void dispose() {

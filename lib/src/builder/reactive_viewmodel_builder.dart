@@ -16,21 +16,40 @@ class ReactiveViewModelBuilder<T> extends StatefulWidget {
     Widget Function(Widget child) keep,
   ) builder;
 
+  /// Builds the widget based on the current [ViewModel] state.
+  ///
+  /// This function provides:
+  /// - [state]: The current state value managed by the [ViewModel].
+  /// - [viewmodel]: The [ViewModel] instance containing business logic, async control, and update methods.
+  /// - [keep]: A helper function to prevent unnecessary widget rebuilds by maintaining widget identity.
+  ///
+  /// Use this builder when working with complex state logic encapsulated in a [ViewModel<T>].
+  final Widget Function(
+      /// The current value of the reactive state.
+      T state,
+
+      /// The ViewModel that manages the internal logic and state updates.
+      ViewModel<T> viewmodel,
+
+      /// Function used to wrap widgets that should remain stable across rebuilds.
+      Widget Function(Widget child) keep,
+      )? build;
+
   /// Constructor that ensures either notifier or viewmodel is provided
-  const ReactiveViewModelBuilder({
-    super.key,
-    required this.viewmodel,
+  const ReactiveViewModelBuilder({super.key,
+      required this.viewmodel,
+
+    @Deprecated("Use 'build' instead. 'builder' will be removed in version 3.0.0.")
     required this.builder,
+      this.build,
   });
 
   @override
-  State<ReactiveViewModelBuilder<T>> createState() =>
-      _ReactiveBuilderStateViewModel<T>();
+  State<ReactiveViewModelBuilder<T>> createState() => _ReactiveBuilderStateViewModel<T>();
 }
 
 /// State class for ReactiveViewModelBuilder
-class _ReactiveBuilderStateViewModel<T>
-    extends State<ReactiveViewModelBuilder<T>> {
+class _ReactiveBuilderStateViewModel<T> extends State<ReactiveViewModelBuilder<T>> {
   /// Current value of the state
   late T value;
 
@@ -65,8 +84,7 @@ class _ReactiveBuilderStateViewModel<T>
     // Handle auto-dispose if applicable
     if (widget.viewmodel is ReactiveNotifierViewModel) {
       final reactiveViewModel = widget.viewmodel as ReactiveNotifierViewModel;
-      if (reactiveViewModel.autoDispose &&
-          !reactiveViewModel.notifier.hasListeners) {
+      if (reactiveViewModel.autoDispose && !reactiveViewModel.notifier.hasListeners) {
         reactiveViewModel.dispose();
       }
     }
@@ -93,7 +111,8 @@ class _ReactiveBuilderStateViewModel<T>
 
   @override
   Widget build(BuildContext context) {
-    return widget.builder(value, _noRebuild);
+    return widget.build?.call(value, widget.viewmodel, _noRebuild) ??
+        widget.builder(value, _noRebuild);
   }
 }
 
@@ -106,14 +125,12 @@ class _NoRebuildWrapperViewModel extends StatefulWidget {
   const _NoRebuildWrapperViewModel({required this.builder});
 
   @override
-  _NoRebuildWrapperStateViewModel createState() =>
-      _NoRebuildWrapperStateViewModel();
+  _NoRebuildWrapperStateViewModel createState() => _NoRebuildWrapperStateViewModel();
 }
 
 /// State for _NoRebuildWrapperViewModel
 /// Maintains a single instance of the child widget
-class _NoRebuildWrapperStateViewModel
-    extends State<_NoRebuildWrapperViewModel> {
+class _NoRebuildWrapperStateViewModel extends State<_NoRebuildWrapperViewModel> {
   /// Cached instance of the child widget
   late Widget child;
 

@@ -4,9 +4,29 @@ import 'package:flutter/material.dart';
 import 'package:reactive_notifier/src/handler/stream_state.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
+import 'no_rebuild_wrapper.dart';
+
 class ReactiveStreamBuilder<T> extends StatefulWidget {
   final ReactiveNotifier<Stream<T>> notifier;
-  final Widget Function(T data) onData;
+  /// Called when the reactive [Stream] emits a new data event.
+  ///
+  /// This function provides:
+  /// - [data]: The latest value emitted by the stream.
+  /// - [state]: The [ReactiveNotifier] that holds the current stream state and allows additional interactions.
+  /// - [keep]: A helper function to wrap widgets that should avoid unnecessary rebuilds.
+  ///
+  /// Use this builder to render UI based on live stream data while keeping performance optimizations in place.
+  final Widget Function(
+      /// Latest value emitted by the stream.
+      T data,
+
+      /// The reactive state that wraps the stream and handles updates.
+      ReactiveNotifier<Stream<T>> state,
+
+      /// Function to prevent unnecessary widget rebuilds.
+      /// Wrap stable child widgets with this to preserve identity across builds.
+      Widget Function(Widget child) keep,
+      ) onData;
   final Widget Function()? onLoading;
   final Widget Function(Object error)? onError;
   final Widget Function()? onEmpty;
@@ -30,6 +50,7 @@ class ReactiveStreamBuilder<T> extends StatefulWidget {
 class _ReactiveStreamBuilderState<T> extends State<ReactiveStreamBuilder<T>> {
   StreamSubscription<T>? _subscription;
   StreamState<T> _state = StreamState<T>.initial();
+  final Map<String, NoRebuildWrapper> _noRebuildWidgets = {};
 
   @override
   void initState() {
@@ -65,6 +86,14 @@ class _ReactiveStreamBuilderState<T> extends State<ReactiveStreamBuilder<T>> {
     _subscription = null;
   }
 
+  Widget _noRebuild(Widget keep) {
+    final key = keep.hashCode.toString();
+    if (!_noRebuildWidgets.containsKey(key)) {
+      _noRebuildWidgets[key] = NoRebuildWrapper(builder: keep);
+    }
+    return _noRebuildWidgets[key]!;
+  }
+
   @override
   Widget build(BuildContext context) {
     return _state.when(
@@ -72,7 +101,7 @@ class _ReactiveStreamBuilderState<T> extends State<ReactiveStreamBuilder<T>> {
       loading: () =>
           widget.onLoading?.call() ??
           const Center(child: CircularProgressIndicator.adaptive()),
-      data: (data) => widget.onData(data),
+      data: (data) => widget.onData(data, widget.notifier, _noRebuild),
       error: (error) =>
           widget.onError?.call(error) ?? Center(child: Text('Error: $error')),
       done: () => widget.onDone?.call() ?? const SizedBox.shrink(),

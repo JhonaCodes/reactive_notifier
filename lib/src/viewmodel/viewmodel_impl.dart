@@ -385,23 +385,43 @@ New empty state hash: ${_data.hashCode}
     }
   }
 
+  /// Holds the currently active listener callback.
+  /// Ensures that only one listener is attached at any given time.
   VoidCallback? _currentListener;
 
-  void listenVM(void Function(T data) value) {
+  /// Starts listening for changes in the ViewModel.
+  ///
+  /// This method:
+  /// - Removes any previously registered listener.
+  /// - Registers a new listener that invokes the provided [value] callback with the current [_data].
+  /// - Immediately returns the current value of [_data], allowing the caller to sync with the initial state.
+  ///
+  /// [value] is the callback function that receives the updated data whenever a change occurs.
+  ///
+  /// Returns the current value of [_data].
+  T listenVM(void Function(T data) value) {
     log("Listen notifier is active");
+
     if (_currentListener != null) {
       removeListener(_currentListener!);
     }
+
     _currentListener = () => value(_data);
     addListener(_currentListener!);
 
+    return _data;
   }
 
+  /// Stops listening for changes in the ViewModel.
+  ///
+  /// If a listener is currently registered, it will be removed and
+  /// [_currentListener] will be set to null to free up resources.
   void stopListeningVM() {
     if (_currentListener != null) {
       removeListener(_currentListener!);
       _currentListener = null;
     }
   }
+
 
 }

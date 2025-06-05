@@ -7,15 +7,33 @@ import 'no_rebuild_wrapper.dart';
 /// Reactive Builder for simple state or direct model state.
 class ReactiveBuilder<T> extends StatefulWidget {
   final NotifierImpl<T> notifier;
+  final Widget Function(T state, Widget Function(Widget child) keep, ) builder;
+  /// Builds the widget based on the current reactive state.
+  ///
+  /// This function provides:
+  /// - [state]: The current reactive value of type `T`.
+  /// - [notifier]: The internal [NotifierImpl<T>] containing state update methods and logic.
+  /// - [keep]: A wrapper function used to prevent unnecessary widget rebuilds by maintaining widget identity.
+  ///
+  /// Useful for customizing the UI based on reactive changes while having full access to state logic and optimization tools.
   final Widget Function(
-    T state,
-    Widget Function(Widget child) keep,
-  ) builder;
+      /// The current state value.
+      T state,
+
+      /// The notifier instance that provides update methods and internal logic.
+      NotifierImpl<T> notifier,
+
+      /// A wrapper that helps prevent unnecessary rebuilds.
+      /// Wrap any widget that should remain stable between state updates.
+      Widget Function(Widget child) keep,
+      )? build;
 
   const ReactiveBuilder({
     super.key,
     required this.notifier,
+    @Deprecated("Use 'build' instead. 'builder' will be removed in version 3.0.0.")
     required this.builder,
+    this.build
   });
 
   @override
@@ -76,7 +94,7 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return widget.builder(value, _noRebuild);
+    return widget.build?.call(value, widget.notifier, _noRebuild) ?? widget.builder(value, _noRebuild);
   }
 }
 

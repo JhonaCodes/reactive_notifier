@@ -15,13 +15,17 @@
 - Introduced state update control with `notifyChangesFromNewState` flag
 - Enhanced error and loading state handling with customizable builders
 - Added comprehensive documentation with usage examples
+- **New listener API**:
+  - `listen()` allows directly listening to the main `ReactiveNotifier` state, ideal for simple types like `String`, `int`, or plain models.
+  - `listenVM()` enables listening to complex state objects like ViewModels inside the `ReactiveNotifier.notifier`, managing their internal lifecycle properly.
+  - These additions improve fine-grained reactivity and reduce boilerplate when dealing with nested logic.
 
 ### 🐛 Bug Fixes
 - Fixed UI flickering when navigating back to previously loaded screens
 - Resolved state loss issues during navigation transitions
 - Fixed race conditions between default data and async data loading
-- Modified `AsyncViewModelImpl` to support nullable data types, enabling safer initialization validation 
-- Added proper null checks to prevent errors during state updates 
+- Modified `AsyncViewModelImpl` to support nullable data types, enabling safer initialization validation
+- Added proper null checks to prevent errors during state updates
 - Improved type safety with stronger null handling throughout the reactive system
 
 ### 💻 Developer Experience
@@ -29,6 +33,7 @@
 - Reduced boilerplate when implementing loading/success/error states
 - Improved code readability with clear separation of UI and data concerns
 - Added type safety with generic parameter support
+
 
 
 # 2.8.1
