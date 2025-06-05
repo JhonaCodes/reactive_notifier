@@ -3,7 +3,7 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 
 import 'no_rebuild_wrapper.dart';
 
-class ReactiveAsyncBuilder<T> extends StatefulWidget {
+class ReactiveAsyncBuilder<T, VM> extends StatefulWidget {
   final AsyncViewModelImpl<T> notifier;
   final Widget Function(T data)? onSuccess;
 
@@ -25,7 +25,7 @@ class ReactiveAsyncBuilder<T> extends StatefulWidget {
   ///   );
   /// }
   /// ```
-  final Widget Function(T data, AsyncViewModelImpl<T> viewmodel, Widget Function(Widget child) keep)?
+  final Widget Function(T data, VM viewmodel, Widget Function(Widget child) keep)?
       onData;
   final Widget Function()? onLoading;
   final Widget Function(Object? error, StackTrace? stackTrace)? onError;
@@ -48,10 +48,10 @@ class ReactiveAsyncBuilder<T> extends StatefulWidget {
   });
 
   @override
-  State<ReactiveAsyncBuilder<T>> createState() => _ReactiveAsyncBuilderState<T>();
+  State<ReactiveAsyncBuilder<T, VM>> createState() => _ReactiveAsyncBuilderState<T, VM>();
 }
 
-class _ReactiveAsyncBuilderState<T> extends State<ReactiveAsyncBuilder<T>> {
+class _ReactiveAsyncBuilderState<T, VM> extends State<ReactiveAsyncBuilder<T, VM>> {
   final Map<String, NoRebuildWrapper> _noRebuildWidgets = {};
 
   @override
@@ -61,7 +61,7 @@ class _ReactiveAsyncBuilderState<T> extends State<ReactiveAsyncBuilder<T>> {
   }
 
   @override
-  void didUpdateWidget(ReactiveAsyncBuilder<T> oldWidget) {
+  void didUpdateWidget(ReactiveAsyncBuilder<T, VM> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.notifier != widget.notifier) {
       oldWidget.notifier.removeListener(_valueChanged);
@@ -96,7 +96,7 @@ class _ReactiveAsyncBuilderState<T> extends State<ReactiveAsyncBuilder<T>> {
       loading: () =>
           widget.onLoading?.call() ?? const Center(child: CircularProgressIndicator.adaptive()),
       success: (data) =>
-          widget.onData?.call(data, widget.notifier, _noRebuild) ??
+          widget.onData?.call(data, (widget.notifier as VM), _noRebuild) ??
           widget.onSuccess?.call(data) ??
           const SizedBox.shrink(),
       error: (error, stackTrace) => widget.onError != null

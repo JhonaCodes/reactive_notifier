@@ -6,7 +6,7 @@ import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 import 'no_rebuild_wrapper.dart';
 
-class ReactiveStreamBuilder<T> extends StatefulWidget {
+class ReactiveStreamBuilder<T, VM> extends StatefulWidget {
   final ReactiveNotifier<Stream<T>> notifier;
 
   /// Called when the reactive [Stream] emits a new data event.
@@ -22,7 +22,7 @@ class ReactiveStreamBuilder<T> extends StatefulWidget {
     T data,
 
     /// The reactive state that wraps the stream and handles updates.
-    ReactiveNotifier<Stream<T>> viewmodel,
+      VM viewmodel,
 
     /// Function to prevent unnecessary widget rebuilds.
     /// Wrap stable child widgets with this to preserve identity across builds.
@@ -44,11 +44,11 @@ class ReactiveStreamBuilder<T> extends StatefulWidget {
   });
 
   @override
-  State<ReactiveStreamBuilder<T>> createState() =>
-      _ReactiveStreamBuilderState<T>();
+  State<ReactiveStreamBuilder<T, VM>> createState() =>
+      _ReactiveStreamBuilderState<T, VM>();
 }
 
-class _ReactiveStreamBuilderState<T> extends State<ReactiveStreamBuilder<T>> {
+class _ReactiveStreamBuilderState<T, VM> extends State<ReactiveStreamBuilder<T, VM>> {
   StreamSubscription<T>? _subscription;
   StreamState<T> _state = StreamState<T>.initial();
   final Map<String, NoRebuildWrapper> _noRebuildWidgets = {};
@@ -102,7 +102,7 @@ class _ReactiveStreamBuilderState<T> extends State<ReactiveStreamBuilder<T>> {
       loading: () =>
           widget.onLoading?.call() ??
           const Center(child: CircularProgressIndicator.adaptive()),
-      data: (data) => widget.onData(data, widget.notifier, _noRebuild),
+      data: (data) => widget.onData(data, (widget.notifier as VM), _noRebuild),
       error: (error) =>
           widget.onError?.call(error) ?? Center(child: Text('Error: $error')),
       done: () => widget.onDone?.call() ?? const SizedBox.shrink(),

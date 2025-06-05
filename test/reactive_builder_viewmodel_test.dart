@@ -30,7 +30,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: ReactiveViewModelBuilder<String>(
+          home: ReactiveViewModelBuilder<MockStateNotifier, String>(
             viewmodel: mockNotifier,
             builder: (state, keep) {
               capturedState = state;
@@ -50,7 +50,7 @@ void main() {
       // Arrange
       await tester.pumpWidget(
         MaterialApp(
-          home: ReactiveViewModelBuilder<String>(
+          home: ReactiveViewModelBuilder<MockStateNotifier, String>(
             viewmodel: mockNotifier,
             builder: (state, keep) => Text(state),
           ),
@@ -72,7 +72,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: ReactiveViewModelBuilder<String>(
+          home: ReactiveViewModelBuilder<MockStateNotifier, String>(
             viewmodel: mockNotifier,
             builder: (state, keep) {
               return Column(
@@ -142,7 +142,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: ReactiveViewModelBuilder<String>(
+          home: ReactiveViewModelBuilder<MockStateNotifier, String>(
             key: key,
             viewmodel: mockNotifier,
             builder: (state, keep) => Text(state),
@@ -167,7 +167,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: ReactiveViewModelBuilder<String>(
+          home: ReactiveViewModelBuilder<MockStateNotifier, String>(
             viewmodel: mockNotifier,
             builder: (state, keep) => Text(state),
           ),
@@ -177,7 +177,7 @@ void main() {
       // Act - cambiar el notifier
       await tester.pumpWidget(
         MaterialApp(
-          home: ReactiveViewModelBuilder<String>(
+          home: ReactiveViewModelBuilder<MockStateNotifier, String>(
             viewmodel: newNotifier,
             builder: (state, keep) => Text(state),
           ),

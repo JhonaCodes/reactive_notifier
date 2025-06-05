@@ -6,7 +6,7 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 /// It's designed to work specifically with StateNotifierImpl implementations
 /// and provides efficient state management and rebuilding mechanisms
 ///
-class ReactiveViewModelBuilder<T> extends StatefulWidget {
+class ReactiveViewModelBuilder<VM, T> extends StatefulWidget {
   /// New ViewModel approach, takes precedence over notifier if both are provided
   final ViewModel<T> viewmodel;
 
@@ -29,7 +29,7 @@ class ReactiveViewModelBuilder<T> extends StatefulWidget {
     T state,
 
     /// The ViewModel that manages the internal logic and state updates.
-    ViewModel<T> viewmodel,
+      VM viewmodel,
 
     /// Function used to wrap widgets that should remain stable across rebuilds.
     Widget Function(Widget child) keep,
@@ -46,13 +46,13 @@ class ReactiveViewModelBuilder<T> extends StatefulWidget {
   });
 
   @override
-  State<ReactiveViewModelBuilder<T>> createState() =>
-      _ReactiveBuilderStateViewModel<T>();
+  State<ReactiveViewModelBuilder<VM, T>> createState() =>
+      _ReactiveBuilderStateViewModel<VM, T>();
 }
 
 /// State class for ReactiveViewModelBuilder
-class _ReactiveBuilderStateViewModel<T>
-    extends State<ReactiveViewModelBuilder<T>> {
+class _ReactiveBuilderStateViewModel<VM, T>
+    extends State<ReactiveViewModelBuilder<VM, T>> {
   /// Current value of the state
   late T value;
 
@@ -70,7 +70,7 @@ class _ReactiveBuilderStateViewModel<T>
   }
 
   @override
-  void didUpdateWidget(ReactiveViewModelBuilder<T> oldWidget) {
+  void didUpdateWidget(ReactiveViewModelBuilder<VM, T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.viewmodel != widget.viewmodel) {
       oldWidget.viewmodel.removeListener(_valueChanged);
@@ -115,7 +115,7 @@ class _ReactiveBuilderStateViewModel<T>
 
   @override
   Widget build(BuildContext context) {
-    return widget.build?.call(value, widget.viewmodel, _noRebuild) ??
+    return widget.build?.call(value, (widget.viewmodel as VM), _noRebuild) ??
         widget.builder?.call(value, _noRebuild) ?? const SizedBox.shrink();
   }
 }
