@@ -320,6 +320,56 @@ The framework automatically calls these methods at the right times:
 | During dispose() | | ✓ |
 
 This structured approach allows ViewModels to react to external state changes without creating memory leaks or causing unnecessary widget rebuilds.
+
+## `listen`
+
+`listen` is used to subscribe to changes in a **simple `ReactiveNotifier<T>`**—a notifier holding a direct value.
+
+```dart
+await notifier.listen((data) {
+  // React to changes in the simple value held by the ReactiveNotifier
+  print('New value: $data');
+});
+```
+
+### Usage
+
+* Listen to updates on primitive or simple reactive values (e.g., `int`, `bool`, `List<T>`)
+* Run side effects based on value changes (UI notifications, triggers)
+* Works with reactive notifiers that directly expose the value as `T`
+
+### Notes
+
+* Remember to stop listening with `stopListening()` to avoid memory leaks
+* Keep listener logic lightweight and side-effect focused
+
+
+## `listenVM`
+
+`listenVM` subscribes to **changes inside a ViewModel’s internal state**, reacting to modifications of the state.
+
+```dart
+await notifier.listenVM((state) {
+  // React to changes in the simple value held by the ReactiveNotifier
+  print('New state: $state');
+});
+```
+
+### Usage
+
+* Listen to the *state object* inside a ViewModel (e.g., `AsyncState<T>`, `CustomState`)
+* React to internal state changes such as loading, error, or data updates
+* Enables fine-grained reactive responses tied to the ViewModel’s state
+
+### Notes
+
+* Call `stopListeningVM()` to properly clean up listeners
+* Use alongside `setupListeners()` and `removeListeners()` to manage lifecycle
+* Listener callback receives only the updated state object, not the entire ViewModel
+
+
+
+
 ## State Update Methods
 
 ReactiveNotifier provides multiple ways to update state with precise control:
@@ -663,6 +713,46 @@ Problem: Attempting to create a circular dependency
 Solution: Ensure state relationships form a DAG
 Location: package:my_app/cart/cart_state.dart:42
 ```
+
+
+# ReactiveFutureBuilder<T>
+
+`ReactiveFutureBuilder` combines Flutter’s `FutureBuilder` with reactive state management to avoid UI flickering and keep data synchronized globally.
+
+### Key Features
+
+* Displays `defaultData` immediately to avoid flickering when navigating back
+* Updates a `ReactiveNotifier<T>` with Future results for shared state
+* Uses a `keep` function to prevent unnecessary widget rebuilds
+* Handles all Future states: initial, loading, error, and success
+
+### Example
+
+```dart
+ReactiveFutureBuilder<OrderItem?>(
+  future: OrderService.instance.notifier.loadById(orderId),
+  defaultData: OrderService.instance.notifier.getByPid(orderId),
+  createStateNotifier: OrderService.currentOrderItem,
+  onData: (order, keep) => keep(OrderDetailView(order: order!)),
+  onLoading: () => const CircularProgressIndicator(),
+  onError: (error, _) => Text('Error: $error'),
+)
+```
+
+### Parameters
+
+| Parameter                   | Description                                                                   |
+| --------------------------- | ----------------------------------------------------------------------------- |
+| `future`                    | The Future that provides data                                                 |
+| `defaultData`               | Data to display immediately while waiting for the Future                      |
+| `onSuccess` (deprecated)    | Deprecated simple success builder, use `onData` instead                       |
+| `onData`                    | Builder function receiving data and a `keep` widget wrapper to avoid rebuilds |
+| `onLoading`                 | Widget displayed while loading                                                |
+| `onError`                   | Widget displayed on error                                                     |
+| `onInitial`                 | Widget shown before the Future starts                                         |
+| `createStateNotifier`       | `ReactiveNotifier<T>` updated with the Future’s data                          |
+| `notifyChangesFromNewState` | Whether to notify listeners on updates or update silently                     |
+
 
 ## Best Practices
 
