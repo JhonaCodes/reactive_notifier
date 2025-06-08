@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
+import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 
 // Mock de un StateNotifierImpl simple para testing
 class MockStateNotifier extends ViewModel<String> {

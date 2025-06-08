@@ -112,7 +112,16 @@ Initial state hash: ${_data.hashCode}
     }());
   }
 
-  /// Abstract init method to be implemented by subclasses
+  /// This method must be implemented as fully synchronous.
+  /// Do not use `async` or return a `Future<void>`.
+  ///
+  /// The base `ViewModel` does not handle asynchronous processes.
+  /// Using `async` here can lead to uncontrolled rebuilds or race conditions,
+  /// since asynchronous initialization is not managed by the ViewModel's lifecycle.
+  ///
+  /// If you need to perform asynchronous operations during initialization,
+  /// use `AsyncViewModelImpl` instead of `ViewModel`.
+  ///
   void init();
 
   /// Safe initialization that handles errors
