@@ -4,7 +4,7 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 
 // Mock de un StateNotifierImpl simple para testing
 class MockStateNotifier extends ViewModel<String> {
-  MockStateNotifier() : super('initial');
+  MockStateNotifier() : super();
 
   void updateValue(String newValue) {
     updateState(newValue);
@@ -12,6 +12,7 @@ class MockStateNotifier extends ViewModel<String> {
 
   @override
   void init() {
+    updateState('initial');
     // TODO: implement init
   }
 }
