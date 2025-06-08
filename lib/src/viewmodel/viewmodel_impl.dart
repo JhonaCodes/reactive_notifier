@@ -98,7 +98,18 @@ Initial state hash: ${_data.hashCode}
   /// Public getter for the data
   T get data {
     _checkDisposed();
+    assertDataInitialized();
     return _data;
+  }
+
+
+  void assertDataInitialized() {
+    assert(() {
+      if (!_initialized) {
+        throw StateError("ViewModel<${T.toString()}> was used before _data was initialized.");
+      }
+      return true;
+    }());
   }
 
   /// Abstract init method to be implemented by subclasses
@@ -106,13 +117,34 @@ Initial state hash: ${_data.hashCode}
 
   /// Safe initialization that handles errors
   void _safeInitialization() {
-    /// We make sure it is always false before any full initialization.
+    // We make sure it is always false before any full initialization.
     hasInitializedListenerExecution = false;
 
     if (_initialized || _disposed) return;
 
     try {
       init();
+
+      // Ensure _data was assigned in init()
+      assert(() {
+        try {
+          final _ = _data;
+          return true;
+        } catch (_) {
+          throw StateError('''
+⚠️ ViewModel<${T.toString()}> initialization error
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The init() method did not assign an initial state to the internal _data variable.
+It is mandatory to call updateSilently(...) or assign _data before finishing init().
+
+This ensures the ViewModel has a valid state and prevents subsequent errors.
+
+Check the init() implementation at: ${_getCreationLocation()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''');
+        }
+      }());
+
       _initialized = true;
       _initTime = DateTime.now();
 

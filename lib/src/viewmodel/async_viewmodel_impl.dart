@@ -10,21 +10,17 @@ import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 /// Provides a standardized way to handle loading, success, and error states for async data.
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
-abstract class AsyncViewModelImpl<T> extends ChangeNotifier
-    with HelperNotifier {
-  late AsyncState<T> _state;
+abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier {
+  AsyncState<T> _state = AsyncState.initial();
   late bool loadOnInit;
 
-  AsyncViewModelImpl(this._state, {this.loadOnInit = true}) : super() {
+  AsyncViewModelImpl({this.loadOnInit = true}) : super() {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
 
     if (loadOnInit) {
       _initializeAsync();
-
-      /// Yes and only if it is changed to true when the entire initialization process is finished.
-      hasInitializedListenerExecution = true;
     }
   }
 
@@ -34,7 +30,24 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     hasInitializedListenerExecution = false;
 
     try {
+
       await reload();
+
+      // Assert _state is properly initialized
+      assert(() {
+        try {
+          final _ = _state;
+          return true;
+        } catch (_) {
+          throw StateError(
+              '⚠️ AsyncViewModelImpl<${T.toString()}> did not properly initialize state in init()'
+          );
+        }
+      }());
+
+      /// Yes and only if it is changed to true when the entire initialization process is finished.
+      hasInitializedListenerExecution = true;
+
     } catch (error, stackTrace) {
       errorState(error, stackTrace);
     }
@@ -76,7 +89,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
       loadOnInit = false;
 
       loadingState();
-      final result = await loadData();
+      final result = await init();
       updateState(result);
 
       await setupListeners();
@@ -133,7 +146,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
 
   /// Override this method to provide the async data loading logic
   @protected
-  FutureOr<T> loadData();
+  FutureOr<T> init();
 
   /// Update data directly
 
@@ -158,7 +171,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   void cleanState() {
     _state = AsyncState.initial();
     unawaited(removeListeners());
-    loadData();
+    init();
     unawaited(setupListeners());
     notifyListeners();
   }
@@ -200,7 +213,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     }());
 
     if (_state.data == null || loadOnInit) {
-      await loadData();
+      await init();
       await setupListeners();
       return;
     }
