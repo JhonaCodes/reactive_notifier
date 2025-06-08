@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
@@ -57,7 +59,7 @@ class _ReactiveBuilderStateViewModel<VM, T>
   late T value;
 
   /// Cache for widgets that shouldn't rebuild
-  final Map<String, _NoRebuildWrapperViewModel> _noRebuildWidgets = {};
+  final HashMap<Key, _NoRebuildWrapperViewModel> _noRebuildWidgets = HashMap.from({});
 
   @override
   void initState() {
@@ -92,6 +94,9 @@ class _ReactiveBuilderStateViewModel<VM, T>
         reactiveViewModel.dispose();
       }
     }
+
+    _noRebuildWidgets.clear();
+
     super.dispose();
   }
 
@@ -106,7 +111,7 @@ class _ReactiveBuilderStateViewModel<VM, T>
 
   /// Creates or retrieves a cached widget that shouldn't rebuild
   Widget _noRebuild(Widget keep) {
-    final key = keep.hashCode.toString();
+    final key = keep.key ?? ValueKey(keep.hashCode);
     if (!_noRebuildWidgets.containsKey(key)) {
       _noRebuildWidgets[key] = _NoRebuildWrapperViewModel(builder: keep);
     }

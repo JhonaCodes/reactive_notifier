@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
@@ -55,7 +57,7 @@ class ReactiveAsyncBuilder<VM, T> extends StatefulWidget {
 
 class _ReactiveAsyncBuilderState<VM, T>
     extends State<ReactiveAsyncBuilder<VM, T>> {
-  final Map<String, NoRebuildWrapper> _noRebuildWidgets = {};
+  final HashMap<Key, NoRebuildWrapper> _noRebuildWidgets = HashMap.from({});
 
   @override
   void initState() {
@@ -75,6 +77,17 @@ class _ReactiveAsyncBuilderState<VM, T>
   @override
   void dispose() {
     widget.notifier.removeListener(_valueChanged);
+
+    if (widget.notifier is ReactiveNotifier) {
+      final reactiveNotifier = widget.notifier as ReactiveNotifier;
+      if (reactiveNotifier.autoDispose && !reactiveNotifier.hasListeners) {
+        /// Clean current reactive and any dispose on Viewmodel
+        reactiveNotifier.cleanCurrentNotifier();
+      }
+    }
+
+    _noRebuildWidgets.clear();
+
     super.dispose();
   }
 
@@ -85,9 +98,9 @@ class _ReactiveAsyncBuilderState<VM, T>
   }
 
   Widget _noRebuild(Widget keep) {
-    final key = keep.hashCode.toString();
+    final key = keep.key ?? ValueKey(keep.hashCode);
     if (!_noRebuildWidgets.containsKey(key)) {
-      _noRebuildWidgets[key] = NoRebuildWrapper(builder: keep);
+      _noRebuildWidgets[key] = NoRebuildWrapper(child: keep);
     }
     return _noRebuildWidgets[key]!;
   }
@@ -202,7 +215,7 @@ class ReactiveFutureBuilder<T> extends StatefulWidget {
 }
 
 class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
-  final Map<String, NoRebuildWrapper> _noRebuildWidgets = {};
+  final HashMap<Key, NoRebuildWrapper> _noRebuildWidgets = HashMap.from({});
 
   /// Updates the ReactiveNotifier with new data.
   ///
@@ -217,9 +230,9 @@ class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
   }
 
   Widget _noRebuild(Widget keep) {
-    final key = keep.hashCode.toString();
+    final key = keep.key ?? ValueKey(keep.hashCode + keep.runtimeType.hashCode);
     if (!_noRebuildWidgets.containsKey(key)) {
-      _noRebuildWidgets[key] = NoRebuildWrapper(builder: keep);
+      _noRebuildWidgets[key] = NoRebuildWrapper(child: keep);
     }
     return _noRebuildWidgets[key]!;
   }
@@ -229,6 +242,7 @@ class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
     if (widget.createStateNotifier != null) {
       widget.createStateNotifier!.cleanCurrentNotifier();
     }
+    _noRebuildWidgets.clear();
     super.dispose();
   }
 

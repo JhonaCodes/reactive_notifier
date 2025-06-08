@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/src/handler/stream_state.dart';
@@ -44,15 +45,13 @@ class ReactiveStreamBuilder<VM, T> extends StatefulWidget {
   });
 
   @override
-  State<ReactiveStreamBuilder<VM, T>> createState() =>
-      _ReactiveStreamBuilderState<VM, T>();
+  State<ReactiveStreamBuilder<VM, T>> createState() => _ReactiveStreamBuilderState<VM, T>();
 }
 
-class _ReactiveStreamBuilderState<VM, T>
-    extends State<ReactiveStreamBuilder<VM, T>> {
+class _ReactiveStreamBuilderState<VM, T> extends State<ReactiveStreamBuilder<VM, T>> {
   StreamSubscription<T>? _subscription;
   StreamState<T> _state = StreamState<T>.initial();
-  final Map<String, NoRebuildWrapper> _noRebuildWidgets = {};
+  final HashMap<Key, NoRebuildWrapper> _noRebuildWidgets = HashMap.from({});
 
   @override
   void initState() {
@@ -64,6 +63,13 @@ class _ReactiveStreamBuilderState<VM, T>
   @override
   void dispose() {
     widget.notifier.removeListener(_onStreamChanged);
+
+    if (widget.notifier.autoDispose && !widget.notifier.hasListeners) {
+      /// Clean current reactive and any dispose on Viewmodel
+      widget.notifier.cleanCurrentNotifier();
+    }
+
+    _noRebuildWidgets.clear();
     _unsubscribe();
     super.dispose();
   }
@@ -89,9 +95,9 @@ class _ReactiveStreamBuilderState<VM, T>
   }
 
   Widget _noRebuild(Widget keep) {
-    final key = keep.hashCode.toString();
+    final key = keep.key ?? ValueKey(keep.hashCode);
     if (!_noRebuildWidgets.containsKey(key)) {
-      _noRebuildWidgets[key] = NoRebuildWrapper(builder: keep);
+      _noRebuildWidgets[key] = NoRebuildWrapper(child: keep);
     }
     return _noRebuildWidgets[key]!;
   }
@@ -101,11 +107,9 @@ class _ReactiveStreamBuilderState<VM, T>
     return _state.when(
       initial: () => widget.onEmpty?.call() ?? const SizedBox.shrink(),
       loading: () =>
-          widget.onLoading?.call() ??
-          const Center(child: CircularProgressIndicator.adaptive()),
+          widget.onLoading?.call() ?? const Center(child: CircularProgressIndicator.adaptive()),
       data: (data) => widget.onData(data, (widget.notifier as VM), _noRebuild),
-      error: (error) =>
-          widget.onError?.call(error) ?? Center(child: Text('Error: $error')),
+      error: (error) => widget.onError?.call(error) ?? Center(child: Text('Error: $error')),
       done: () => widget.onDone?.call() ?? const SizedBox.shrink(),
     );
   }
