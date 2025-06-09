@@ -199,7 +199,7 @@ class ReactiveFutureBuilder<T> extends StatefulWidget {
   const ReactiveFutureBuilder({
     super.key,
     required this.future,
-    @Deprecated("Use onData, contain keep function") required this.onSuccess,
+    @Deprecated("Use onData, contain keep function") this.onSuccess,
     this.onData,
     this.onLoading,
     this.onError,
