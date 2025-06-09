@@ -7,7 +7,7 @@ import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 /// Se usa en las clases Viewmodel donde debe estar toda la logica de mi negocio
 abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier {
   // Internal state
-  late T _data;
+  T _data;
   bool _initialized = false;
   bool _disposed = false;
 
@@ -16,7 +16,7 @@ abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier {
   DateTime? _initTime;
   int _updateCount = 0;
 
-  ViewModel() {
+  ViewModel(this._data) {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }

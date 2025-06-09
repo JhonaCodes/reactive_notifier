@@ -11,16 +11,19 @@ import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
 abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier {
-  AsyncState<T> _state = AsyncState.initial();
+  AsyncState<T> _state;
   late bool loadOnInit;
 
-  AsyncViewModelImpl({this.loadOnInit = true}) : super() {
+  AsyncViewModelImpl(this._state,{this.loadOnInit = true}) : super() {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
 
     if (loadOnInit) {
       _initializeAsync();
+
+      /// Yes and only if it is changed to true when the entire initialization process is finished.
+      hasInitializedListenerExecution = true;
     }
   }
 

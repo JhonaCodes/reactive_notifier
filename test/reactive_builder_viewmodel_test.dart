@@ -5,7 +5,7 @@ import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 
 // Mock de un StateNotifierImpl simple para testing
 class MockStateNotifier extends ViewModel<String> {
-  MockStateNotifier() : super();
+  MockStateNotifier() : super("");
 
   void updateValue(String newValue) {
     updateState(newValue);
