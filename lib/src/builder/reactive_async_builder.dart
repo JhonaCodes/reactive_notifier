@@ -161,7 +161,7 @@ class ReactiveFutureBuilder<T> extends StatefulWidget {
 
   /// Builder function for rendering the UI when the Future completes successfully.
   /// Receives the data of type T from the Future.
-  final Widget Function(T data) onSuccess;
+  final Widget Function(T data)? onSuccess;
 
   final Widget Function(T data, Widget Function(Widget child) keep)? onData;
 
@@ -253,7 +253,7 @@ class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
       final defaultData = (widget.defaultData as T);
       _onCreateNotify(defaultData);
       if (widget.onData != null) return widget.onData!(defaultData, _noRebuild);
-      return widget.onSuccess(defaultData);
+      return widget.onSuccess?.call(defaultData) ?? const SizedBox.shrink();
     }
 
     // Otherwise, use a standard FutureBuilder
@@ -285,7 +285,7 @@ class _ReactiveFutureBuilderState<T> extends State<ReactiveFutureBuilder<T>> {
           final response = snapshot.data as T;
           _onCreateNotify(response);
           return widget.onData?.call(response, _noRebuild) ??
-              widget.onSuccess(response);
+              widget.onSuccess?.call(response) ?? const SizedBox.shrink();
         } else {
           // Unexpected state (should rarely occur)
           return const Center(child: Text('Unexpected state'));
