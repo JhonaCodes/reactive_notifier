@@ -98,19 +98,9 @@ Initial state hash: ${_data.hashCode}
   /// Public getter for the data
   T get data {
     _checkDisposed();
-    assertDataInitialized();
     return _data;
   }
 
-
-  void assertDataInitialized() {
-    assert(() {
-      if (!_initialized) {
-        throw StateError("ViewModel<${T.toString()}> was used before _data was initialized.");
-      }
-      return true;
-    }());
-  }
 
   /// This method must be implemented as fully synchronous.
   /// Do not use `async` or return a `Future<void>`.
