@@ -39,7 +39,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  reactive_notifier: ^2.10.0
+  reactive_notifier: ^2.10.1
 ```
 
 ## Core Concepts
@@ -438,7 +438,6 @@ mixin CartService {
   static void prepareCartData(List<Product> products) {
     cart.transformDataState((state) => state.copyWith(
       recommendedItems: products,
-      // No UI update needed for this background change
     ));
   }
 }

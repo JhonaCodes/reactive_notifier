@@ -1,4 +1,8 @@
 # 2.10.0
+## Readme
+- Update example on readme for transformState
+
+# 2.10.0
 ## 🛠️ ViewModel State Enhancements
 - Introduced `transformDataState` for modifying the data within a success state and notifying listeners.
 - Introduced `transformDataStateSilently` for modifying the data within a success state without notifying listeners.
