@@ -1,3 +1,8 @@
+# 2.10.4
+## Listen and Initialization
+- `callOnInit` implemented for `listen` and `listenVM`, for execute function on init instance.
+- `onResume` Called after the ViewModel's primary initialization
+
 # 2.10.3
 ## Readme
 - Update description

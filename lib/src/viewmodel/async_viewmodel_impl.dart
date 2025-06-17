@@ -10,8 +10,7 @@ import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 /// Provides a standardized way to handle loading, success, and error states for async data.
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
-abstract class AsyncViewModelImpl<T> extends ChangeNotifier
-    with HelperNotifier {
+abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier {
   AsyncState<T> _state;
   late bool loadOnInit;
 
@@ -94,6 +93,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
       updateState(result);
 
       await setupListeners();
+
+      await onResume(_state.data);
     } catch (error, stackTrace) {
       errorState(error, stackTrace);
       try {
@@ -108,8 +109,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// We remove the listeners registered in [setupListeners] to avoid memory problems.
   ///
   @mustCallSuper
-  Future<void> removeListeners(
-      {List<String> currentListeners = const []}) async {
+  Future<void> removeListeners({List<String> currentListeners = const []}) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
         logRemove<T>(listeners: currentListeners);
@@ -122,8 +122,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// We register our listeners coming from the notifiers.
   ///
   @mustCallSuper
-  Future<void> setupListeners(
-      {List<String> currentListeners = const []}) async {
+  Future<void> setupListeners({List<String> currentListeners = const []}) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
         logSetup<T>(listeners: currentListeners);
@@ -220,9 +219,15 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   ///```
   /// - Parameter transformer: A function that takes the current data `T?` from
   ///   a success state and returns the new data `T`.
-  void transformDataState(T Function(T? data) transformer) {
-    _state = AsyncState.success(transformer(_state.data));
-    notifyListeners();
+  void transformDataState(T? Function(T? data) transformer) {
+    final transformData = transformer(_state.data);
+
+    if (transformData != null) {
+      _state = AsyncState.success(transformData);
+      notifyListeners();
+    } else {
+      log('⚠️ transformDataState<${T.toString()}> returned null - transformation ignored');
+    }
   }
 
   /// Transforms the data within the current success state using the
@@ -245,8 +250,14 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   ///```
   /// - Parameter transformer: A function that takes the current data `T?` from
   ///   a success state and returns the new data `T`.
-  void transformDataStateSilently(T Function(T? data) transformer) {
-    _state = AsyncState.success(transformer(_state.data));
+  void transformDataStateSilently(T? Function(T? data) transformer) {
+    final transformData = transformer(_state.data);
+
+    if (transformData != null) {
+      _state = AsyncState.success(transformData);
+    } else {
+      log('⚠️ transformDataStateSilently<${T.toString()}> returned null - transformation ignored');
+    }
   }
 
   /// Transforms the current entire [AsyncState] using the provided [transformer]
@@ -274,8 +285,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   ///   and returns a new [AsyncState<T>].
   ///   ```
   ///
-  void transformStateSilently(
-      AsyncState<T> Function(AsyncState<T> state) transformer) {
+  void transformStateSilently(AsyncState<T> Function(AsyncState<T> state) transformer) {
     _state = transformer(_state);
   }
 
@@ -283,8 +293,27 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   @protected
   FutureOr<T> init();
 
-  /// Update data directly
+  /// Called after the ViewModel's primary initialization logic (e.g., in `init(), setupListeners, etc`)
+  /// has completed successfully.
+  ///
+  /// Override this method in subclasses to perform any tasks that should
+  /// execute immediately after the ViewModel is considered fully initialized
+  /// and its initial state/data is available.
+  ///
+  /// This can be useful for setting up secondary listeners, logging completion,
+  /// triggering follow-up actions, or starting background tasks that depend
+  /// on the initial setup.
+  ///
+  /// The base implementation simply logs a message.
+  ///
+  /// Example:
+  ///
+  @protected
+  FutureOr<void> onResume(T? data) async {
+    log("Application was initialized and onResume was executed");
+  }
 
+  /// Update data directly
   void updateState(T data) {
     _state = AsyncState.success(data);
     notifyListeners();

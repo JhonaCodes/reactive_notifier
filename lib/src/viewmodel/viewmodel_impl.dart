@@ -4,7 +4,14 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 
-/// Se usa en las clases Viewmodel donde debe estar toda la logica de mi negocio
+/// Used in ViewModel classes where all business logic should reside.
+///
+/// This abstract class serves as a base for ViewModels, providing core
+/// functionalities like state management by extending [ChangeNotifier] and
+/// incorporating helper utilities via the [HelperNotifier] mixin.
+///
+/// Implementations of this class are expected to encapsulate the presentation
+/// logic and state for a particular view or feature.
 abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier {
   // Internal state
   T _data;
@@ -403,6 +410,7 @@ New empty state hash: ${_data.hashCode}
 
       init();
       await setupListeners();
+      await onResume(_data);
     } catch (error, stackTrace) {
       log(error.toString());
       log(stackTrace.toString());
@@ -455,5 +463,27 @@ New empty state hash: ${_data.hashCode}
       removeListener(_currentListener!);
       _currentListener = null;
     }
+  }
+
+
+
+  /// Called after the ViewModel's primary initialization logic (e.g., in `init(), setupListeners, etc`)
+  /// has completed successfully.
+  ///
+  /// Override this method in subclasses to perform any tasks that should
+  /// execute immediately after the ViewModel is considered fully initialized
+  /// and its initial state/data is available.
+  ///
+  /// This can be useful for setting up secondary listeners, logging completion,
+  /// triggering follow-up actions, or starting background tasks that depend
+  /// on the initial setup.
+  ///
+  /// The base implementation simply logs a message.
+  ///
+  /// Example:
+  ///
+  @protected
+  FutureOr<void> onResume(T data) async {
+    log("Application was initialized and onResume was executed");
   }
 }
