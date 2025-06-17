@@ -1,11 +1,8 @@
-# 2.9.2
+# 2.10.0
 ## 🛠️ ViewModel State Enhancements
 - Introduced `transformDataState` for modifying the data within a success state and notifying listeners.
 - Introduced `transformDataStateSilently` for modifying the data within a success state without notifying listeners.
-
-
-# 2.9.1
-## 🔄 Reactive State Management
+- `init` now init es default form of initialization.
 - `builder`, `onSucess` optional.
 - `onData` optional and more.
 
