@@ -1,6 +1,9 @@
-# 2.10.1
+# 2.10.2
 ## Readme
 - Update example on readme for transformState
+
+# 2.10.1
+## Readme
 - Update metadata
 
 # 2.10.0
