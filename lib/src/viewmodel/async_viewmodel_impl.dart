@@ -187,8 +187,10 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   ///```
   ///
   void transformState(AsyncState<T> Function(AsyncState<T> state) transformer) {
-    _state = transformer(_state);
-    notifyListeners();
+    final newState = transformer(_state).data;
+    if(newState != null) {
+      updateState(newState);
+    }
   }
 
   /// Transforms the data within the current success state using the
@@ -226,8 +228,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     final transformData = transformer(_state.data);
 
     if (transformData != null) {
-      _state = AsyncState.success(transformData);
-      notifyListeners();
+      updateState(transformData);
     } else {
       log('⚠️ transformDataState<${T.toString()}> returned null - transformation ignored');
     }
