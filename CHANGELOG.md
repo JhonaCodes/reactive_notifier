@@ -1,10 +1,7 @@
-# 2.10.2
-## Readme
-- Update metadata
-
 # 2.10.1
 ## Readme
 - Update example on readme for transformState
+- Update metadata
 
 # 2.10.0
 ## 🛠️ ViewModel State Enhancements
