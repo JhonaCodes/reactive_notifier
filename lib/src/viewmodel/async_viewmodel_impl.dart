@@ -10,11 +10,12 @@ import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 /// Provides a standardized way to handle loading, success, and error states for async data.
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
-abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier {
+abstract class AsyncViewModelImpl<T> extends ChangeNotifier
+    with HelperNotifier {
   AsyncState<T> _state;
   late bool loadOnInit;
 
-  AsyncViewModelImpl(this._state,{this.loadOnInit = true}) : super() {
+  AsyncViewModelImpl(this._state, {this.loadOnInit = true}) : super() {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
@@ -33,7 +34,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier 
     hasInitializedListenerExecution = false;
 
     try {
-
       await reload();
 
       // Assert _state is properly initialized
@@ -43,14 +43,12 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier 
           return true;
         } catch (_) {
           throw StateError(
-              '⚠️ AsyncViewModelImpl<${T.toString()}> did not properly initialize state in init()'
-          );
+              '⚠️ AsyncViewModelImpl<${T.toString()}> did not properly initialize state in init()');
         }
       }());
 
       /// Yes and only if it is changed to true when the entire initialization process is finished.
       hasInitializedListenerExecution = true;
-
     } catch (error, stackTrace) {
       errorState(error, stackTrace);
     }
@@ -134,17 +132,151 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier 
     }
   }
 
+  /// Updates the internal state to a new success state with [newState]
+  /// without notifying any listeners.
+  ///
+  /// This is useful for making internal or test state changes that should not trigger
+  /// a UI rebuild or other side effects that listeners might perform.
+  /// For example, this might be used during initialization or when applying
+  /// changes that will be bundled with a subsequent notification.
+  ///
+  /// Example:
+  ///```dart
+  ///     // Inside a ViewModel method, perhaps during setup:
+  ///     var initialData = await _repository.fetchInitialData();
+  ///     updateSilently(initialData);
+  ///     // ... other setup ...
+  ///     // A later call to notifyListeners() or a state-updating method that
+  ///     // notifies will make this state visible to the UI.
+  ///```
+  /// - Parameter newState: The new data to set as the successful state.
+  ///
   void updateSilently(T newState) {
     _state = AsyncState.success(newState);
   }
 
-  void transformState(AsyncState<T> Function(AsyncState<T> data) data) {
-    _state = data(_state);
+  /// Transforms the current entire [AsyncState] using the provided [transformer]
+  /// function and notifies listeners.
+  ///
+  /// The [transformer] function receives the current [AsyncState<T>] and should
+  /// return a new [AsyncState<T>]. This allows for complex state transitions,
+  /// such as changing from a loading state to an error state, or modifying
+  /// data within a success state while preserving the state type.
+  ///
+  /// After the transformation, listeners are notified of the change.
+  ///
+  /// Example:
+  ///```dart
+  ///    // Change state to error if data is null, otherwise keep success
+  ///    transformState((currentState) {
+  ///       if (currentState.isSuccess && currentState.data == null) {
+  ///         return AsyncState.error('Data became null unexpectedly');
+  ///       }
+  ///       return currentState; // Or modify currentState.data if needed
+  ///     });
+  ///
+  ///     // Transition from a loading state to a success state
+  ///     if (_state.isLoading) {
+  ///       transformState((_) => AsyncState.success(fetchedData));
+  ///     }
+  ///
+  /// - Parameter transformer: A function that takes the current [AsyncState<T>]
+  ///   and returns a new [AsyncState<T>].
+  ///```
+  ///
+  void transformState(AsyncState<T> Function(AsyncState<T> state) transformer) {
+    _state = transformer(_state);
     notifyListeners();
   }
 
-  void transformStateSilently(AsyncState<T> Function(AsyncState<T> data) data) {
-    _state = data(_state);
+  /// Transforms the data within the current success state using the
+  /// provided [transformer] function and notifies listeners.
+  ///
+  /// If the current state is not a success state, or if the current data is `null`
+  /// and the [transformer] cannot handle `null`, the behavior might lead to
+  /// unexpected states or errors depending on the [transformer]'s implementation.
+  /// It's generally expected that this method is called when `_state.data` is valid
+  /// or the [transformer] can gracefully handle `null`.
+  ///
+  /// The [transformer] function receives the current data `T?` (which might be null
+  /// if the state was `AsyncState.success(null)` or if `T` is nullable)
+  /// and should return the new data `T`. The state will then be updated to
+  /// `AsyncState.success` with this new data.
+  ///
+  /// After the transformation, listeners are notified.
+  ///
+  /// Example:
+  ///```dart
+  ///     // Assuming T is List<String> and _state is AsyncState.success(["apple"])
+  ///     // Add an item to the list
+  ///     transformDataState((currentData) {
+  ///       return [...?currentData, "banana"];
+  ///     });
+  ///     // _state is now AsyncState.success(["apple", "banana"]) and listeners are notified.
+  ///
+  ///     // If T is int and _state is AsyncState.success(5)
+  ///     transformDataState((currentData) => (currentData ?? 0) + 1);
+  ///     // _state is now AsyncState.success(6)
+  ///```
+  /// - Parameter transformer: A function that takes the current data `T?` from
+  ///   a success state and returns the new data `T`.
+  void transformDataState(T Function(T? data) transformer) {
+    _state = AsyncState.success(transformer(_state.data));
+    notifyListeners();
+  }
+
+  /// Transforms the data within the current success state using the
+  /// provided [transformer] function, **without notifying listeners**.
+  ///
+  /// This is the "silent" version of [transformDataState]. It's useful for
+  /// making internal changes to the data of a success state that should not
+  /// immediately trigger a UI rebuild or other listener-driven side effects.
+  ///
+  /// Similar to [transformDataState], care should be taken if the current data
+  /// is `null` based on the [transformer]'s ability to handle it. The state
+  /// will be updated to `AsyncState.success` with the new data.
+  ///
+  /// Example:
+  ///```dart
+  ///     // Increment a counter silently
+  ///     // Assuming T is int and _state is AsyncState.success(5)
+  ///     transformDataStateSilently((currentData) => (currentData ?? 0) + 1);
+  ///     // _state is now AsyncState.success(6), but listeners are not notified yet.
+  ///```
+  /// - Parameter transformer: A function that takes the current data `T?` from
+  ///   a success state and returns the new data `T`.
+  void transformDataStateSilently(T Function(T? data) transformer) {
+    _state = AsyncState.success(transformer(_state.data));
+  }
+
+  /// Transforms the current entire [AsyncState] using the provided [transformer]
+  /// function, **without notifying listeners**.
+  ///
+  /// This is the "silent" version of [transformState]. It's useful for
+  /// making complex internal state transitions (e.g., from loading to error,
+  /// or modifying data within a success state) that should not immediately
+  /// trigger a UI rebuild or other listener-driven side effects.
+  ///
+  /// The [transformer] function receives the current [AsyncState<T>] and should
+  /// return a new [AsyncState<T>].
+  ///
+  /// Example:
+  ///```dart
+  ///     // Silently change state to error if data is null during an internal check
+  ///     transformStateSilently((currentState) {
+  ///       if (currentState.isSuccess && currentState.data == null) {
+  ///         return AsyncState.error('Internal check: Data became null');
+  ///       }
+  ///       return currentState;
+  ///     });
+  ///
+  /// - Parameter transformer: A function that takes the current [AsyncState<T>]
+  ///   and returns a new [AsyncState<T>].
+  ///   ```
+  ///
+  void transformStateSilently(
+      AsyncState<T> Function(AsyncState<T> state) transformer) {
+    _state = transformer(_state);
   }
 
   /// Override this method to provide the async data loading logic
@@ -287,8 +419,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier 
   /// The [value] callback receives the current [AsyncState<T>] whenever the state updates.
   ///
   /// Returns a [Future] that completes once the listener is registered.
-  Future<AsyncState<T>> listenVM(
-      void Function(AsyncState<T> data) value) async {
+  Future<AsyncState<T>> listenVM(void Function(AsyncState<T> data) value,
+      {bool callOnInit = false}) async {
     log("Listen notifier is active");
 
     if (_currentListener != null) {
@@ -296,6 +428,11 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier 
     }
 
     _currentListener = () => value(_state);
+
+    if (callOnInit) {
+      _currentListener?.call();
+    }
+
     addListener(_currentListener!);
 
     return _state;

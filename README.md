@@ -393,16 +393,16 @@ mixin CounterService {
 }
 ```
 
-### transformState and transformStateSilently
+### transformState, transformStateSilently, transformDataState and transformDataStateSilently
 
 For complex state that needs to be updated based on current values:
 
 ```dart
 mixin CartService {
-  static final ReactiveNotifier<CartModel> cart = 
+  static final ReactiveViewModelNotifier<CartModel> cart = 
       ReactiveNotifier<CartModel>(() => CartModel.empty());
   
-  // Update with notification
+  // Update with notification 
   static void addItem(Product product) {
     cart.transformState((state) => state.copyWith(
       items: [...state.items, product],
@@ -414,6 +414,29 @@ mixin CartService {
   // Useful for background calculations or preparations
   static void prepareCartData(List<Product> products) {
     cart.transformStateSilently((state) => state.copyWith(
+      recommendedItems: products,
+      // No UI update needed for this background change
+    ));
+  }
+
+
+  // in this case `CartViewModel` is `AsyncViewModelImpl`
+  static final ReactiveNotifier<CartModel> cart =
+  ReactiveNotifier<CartViewModel>(CartViewModel.new);
+
+
+  // For update `transformState` we need to use `AsyncState`
+  // because sometimes we need a AsyncState to update the state
+  static void addItem(Product product) {
+    cart.transformState((state) => AsyncState.success(state.data.copyWith(
+        items: [...state.items, product],
+        total: state.total + product.price
+    )));
+  }
+  
+  // This is directory for data
+  static void prepareCartData(List<Product> products) {
+    cart.transformDataState((state) => state.copyWith(
       recommendedItems: products,
       // No UI update needed for this background change
     ));

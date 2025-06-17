@@ -45,10 +45,12 @@ class ReactiveStreamBuilder<VM, T> extends StatefulWidget {
   });
 
   @override
-  State<ReactiveStreamBuilder<VM, T>> createState() => _ReactiveStreamBuilderState<VM, T>();
+  State<ReactiveStreamBuilder<VM, T>> createState() =>
+      _ReactiveStreamBuilderState<VM, T>();
 }
 
-class _ReactiveStreamBuilderState<VM, T> extends State<ReactiveStreamBuilder<VM, T>> {
+class _ReactiveStreamBuilderState<VM, T>
+    extends State<ReactiveStreamBuilder<VM, T>> {
   StreamSubscription<T>? _subscription;
   StreamState<T> _state = StreamState<T>.initial();
   final HashMap<Key, NoRebuildWrapper> _noRebuildWidgets = HashMap.from({});
@@ -107,9 +109,11 @@ class _ReactiveStreamBuilderState<VM, T> extends State<ReactiveStreamBuilder<VM,
     return _state.when(
       initial: () => widget.onEmpty?.call() ?? const SizedBox.shrink(),
       loading: () =>
-          widget.onLoading?.call() ?? const Center(child: CircularProgressIndicator.adaptive()),
+          widget.onLoading?.call() ??
+          const Center(child: CircularProgressIndicator.adaptive()),
       data: (data) => widget.onData(data, (widget.notifier as VM), _noRebuild),
-      error: (error) => widget.onError?.call(error) ?? Center(child: Text('Error: $error')),
+      error: (error) =>
+          widget.onError?.call(error) ?? Center(child: Text('Error: $error')),
       done: () => widget.onDone?.call() ?? const SizedBox.shrink(),
     );
   }

@@ -101,7 +101,6 @@ Initial state hash: ${_data.hashCode}
     return _data;
   }
 
-
   /// This method must be implemented as fully synchronous.
   /// Do not use `async` or return a `Future<void>`.
   ///
@@ -429,7 +428,7 @@ New empty state hash: ${_data.hashCode}
   /// [value] is the callback function that receives the updated data whenever a change occurs.
   ///
   /// Returns the current value of [_data].
-  T listenVM(void Function(T data) value) {
+  T listenVM(void Function(T data) value, {bool callOnInit = false}) {
     log("Listen notifier is active");
 
     if (_currentListener != null) {
@@ -437,6 +436,11 @@ New empty state hash: ${_data.hashCode}
     }
 
     _currentListener = () => value(_data);
+
+    if (callOnInit) {
+      _currentListener?.call();
+    }
+
     addListener(_currentListener!);
 
     return _data;

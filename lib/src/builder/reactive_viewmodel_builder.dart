@@ -59,7 +59,8 @@ class _ReactiveBuilderStateViewModel<VM, T>
   late T value;
 
   /// Cache for widgets that shouldn't rebuild
-  final HashMap<Key, _NoRebuildWrapperViewModel> _noRebuildWidgets = HashMap.from({});
+  final HashMap<Key, _NoRebuildWrapperViewModel> _noRebuildWidgets =
+      HashMap.from({});
 
   @override
   void initState() {

@@ -138,7 +138,7 @@ class CounterScreen extends StatelessWidget {
             // Main counter display - rebuilds when counter state changes
             ReactiveBuilder<CounterState>(
               notifier: CounterService.instance,
-              builder: (state, keep) => Column(
+              build: (state, vm, keep) => Column(
                 children: [
                   Text(
                     'Counter: ${state.count}',
@@ -156,7 +156,7 @@ class CounterScreen extends StatelessWidget {
             // Related message display - rebuilds independently when message changes
             ReactiveBuilder<String>(
               notifier: CounterService.messageInstance,
-              builder: (message, keep) => Text(
+              build: (message, vm, keep) => Text(
                 'Related message: $message',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
