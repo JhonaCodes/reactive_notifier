@@ -465,8 +465,6 @@ New empty state hash: ${_data.hashCode}
     }
   }
 
-
-
   /// Called after the ViewModel's primary initialization logic (e.g., in `init(), setupListeners, etc`)
   /// has completed successfully.
   ///

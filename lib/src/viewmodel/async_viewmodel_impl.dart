@@ -10,7 +10,8 @@ import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 /// Provides a standardized way to handle loading, success, and error states for async data.
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
-abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier {
+abstract class AsyncViewModelImpl<T> extends ChangeNotifier
+    with HelperNotifier {
   AsyncState<T> _state;
   late bool loadOnInit;
 
@@ -109,7 +110,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier 
   /// We remove the listeners registered in [setupListeners] to avoid memory problems.
   ///
   @mustCallSuper
-  Future<void> removeListeners({List<String> currentListeners = const []}) async {
+  Future<void> removeListeners(
+      {List<String> currentListeners = const []}) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
         logRemove<T>(listeners: currentListeners);
@@ -122,7 +124,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier 
   /// We register our listeners coming from the notifiers.
   ///
   @mustCallSuper
-  Future<void> setupListeners({List<String> currentListeners = const []}) async {
+  Future<void> setupListeners(
+      {List<String> currentListeners = const []}) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
         logSetup<T>(listeners: currentListeners);
@@ -285,7 +288,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier with HelperNotifier 
   ///   and returns a new [AsyncState<T>].
   ///   ```
   ///
-  void transformStateSilently(AsyncState<T> Function(AsyncState<T> state) transformer) {
+  void transformStateSilently(
+      AsyncState<T> Function(AsyncState<T> state) transformer) {
     _state = transformer(_state);
   }
 
