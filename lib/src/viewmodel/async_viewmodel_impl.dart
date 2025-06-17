@@ -188,7 +188,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   ///
   void transformState(AsyncState<T> Function(AsyncState<T> state) transformer) {
     final newState = transformer(_state).data;
-    if(newState != null) {
+    if (newState != null) {
       updateState(newState);
     }
   }
