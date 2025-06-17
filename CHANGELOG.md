@@ -1,3 +1,7 @@
+# 2.10.5
+## UpdateState on TransformState
+- `updateState` on TransformState for `AsyncViewModelImpl`
+
 # 2.10.4
 ## Listen and Initialization
 - `callOnInit` implemented for `listen` and `listenVM`, for execute function on init instance.
