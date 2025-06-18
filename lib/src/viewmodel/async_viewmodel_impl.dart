@@ -296,7 +296,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
 
   /// Override this method to provide the async data loading logic
   @protected
-  FutureOr<T> init();
+  Future<T> init();
 
   /// Called after the ViewModel's primary initialization logic (e.g., in `init(), setupListeners, etc`)
   /// has completed successfully.
