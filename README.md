@@ -38,7 +38,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  reactive_notifier: ^2.10.5
+  reactive_notifier: ^2.10.6
 ```
 
 ## Core Concepts

@@ -1,3 +1,6 @@
+# 2.10.6
+- `README.md` update readme.
+
 # 2.10.5
 ## UpdateState on TransformState
 - `updateState` on TransformState for `AsyncViewModelImpl`
