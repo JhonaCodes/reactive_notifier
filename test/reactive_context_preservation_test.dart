@@ -317,14 +317,12 @@ void main() {
                 return Column(
                   children: [
                     Text('Data: ${context.data}'),
-                    Container(
-                      child: Column(
-                        children: [
-                          const CountedWidget(text: 'Nested Preserved')
-                              .keep('nested_key'),
-                          const CountedWidget(text: 'Nested Normal'),
-                        ],
-                      ),
+                    Column(
+                      children: [
+                        const CountedWidget(text: 'Nested Preserved')
+                            .keep('nested_key'),
+                        const CountedWidget(text: 'Nested Normal'),
+                      ],
                     ).keep('container_key'),
                   ],
                 );

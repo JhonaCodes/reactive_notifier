@@ -109,7 +109,7 @@ class ReactiveContextEnhanced {
   }
 
   /// Enhanced cleanup with type-specific clearing
-  @protected
+
   static void cleanup() {
     _markNeedsBuildElements.clear();
     _globalListenersSetup.clear();

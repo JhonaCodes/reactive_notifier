@@ -149,10 +149,10 @@ void main() {
     testWidgets('should provide reactive state through context extensions',
         (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
-              child: const ReactiveContextTestWidget(),
+              child: ReactiveContextTestWidget(),
             ),
           ),
         ),
@@ -294,10 +294,10 @@ void main() {
     testWidgets('should handle multiple state changes efficiently',
         (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
-              child: const ReactiveContextTestWidget(),
+              child: ReactiveContextTestWidget(),
             ),
           ),
         ),
@@ -452,10 +452,10 @@ void main() {
       await tester.pumpWidget(
         ReactiveContextOptimizer(
           forceInheritedFor: [TestLanguageService.instance],
-          child: MaterialApp(
+          child: const MaterialApp(
             home: Scaffold(
               body: SingleChildScrollView(
-                child: const ReactiveContextTestWidget(),
+                child: ReactiveContextTestWidget(),
               ),
             ),
           ),
@@ -474,10 +474,10 @@ void main() {
 
     testWidgets('should handle high-frequency updates', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
-              child: const ReactiveContextTestWidget(),
+              child: ReactiveContextTestWidget(),
             ),
           ),
         ),
@@ -520,7 +520,7 @@ void main() {
                   final lang = context<TestLang>();
                   return Text('Lang: ${lang.name}');
                 } catch (e) {
-                  return Text('Error: Missing state handled gracefully');
+                  return const Text('Error: Missing state handled gracefully');
                 }
               },
             ),

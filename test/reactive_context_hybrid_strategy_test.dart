@@ -142,13 +142,13 @@ void main() {
     testWidgets('should prevent cross-rebuilds between different types',
         (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: Column(
               children: [
-                const HybridTrackingWidget(trackingType: 'A'),
-                const HybridTrackingWidget(trackingType: 'B'),
-                const HybridTrackingWidget(trackingType: 'C'),
+                HybridTrackingWidget(trackingType: 'A'),
+                HybridTrackingWidget(trackingType: 'B'),
+                HybridTrackingWidget(trackingType: 'C'),
               ],
             ),
           ),
@@ -188,13 +188,13 @@ void main() {
     testWidgets('should handle widgets using multiple services',
         (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: Column(
               children: [
-                const HybridTrackingWidget(trackingType: 'A'),
-                const MultiServiceWidget(),
-                const HybridTrackingWidget(trackingType: 'B'),
+                HybridTrackingWidget(trackingType: 'A'),
+                MultiServiceWidget(),
+                HybridTrackingWidget(trackingType: 'B'),
               ],
             ),
           ),
@@ -228,13 +228,13 @@ void main() {
       await tester.pumpWidget(
         ReactiveContextOptimizer(
           forceInheritedFor: [ServiceA.instance, ServiceB.instance],
-          child: MaterialApp(
+          child: const MaterialApp(
             home: Scaffold(
               body: Column(
                 children: [
-                  const HybridTrackingWidget(trackingType: 'A'),
-                  const HybridTrackingWidget(trackingType: 'B'),
-                  const HybridTrackingWidget(trackingType: 'C'),
+                  HybridTrackingWidget(trackingType: 'A'),
+                  HybridTrackingWidget(trackingType: 'B'),
+                  HybridTrackingWidget(trackingType: 'C'),
                 ],
               ),
             ),
@@ -267,12 +267,12 @@ void main() {
     testWidgets('should handle rapid state changes efficiently',
         (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: Column(
               children: [
-                const HybridTrackingWidget(trackingType: 'A'),
-                const HybridTrackingWidget(trackingType: 'B'),
+                HybridTrackingWidget(trackingType: 'A'),
+                HybridTrackingWidget(trackingType: 'B'),
               ],
             ),
           ),
@@ -306,14 +306,14 @@ void main() {
 
     testWidgets('should handle concurrent updates correctly', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: Column(
               children: [
-                const HybridTrackingWidget(trackingType: 'A'),
-                const HybridTrackingWidget(trackingType: 'B'),
-                const HybridTrackingWidget(trackingType: 'C'),
-                const MultiServiceWidget(),
+                HybridTrackingWidget(trackingType: 'A'),
+                HybridTrackingWidget(trackingType: 'B'),
+                HybridTrackingWidget(trackingType: 'C'),
+                MultiServiceWidget(),
               ],
             ),
           ),
@@ -417,12 +417,12 @@ void main() {
     testWidgets('should handle memory cleanup during strategy switching',
         (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: Column(
               children: [
-                const HybridTrackingWidget(trackingType: 'A'),
-                const HybridTrackingWidget(trackingType: 'B'),
+                HybridTrackingWidget(trackingType: 'A'),
+                HybridTrackingWidget(trackingType: 'B'),
               ],
             ),
           ),
@@ -443,12 +443,12 @@ void main() {
       await tester.pumpWidget(
         ReactiveContextOptimizer(
           forceInheritedFor: [ServiceA.instance],
-          child: MaterialApp(
+          child: const MaterialApp(
             home: Scaffold(
               body: Column(
                 children: [
-                  const HybridTrackingWidget(trackingType: 'A'),
-                  const HybridTrackingWidget(trackingType: 'B'),
+                  HybridTrackingWidget(trackingType: 'A'),
+                  HybridTrackingWidget(trackingType: 'B'),
                 ],
               ),
             ),
