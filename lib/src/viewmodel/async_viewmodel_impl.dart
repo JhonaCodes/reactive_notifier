@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 import 'package:reactive_notifier/src/helper/helper_notifier.dart';
+import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
 ///
@@ -14,6 +15,11 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     with HelperNotifier {
   AsyncState<T> _state;
   late bool loadOnInit;
+  bool _disposed = false;
+  
+  /// Public getter to check if AsyncViewModel is disposed
+  /// Used by ReactiveNotifier to avoid circular dispose calls
+  bool get isDisposed => _disposed;
 
   AsyncViewModelImpl(this._state, {this.loadOnInit = true}) : super() {
     if (kFlutterMemoryAllocationsEnabled) {
@@ -485,8 +491,83 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
 
   @override
   void dispose() {
+    assert(() {
+      log('''
+🗑️ Starting AsyncViewModelImpl<${T.toString()}> disposal
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Current state: ${_state.runtimeType}
+LoadOnInit was: $loadOnInit
+HasInitialized: $hasInitializedListenerExecution
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+
+    // 1. Stop internal listenVM() connections to other ViewModels/AsyncViewModels
     stopListeningVM();
+    
+    // 2. Remove all external listeners registered via setupListeners()
     removeListeners();
+    
+    // 3. Clear async state to help GC
+    _state = AsyncState.initial();
+    
+    // 4. Reset initialization flags
+    hasInitializedListenerExecution = false;
+    loadOnInit = true;
+    
+    // 5. Mark as disposed 
+    _disposed = true;
+    
+    // 6. Notify ReactiveNotifier to remove this AsyncViewModel from global registry
+    _notifyReactiveNotifierDisposal();
+
+    assert(() {
+      log('''
+✅ AsyncViewModelImpl<${T.toString()}> completely disposed
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+State reset to: AsyncState.initial()
+Listeners: Removed
+ReactiveNotifier cleanup: Requested
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+
+    // 6. Call ChangeNotifier dispose to remove all Flutter listeners
     super.dispose();
+  }
+  
+  /// Notifies any containing ReactiveNotifier that this AsyncViewModel is being disposed
+  /// This allows ReactiveNotifier to clean itself from the global registry
+  void _notifyReactiveNotifierDisposal() {
+    // Find any ReactiveNotifier that contains this AsyncViewModel instance
+    // and request cleanup from global registry
+    try {
+      final instances = ReactiveNotifier.getInstances;
+      for (final instance in instances) {
+        if (instance.notifier == this) {
+          // Found the ReactiveNotifier containing this AsyncViewModel
+          // Use cleanCurrentNotifier with forceCleanup since AsyncViewModel is disposing
+          instance.cleanCurrentNotifier(forceCleanup: true);
+          break;
+        }
+      }
+    } catch (e) {
+      assert(() {
+        log('''
+⚠️ Warning: Could not notify ReactiveNotifier of AsyncViewModel disposal
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AsyncViewModel: ${T.toString()}
+Current state: ${_state.runtimeType}
+Error: $e
+
+This may result in the ReactiveNotifier remaining in global registry.
+Consider calling ReactiveNotifier.cleanup() manually when appropriate.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 50);
+        return true;
+      }());
+    }
   }
 }

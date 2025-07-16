@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/src/helper/helper_notifier.dart';
+import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 /// Used in ViewModel classes where all business logic should reside.
 ///
@@ -17,6 +18,10 @@ abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier {
   T _data;
   bool _initialized = false;
   bool _disposed = false;
+  
+  /// Public getter to check if ViewModel is disposed
+  /// Used by ReactiveNotifier to avoid circular dispose calls
+  bool get isDisposed => _disposed;
 
   // Lifecycle tracking for debugging
   final String _instanceId = UniqueKey().toString();
@@ -287,9 +292,28 @@ New state hash: ${_data.hashCode}
   @override
   void dispose() {
     if (_disposed) return;
-    removeListeners();
-    stopListeningVM();
+    
+    assert(() {
+      log('''
+🗑️ Starting ViewModel<${T.toString()}> disposal
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ID: $_instanceId
+Current updates: $_updateCount
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
 
+    // 1. Remove all external listeners registered via setupListeners()
+    removeListeners();
+    
+    // 2. Stop internal listenVM() connections to other ViewModels
+    stopListeningVM();
+    
+    // 3. Notify ReactiveNotifier to remove this ViewModel from global registry
+    _notifyReactiveNotifierDisposal();
+
+    // 4. Mark as disposed and record timing
     _disposed = true;
     _disposeTime = DateTime.now();
 
@@ -299,17 +323,52 @@ New state hash: ${_data.hashCode}
           : 'unknown';
 
       log('''
-🗑️ ViewModel<${T.toString()}> disposed
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ ViewModel<${T.toString()}> completely disposed
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ID: $_instanceId
-Updates: $_updateCount
+Total updates: $_updateCount
 Lifespan: ${lifespan}ms
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ReactiveNotifier cleanup: Requested
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 10);
       return true;
     }());
 
+    // 5. Call ChangeNotifier dispose to remove all Flutter listeners
     super.dispose();
+  }
+  
+  /// Notifies any containing ReactiveNotifier that this ViewModel is being disposed
+  /// This allows ReactiveNotifier to clean itself from the global registry
+  void _notifyReactiveNotifierDisposal() {
+    // Find any ReactiveNotifier that contains this ViewModel instance
+    // and request cleanup from global registry
+    try {
+      final instances = ReactiveNotifier.getInstances;
+      for (final instance in instances) {
+        if (instance.notifier == this) {
+          // Found the ReactiveNotifier containing this ViewModel
+          // Use cleanCurrentNotifier with forceCleanup since ViewModel is disposing
+          instance.cleanCurrentNotifier(forceCleanup: true);
+          break;
+        }
+      }
+    } catch (e) {
+      assert(() {
+        log('''
+⚠️ Warning: Could not notify ReactiveNotifier of ViewModel disposal
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ViewModel: ${T.toString()}
+ID: $_instanceId
+Error: $e
+
+This may result in the ReactiveNotifier remaining in global registry.
+Consider calling ReactiveNotifier.cleanup() manually when appropriate.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 50);
+        return true;
+      }());
+    }
   }
 
   /// Gets the creation location for debugging
