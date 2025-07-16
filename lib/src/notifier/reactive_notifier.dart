@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
 import 'notifier_impl.dart';
+import '../context/reactive_context_enhanced.dart';
 
 /// A reactive state management solution that supports:
 /// - Singleton instances with key-based identity
@@ -21,8 +22,9 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   final Set<ReactiveNotifier> _parents = {};
   static final Set<ReactiveNotifier> _updatingNotifiers = {};
   final Key keyNotifier;
-  
+
   // Factory function for recreation
+  // ignore: unused_field
   final T Function() _createFunction;
 
   // Notification overflow detection
@@ -532,8 +534,8 @@ Updating notifiers: ${_updatingNotifiers.length}
     int viewModelsDisposed = 0;
     int asyncViewModelsDisposed = 0;
     int simpleNotifiersCleared = 0;
-    
-    _instances.values.forEach((instance) {
+
+    for (final instance in _instances.values) {
       if (instance is ReactiveNotifier) {
         final vm = instance.notifier;
         try {
@@ -561,11 +563,19 @@ Continuing with cleanup...
           }());
         }
       }
-    });
+    }
 
     // 2. Clear all global registries
     _instances.clear();
     _updatingNotifiers.clear();
+
+    // 3. Clear ReactiveContext registries
+    try {
+      ReactiveContextEnhanced.cleanup();
+      cleanupPreservedWidgets();
+    } catch (e) {
+      // Ignore cleanup errors - may not be available in all contexts
+    }
 
     assert(() {
       log('''
@@ -577,8 +587,8 @@ Simple notifiers cleared: $simpleNotifiersCleared
 Total instances processed: ${viewModelsDisposed + asyncViewModelsDisposed + simpleNotifiersCleared}
 
 Global registries cleared:
-- _instances: ${_instances.length == 0 ? '✓' : '✗ (${_instances.length} remaining)'}
-- _updatingNotifiers: ${_updatingNotifiers.length == 0 ? '✓' : '✗ (${_updatingNotifiers.length} remaining)'}
+- _instances: ${_instances.isEmpty ? '✓' : '✗ (${_instances.length} remaining)'}
+- _updatingNotifiers: ${_updatingNotifiers.isEmpty ? '✓' : '✗ (${_updatingNotifiers.length} remaining)'}
 
 🎯 All memory should now be available for garbage collection
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -610,7 +620,7 @@ Global registries cleared:
   /// about what's preventing the cleanup.
   ///
   /// Returns `true` if the instance was cleaned, `false` if it's still in use.
-  /// 
+  ///
   /// [forceCleanup] - If true, cleanup will be performed regardless of listeners or parent references
   /// This is used when ViewModels call dispose() and need to force registry cleanup
   bool cleanCurrentNotifier({bool forceCleanup = false}) {
@@ -689,7 +699,7 @@ Cleaning regardless of current state...
       if (hasListeners) {
         stopListening();
       }
-      
+
       // Clean parent-child relationships
       if (related != null) {
         for (var child in related!) {
@@ -902,7 +912,7 @@ Count: $removedCount
 
   @override
   String toString() => '${describeIdentity(this)}($notifier)';
-  
+
   /// Gets the parent notifiers for testing purposes
   @visibleForTesting
   Set<ReactiveNotifier> get parents => Set.from(_parents);
@@ -917,23 +927,23 @@ Count: $removedCount
   // Need to investigate the interaction between _createFunction() and ViewModel.init()
   //
   // /// Recreates the notifier instance with a fresh ViewModel/state
-  // /// 
+  // ///
   // /// This method:
   // /// 1. Creates a new instance using the original factory function
   // /// 2. Maintains the same key and related states configuration
   // /// 3. Notifies all current listeners with the new state
-  // /// 
+  // ///
   // /// Use cases:
   // /// - After logout to create fresh user state
-  // /// - Reset application state to initial values  
+  // /// - Reset application state to initial values
   // /// - Testing scenarios where clean state is needed
   // /// - Recovery from corrupted or invalid state
-  // /// 
+  // ///
   // /// Example:
   // /// ```dart
   // /// mixin UserService {
   // ///   static final instance = ReactiveNotifier<UserViewModel>(() => UserViewModel());
-  // ///   
+  // ///
   // ///   static void logout() {
   // ///     instance.recreate(); // Fresh UserViewModel with clean state
   // ///   }
@@ -942,7 +952,6 @@ Count: $removedCount
   // void recreate() {
   //   // Implementation pending - needs to handle ViewModel initialization properly
   // }
-
 
   @override
   void dispose() {
@@ -963,7 +972,7 @@ let ViewModel handle disposal via _handleViewModelDisposal().
     if (hasListeners) {
       stopListening();
     }
-    
+
     // 2. If notifier is a ViewModel/AsyncViewModel, dispose it (but avoid circular calls)
     if (notifier is ViewModel || notifier is AsyncViewModelImpl) {
       // Only dispose if the ViewModel hasn't already called dispose
@@ -971,7 +980,8 @@ let ViewModel handle disposal via _handleViewModelDisposal().
       try {
         if (notifier is ViewModel && !(notifier as ViewModel).isDisposed) {
           (notifier as ViewModel).dispose();
-        } else if (notifier is AsyncViewModelImpl && !(notifier as AsyncViewModelImpl).isDisposed) {
+        } else if (notifier is AsyncViewModelImpl &&
+            !(notifier as AsyncViewModelImpl).isDisposed) {
           (notifier as AsyncViewModelImpl).dispose();
         }
       } catch (e) {

@@ -22,3 +22,11 @@ export 'package:reactive_notifier/src/notifier/reactive_notifier_viewmodel.dart'
 /// Export ViewModelImpl
 export 'package:reactive_notifier/src/viewmodel/viewmodel_impl.dart';
 export 'package:reactive_notifier/src/viewmodel/async_viewmodel_impl.dart';
+
+/// Export ReactiveContext functionality
+export 'package:reactive_notifier/src/context/reactive_context_extensions.dart';
+export 'package:reactive_notifier/src/context/reactive_context_preservation.dart';
+
+/// Export ReactiveContext optimizer widget
+export 'package:reactive_notifier/src/context/reactive_context_enhanced.dart'
+    show ReactiveContextOptimizer;

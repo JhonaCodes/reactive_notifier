@@ -1,3 +1,56 @@
+# 2.11.0
+## 🚀 ReactiveContext - Clean Global State Access
+
+### 🎯 New Features
+- **ReactiveContext API**: Clean, intuitive access to global reactive state via `context.lang.name`
+- **Advanced Widget Preservation**: Enhanced `.keep()` system with automatic key management
+- **Type-Specific Rebuilds**: Eliminates cross-rebuilds problem - only relevant widgets rebuild
+- **Generic API Access**: Multiple ways to access state (`context<T>()`, `getByKey<T>()`)
+- **Performance Optimization**: `ReactiveContextOptimizer` widget for maximum performance
+- **Auto-Registration**: Transparent notifier registration and lifecycle management
+
+### 🛠️ ReactiveContext Components
+- **Extension Methods**: Create clean APIs like `context.theme.isDark`
+- **Widget Preservation**: `widget.keep()`, `context.keep()`, `context.keepAll()`
+- **Batch Operations**: Preserve multiple widgets with single operation
+- **Debug Tools**: Comprehensive debugging and monitoring capabilities
+- **Memory Management**: Automatic cleanup with LRU cache and intelligent key generation
+
+### 🔧 API Encapsulation
+- **Protected Internal APIs**: Internal classes properly hidden with `@protected`
+- **Clean Public API**: Only developer-facing APIs exported from main library
+- **Selective Exports**: `ReactiveContextOptimizer` specifically exported for performance optimization
+
+### 📚 Documentation
+- **Complete ReactiveContext Guide**: Comprehensive documentation with examples
+- **Dispose and Recreation Guide**: Memory management and lifecycle control
+- **Migration Guides**: Moving from ReactiveBuilder to ReactiveContext
+- **Best Practices**: When to use ReactiveContext vs ReactiveBuilder
+
+### ⚠️ Important Notes
+- **ReactiveContext is for global state**: Language, theme, user preferences
+- **ReactiveBuilder remains recommended**: For granular state management and business logic
+- **No breaking changes**: Fully backward compatible with existing code
+
+### 🎨 Usage Examples
+```dart
+// Clean extension API
+extension AppContext on BuildContext {
+  MyLang get lang => getReactiveState(LanguageService.instance);
+  MyTheme get theme => getReactiveState(ThemeService.instance);
+}
+
+// Widget preservation
+ExpensiveWidget().keep('key')
+context.keep(widget, 'key')
+
+// Performance optimization
+ReactiveContextOptimizer(
+  forceInheritedFor: [LanguageService.instance, ThemeService.instance],
+  child: MyApp(),
+)
+```
+
 # 2.10.6
 - `README.md` update readme.
 

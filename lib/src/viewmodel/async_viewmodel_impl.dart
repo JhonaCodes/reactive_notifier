@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 import 'package:reactive_notifier/src/helper/helper_notifier.dart';
-import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
 ///
@@ -16,7 +15,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   AsyncState<T> _state;
   late bool loadOnInit;
   bool _disposed = false;
-  
+
   /// Public getter to check if AsyncViewModel is disposed
   /// Used by ReactiveNotifier to avoid circular dispose calls
   bool get isDisposed => _disposed;
@@ -505,20 +504,20 @@ HasInitialized: $hasInitializedListenerExecution
 
     // 1. Stop internal listenVM() connections to other ViewModels/AsyncViewModels
     stopListeningVM();
-    
+
     // 2. Remove all external listeners registered via setupListeners()
     removeListeners();
-    
+
     // 3. Clear async state to help GC
     _state = AsyncState.initial();
-    
+
     // 4. Reset initialization flags
     hasInitializedListenerExecution = false;
     loadOnInit = true;
-    
-    // 5. Mark as disposed 
+
+    // 5. Mark as disposed
     _disposed = true;
-    
+
     // 6. Notify ReactiveNotifier to remove this AsyncViewModel from global registry
     _notifyReactiveNotifierDisposal();
 
@@ -537,7 +536,7 @@ ReactiveNotifier cleanup: Requested
     // 6. Call ChangeNotifier dispose to remove all Flutter listeners
     super.dispose();
   }
-  
+
   /// Notifies any containing ReactiveNotifier that this AsyncViewModel is being disposed
   /// This allows ReactiveNotifier to clean itself from the global registry
   void _notifyReactiveNotifierDisposal() {

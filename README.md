@@ -29,6 +29,10 @@ A flexible, elegant, and secure tool for state management in Flutter. Designed w
 - 🧹 Full lifecycle control with state cleaning
 - 🔍 Comprehensive state tracking
 - 📊 Granular state update control
+- 📱 **ReactiveContext: Clean context-based access with `context.lang.name`**
+- 🔄 **Widget preservation system with `.keep()` extension methods**
+- 🎯 **Generic API with `context<T>()` and `context.getByKey<T>('key')`**
+- ⚡ **Type-specific rebuilds to prevent cross-rebuilds**
 
 ![performance_test](https://github.com/user-attachments/assets/0dc568d2-7e0a-46e5-8ad6-1fec92b772be)
 
@@ -38,7 +42,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  reactive_notifier: ^2.10.6
+  reactive_notifier: ^2.11.0
 ```
 
 ## Core Concepts
@@ -51,6 +55,117 @@ ReactiveNotifier follows a unique "create once, reuse always" approach to state 
 - Organization should be done through mixins, not global variables
 
 ## Quick Start
+
+### New: ReactiveContext - Clean API for Global State
+
+ReactiveContext provides a clean, intuitive way to access **global reactive state** directly from BuildContext without verbose API calls. This is recommended for **specific use cases** like language, theme, font settings, and other global app state that needs to be accessed from multiple widgets.
+
+**When to use ReactiveContext:**
+- Global app state (language, theme, user preferences)
+- State accessed from many different widgets
+- Avoiding duplicate ReactiveBuilder code across the app
+
+**When to use ReactiveBuilder:**
+- Granular state management
+- Component-specific state
+- State that requires precise rebuild control
+- Complex state logic with business rules
+
+```dart
+// Define your state models
+class MyLang {
+  final String name;
+  final String code;
+  
+  MyLang(this.name, this.code);
+}
+
+class MyTheme {
+  final bool isDark;
+  final Color primaryColor;
+  
+  MyTheme(this.isDark, this.primaryColor);
+}
+
+// Create services with ReactiveNotifier
+mixin LanguageService {
+  static final ReactiveNotifier<MyLang> instance = ReactiveNotifier<MyLang>(
+    () => MyLang('English', 'en'),
+  );
+  
+  static void switchLanguage(String name, String code) {
+    instance.updateState(MyLang(name, code));
+  }
+}
+
+mixin ThemeService {
+  static final ReactiveNotifier<MyTheme> instance = ReactiveNotifier<MyTheme>(
+    () => MyTheme(false, Colors.blue),
+  );
+  
+  static void toggleTheme() {
+    final current = instance.notifier;
+    instance.updateState(MyTheme(!current.isDark, current.primaryColor));
+  }
+}
+
+// Create clean extension methods for your context
+extension LanguageContext on BuildContext {
+  MyLang get lang => getReactiveState(LanguageService.instance);
+}
+
+extension ThemeContext on BuildContext {
+  MyTheme get theme => getReactiveState(ThemeService.instance);
+}
+
+// Use in your widgets with clean API
+class MyWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Clean, intuitive access to reactive state
+        Text('Language: ${context.lang.name}'),
+        Text('Theme: ${context.theme.isDark ? 'Dark' : 'Light'}'),
+        
+        // Widget preservation with .keep() extension
+        ExpensiveWidget().keep('expensive_key'),
+        
+        // Context-aware preservation
+        context.keep(AnotherWidget(), 'another_key'),
+        
+        // Buttons to change state
+        ElevatedButton(
+          onPressed: () => LanguageService.switchLanguage('Español', 'es'),
+          child: Text('Switch to Spanish'),
+        ),
+        ElevatedButton(
+          onPressed: ThemeService.toggleTheme,
+          child: Text('Toggle Theme'),
+        ),
+      ],
+    );
+  }
+}
+
+// Generic API for dynamic access
+class GenericWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Access by type
+        Text('Lang: ${context<MyLang>().name}'),
+        Text('Theme: ${context<MyTheme>().isDark}'),
+        
+        // Access by key
+        Text('Lang: ${context.getByKey<MyLang>('lang').name}'),
+        Text('Theme: ${context.getByKey<MyTheme>('theme').isDark}'),
+      ],
+    );
+  }
+}
+```
 
 ### Using ViewModel with ReactiveViewModelBuilder
 
@@ -973,9 +1088,93 @@ ReactiveFutureBuilder<Product>(
 
 This simple implementation provides a significant UX improvement with minimal added complexity.
 
-## Performance Optimization with keep
+## ReactiveContext Performance and Widget Preservation
 
-The `keep` function is a powerful way to prevent unnecessary rebuilds, even for complex widgets containing other reactive components:
+ReactiveContext provides advanced performance optimization through its widget preservation system and type-specific rebuilds.
+
+### Widget Preservation with .keep() Extension
+
+The enhanced widget preservation system provides multiple intuitive ways to prevent unnecessary rebuilds:
+
+```dart
+class MyWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // This rebuilds when language changes
+        Text('Language: ${context.lang.name}'),
+        
+        // Widget preservation with .keep() extension
+        ExpensiveWidget().keep('expensive_key'),
+        
+        // Context-aware preservation
+        context.keep(AnotherWidget(), 'another_key'),
+        
+        // Batch preservation
+        ...context.keepAll([
+          Widget1(),
+          Widget2(),
+          Widget3(),
+        ], 'batch_key'),
+        
+        // Preserve with reactive state dependency
+        context.preserveReactive(
+          ComplexWidget(data: someData),
+          ThemeService.instance,
+          'reactive_preserved'
+        ),
+        
+        // Preserve with builder pattern
+        context.preserveReactiveBuilder<MyTheme>(
+          ThemeService.instance,
+          (theme) => StyledWidget(theme: theme),
+          'themed_widget'
+        ),
+      ],
+    );
+  }
+}
+```
+
+### Type-Specific Rebuilds
+
+Unlike traditional state management where all widgets rebuild when any state changes, ReactiveContext implements type-specific rebuilds:
+
+```dart
+// Only widgets using MyLang will rebuild when language changes
+Text('Language: ${context.lang.name}'),
+
+// Only widgets using MyTheme will rebuild when theme changes  
+Container(color: context.theme.primaryColor),
+
+// Only widgets using CounterState will rebuild when counter changes
+Text('Count: ${context.counter.value}'),
+```
+
+This prevents the common "cross-rebuilds" problem where changing the theme would unnecessarily rebuild language-related widgets.
+
+### Performance Optimization with ReactiveOptimizer
+
+For maximum performance, use `ReactiveOptimizer` to force InheritedWidget strategy:
+
+```dart
+MaterialApp(
+  home: ReactiveOptimizer(
+    // Force InheritedWidget strategy for optimal performance
+    forceInheritedFor: [
+      LanguageService.instance,
+      ThemeService.instance,
+      CounterService.instance,
+    ],
+    child: MyHomePage(),
+  ),
+)
+```
+
+### Traditional keep() Function
+
+The traditional `keep` function is still available for ReactiveBuilder and other reactive components:
 
 ```dart
 ReactiveBuilder<int>(
@@ -1025,17 +1224,38 @@ ReactiveBuilder<int>(
 )
 ```
 
-Key points about `keep`:
+### Debug and Monitoring
 
-1. Using `keep` prevents widgets from rebuilding even when their parent rebuilds
-2. Nested ReactiveBuilder widgets inside `keep` only rebuild when their own state changes
-3. Use `keep` for:
-    - Expensive widgets that don't depend on the current state
-    - Other ReactiveBuilders that should update independently
-    - Widgets with their own state management
-    - Widgets that access the current state but don't need to rebuild when it changes
+ReactiveContext provides extensive debugging capabilities:
 
-Note that there's no need to use `keep` on `const` widgets as they're already optimized by Flutter.
+```dart
+// Print debug information
+context.debugReactiveContext();
+
+// Get debug statistics
+final debugInfo = context.getReactiveDebugInfo();
+print('Active notifiers: ${debugInfo['activeNotifiers']}');
+
+// Clean up resources
+context.cleanupReactiveContext();
+```
+### Key Points About Widget Preservation
+
+1. **Extension Method Preservation**: Use `widget.keep('key')` for direct widget preservation
+2. **Context-Aware Preservation**: Use `context.keep(widget, 'key')` for dynamic scenarios
+3. **Batch Preservation**: Use `context.keepAll([widgets], 'key')` for multiple widgets
+4. **Reactive Preservation**: Use `context.preserveReactive()` for state-dependent widgets
+5. **Automatic Key Management**: Keys are auto-generated if not provided
+6. **Memory Management**: Built-in cache cleanup prevents memory leaks
+7. **Type-Specific Rebuilds**: Only widgets using changed state types rebuild
+8. **Performance Monitoring**: Built-in debug statistics and logging
+
+Benefits of ReactiveContext widget preservation:
+- **Intuitive API**: Clean extension methods instead of manual wrappers
+- **Better Performance**: Type-specific rebuilds prevent unnecessary updates
+- **Automatic Management**: Smart key generation and cache cleanup
+- **Flexible Usage**: Multiple preservation strategies for different use cases
+- **Debug Support**: Built-in monitoring and statistics
 
 ## Debugging and Monitoring
 
@@ -1461,6 +1681,25 @@ class OrderRepositoryImpl {
 ```
 
 The main advantage of this approach is that it keeps business logic and cross-module communication in the appropriate layers (ViewModel, Repository), leaving the UI clean and focused solely on presentation. No complex event systems, or additional controllers are required.
+
+## Advanced Guides
+
+For detailed information about advanced features and patterns, check out our comprehensive guides:
+
+### 📚 **Core Documentation**
+- **[ReactiveContext Guide](doc/reactive_context_guide_en.md)** - Complete guide to clean context-based state access
+- **[Dispose and Recreation Guide](doc/dispose-and-recreation.md)** - Memory management and instance lifecycle control
+- **[Architecture Guide](doc/architecture.md)** - Recommended patterns and project structure
+
+### 🔧 **Feature Guides**
+- **[Widget Preservation](doc/reactive_context_guide_en.md#widget-preservation-system)** - Advanced `.keep()` system for performance optimization
+- **[Cross-ViewModel Communication](README.md#cross-viewmodel-reactive-communication)** - Reactive communication patterns between ViewModels
+- **[Testing with ReactiveNotifier](README.md#testing-with-reactivenotifier)** - Complete testing strategies and patterns
+
+### 📖 **Quick Reference**
+- **[When to use ReactiveContext vs ReactiveBuilder](doc/reactive_context_guide_en.md#when-to-use-reactivecontext)** - Decision guide for choosing the right approach
+- **[Performance Best Practices](doc/reactive_context_guide_en.md#performance-optimization)** - Optimization techniques and patterns
+- **[Migration Guide](doc/reactive_context_guide_en.md#migration-guide)** - Moving from ReactiveBuilder to ReactiveContext
 
 ## Examples
 

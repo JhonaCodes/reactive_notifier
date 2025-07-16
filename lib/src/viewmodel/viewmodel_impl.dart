@@ -18,7 +18,7 @@ abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier {
   T _data;
   bool _initialized = false;
   bool _disposed = false;
-  
+
   /// Public getter to check if ViewModel is disposed
   /// Used by ReactiveNotifier to avoid circular dispose calls
   bool get isDisposed => _disposed;
@@ -292,7 +292,7 @@ New state hash: ${_data.hashCode}
   @override
   void dispose() {
     if (_disposed) return;
-    
+
     assert(() {
       log('''
 🗑️ Starting ViewModel<${T.toString()}> disposal
@@ -306,10 +306,10 @@ Current updates: $_updateCount
 
     // 1. Remove all external listeners registered via setupListeners()
     removeListeners();
-    
+
     // 2. Stop internal listenVM() connections to other ViewModels
     stopListeningVM();
-    
+
     // 3. Notify ReactiveNotifier to remove this ViewModel from global registry
     _notifyReactiveNotifierDisposal();
 
@@ -337,7 +337,7 @@ ReactiveNotifier cleanup: Requested
     // 5. Call ChangeNotifier dispose to remove all Flutter listeners
     super.dispose();
   }
-  
+
   /// Notifies any containing ReactiveNotifier that this ViewModel is being disposed
   /// This allows ReactiveNotifier to clean itself from the global registry
   void _notifyReactiveNotifierDisposal() {
