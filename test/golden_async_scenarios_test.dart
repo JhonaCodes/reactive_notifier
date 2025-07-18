@@ -5,7 +5,7 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 import 'config/alchemist_config.dart';
 
 /// Async Scenarios Golden Tests
-/// 
+///
 /// These tests demonstrate how ReactiveNotifier handles asynchronous operations
 /// in real-world scenarios:
 /// 1. API Data Loading with different states
@@ -14,7 +14,7 @@ import 'config/alchemist_config.dart';
 /// 4. Network Connectivity Status
 /// 5. Search Results with Debouncing
 /// 6. Multi-step Forms with Validation
-/// 
+///
 /// Each test shows practical async patterns using AsyncViewModelImpl.
 
 // Models for async scenarios
@@ -61,7 +61,8 @@ class UploadProgress {
     required this.status,
   });
 
-  double get percentage => totalBytes > 0 ? (uploadedBytes / totalBytes) * 100 : 0;
+  double get percentage =>
+      totalBytes > 0 ? (uploadedBytes / totalBytes) * 100 : 0;
   bool get isComplete => uploadedBytes >= totalBytes;
 }
 
@@ -108,7 +109,7 @@ class ProductsViewModel extends AsyncViewModelImpl<List<Product>> {
   Future<void> loadPage(int page) async {
     loadingState();
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     if (page > 3) {
       errorState('No more products available');
       return;
@@ -162,7 +163,7 @@ class FileUploadViewModel extends AsyncViewModelImpl<UploadProgress> {
 
   Future<void> startUpload(String fileName, int totalBytes) async {
     loadingState();
-    
+
     for (int i = 0; i <= totalBytes; i += (totalBytes / 10).round()) {
       await Future.delayed(const Duration(milliseconds: 100));
       updateState(UploadProgress(
@@ -206,10 +207,10 @@ class SearchViewModel extends AsyncViewModelImpl<SearchResult> {
     }
 
     loadingState();
-    
+
     // Simulate API delay
     await Future.delayed(const Duration(milliseconds: 300));
-    
+
     // Simulate no results
     if (query.toLowerCase() == 'xyz') {
       updateState(SearchResult(
@@ -292,23 +293,23 @@ class NetworkStatusViewModel extends AsyncViewModelImpl<NetworkStatus> {
 
 // Service classes
 mixin ProductService {
-  static final ReactiveNotifier<ProductsViewModel> products = 
-    ReactiveNotifier<ProductsViewModel>(() => ProductsViewModel());
+  static final ReactiveNotifier<ProductsViewModel> products =
+      ReactiveNotifier<ProductsViewModel>(() => ProductsViewModel());
 }
 
 mixin FileUploadService {
-  static final ReactiveNotifier<FileUploadViewModel> upload = 
-    ReactiveNotifier<FileUploadViewModel>(() => FileUploadViewModel());
+  static final ReactiveNotifier<FileUploadViewModel> upload =
+      ReactiveNotifier<FileUploadViewModel>(() => FileUploadViewModel());
 }
 
 mixin SearchService {
-  static final ReactiveNotifier<SearchViewModel> search = 
-    ReactiveNotifier<SearchViewModel>(() => SearchViewModel());
+  static final ReactiveNotifier<SearchViewModel> search =
+      ReactiveNotifier<SearchViewModel>(() => SearchViewModel());
 }
 
 mixin NetworkService {
-  static final ReactiveNotifier<NetworkStatusViewModel> status = 
-    ReactiveNotifier<NetworkStatusViewModel>(() => NetworkStatusViewModel());
+  static final ReactiveNotifier<NetworkStatusViewModel> status =
+      ReactiveNotifier<NetworkStatusViewModel>(() => NetworkStatusViewModel());
 }
 
 // Widget components
@@ -544,7 +545,8 @@ class SearchWidget extends StatelessWidget {
                     child: const Icon(Icons.image, color: Colors.grey),
                   ),
                   title: Text(product['name'] as String),
-                  subtitle: Text('\$${(product['price'] as double).toStringAsFixed(2)}'),
+                  subtitle: Text(
+                      '\$${(product['price'] as double).toStringAsFixed(2)}'),
                   trailing: const Icon(Icons.chevron_right),
                 ),
               );
@@ -659,7 +661,8 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: '1. Initial State',
@@ -669,7 +672,8 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Reset to initial state
-                        ProductService.products.updateSilently(ProductsViewModel());
+                        ProductService.products
+                            .updateSilently(ProductsViewModel());
                         return const ProductListWidget();
                       },
                     ),
@@ -681,7 +685,8 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     appBar: AppBar(title: const Text('Products - Loading')),
-                    body: ReactiveAsyncBuilder<ProductsViewModel, List<Product>>(
+                    body:
+                        ReactiveAsyncBuilder<ProductsViewModel, List<Product>>(
                       notifier: ProductService.products.notifier,
                       onLoading: () => const Center(
                         child: Column(
@@ -751,7 +756,9 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Trigger error state
-                        ProductService.products.notifier.transformStateSilently((_) => AsyncState.error('Network connection failed. Please check your internet connection and try again.'));
+                        ProductService.products.notifier.transformStateSilently(
+                            (_) => AsyncState.error(
+                                'Network connection failed. Please check your internet connection and try again.'));
                         return const ProductListWidget();
                       },
                     ),
@@ -771,7 +778,8 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: '1. Ready to Upload',
@@ -781,7 +789,8 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set initial ready state
-                        FileUploadService.upload.notifier.updateSilently(UploadProgress(
+                        FileUploadService.upload.notifier
+                            .updateSilently(UploadProgress(
                           fileName: 'presentation.pptx',
                           totalBytes: 2048000,
                           uploadedBytes: 0,
@@ -801,7 +810,8 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set starting upload state
-                        FileUploadService.upload.notifier.updateSilently(UploadProgress(
+                        FileUploadService.upload.notifier
+                            .updateSilently(UploadProgress(
                           fileName: 'presentation.pptx',
                           totalBytes: 2048000,
                           uploadedBytes: 204800,
@@ -821,7 +831,8 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set mid-upload progress
-                        FileUploadService.upload.notifier.updateSilently(UploadProgress(
+                        FileUploadService.upload.notifier
+                            .updateSilently(UploadProgress(
                           fileName: 'presentation.pptx',
                           totalBytes: 2048000,
                           uploadedBytes: 1433600,
@@ -841,7 +852,8 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set completed upload
-                        FileUploadService.upload.notifier.updateSilently(UploadProgress(
+                        FileUploadService.upload.notifier
+                            .updateSilently(UploadProgress(
                           fileName: 'presentation.pptx',
                           totalBytes: 2048000,
                           uploadedBytes: 2048000,
@@ -866,7 +878,8 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: '1. Empty Search',
@@ -876,7 +889,8 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set empty search state
-                        SearchService.search.notifier.updateSilently(SearchResult(
+                        SearchService.search.notifier
+                            .updateSilently(SearchResult(
                           products: [],
                           query: '',
                           totalResults: 0,
@@ -896,7 +910,8 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set loading state
-                        SearchService.search.notifier.transformStateSilently((_) => AsyncState.loading());
+                        SearchService.search.notifier.transformStateSilently(
+                            (_) => AsyncState.loading());
                         return const SearchWidget();
                       },
                     ),
@@ -911,7 +926,8 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set search results
-                        SearchService.search.notifier.updateSilently(SearchResult(
+                        SearchService.search.notifier
+                            .updateSilently(SearchResult(
                           products: [
                             Product(
                               id: '1',
@@ -956,7 +972,8 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set no results state
-                        SearchService.search.notifier.updateSilently(SearchResult(
+                        SearchService.search.notifier
+                            .updateSilently(SearchResult(
                           products: [],
                           query: 'nonexistent123',
                           totalResults: 0,
@@ -981,7 +998,8 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: '1. Strong WiFi',
@@ -991,7 +1009,8 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set strong WiFi connection
-                        NetworkService.status.notifier.updateSilently(NetworkStatus(
+                        NetworkService.status.notifier
+                            .updateSilently(NetworkStatus(
                           isConnected: true,
                           connectionType: 'WiFi',
                           signalStrength: 0.95,
@@ -1010,7 +1029,8 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set weak mobile connection
-                        NetworkService.status.notifier.updateSilently(NetworkStatus(
+                        NetworkService.status.notifier
+                            .updateSilently(NetworkStatus(
                           isConnected: true,
                           connectionType: 'Mobile Data',
                           signalStrength: 0.25,
@@ -1029,7 +1049,8 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set loading state
-                        NetworkService.status.notifier.transformStateSilently((_) => AsyncState.loading());
+                        NetworkService.status.notifier.transformStateSilently(
+                            (_) => AsyncState.loading());
                         return const Center(child: NetworkStatusWidget());
                       },
                     ),
@@ -1044,7 +1065,8 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set disconnected state
-                        NetworkService.status.notifier.updateSilently(NetworkStatus(
+                        NetworkService.status.notifier
+                            .updateSilently(NetworkStatus(
                           isConnected: false,
                           connectionType: 'None',
                           signalStrength: 0.0,

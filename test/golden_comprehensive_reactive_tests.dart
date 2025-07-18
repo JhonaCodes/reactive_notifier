@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:alchemist/alchemist.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,17 +6,17 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 import 'config/alchemist_config.dart';
 
 /// Comprehensive Golden Tests for ReactiveNotifier Visual Regression Testing
-/// 
+///
 /// This test suite provides visual regression testing for ReactiveNotifier components,
 /// verifying that state updates and rebuilds render correctly across different scenarios:
-/// 
+///
 /// 1. ReactiveBuilder state updates and partial rebuilds
 /// 2. ReactiveViewModelBuilder with complex state objects
 /// 3. ReactiveAsyncBuilder with loading, success, and error states
 /// 4. Cross-component communication and reactive chains
 /// 5. Performance scenarios with rapid updates
 /// 6. Error handling and edge cases
-/// 
+///
 /// Each test captures golden images that serve as visual baselines for detecting
 /// unintended UI changes during refactoring or feature development.
 
@@ -31,7 +30,8 @@ void main() {
     // Test models for complex state scenarios
     final counterState = ReactiveNotifier<int>(() => 0);
     final userState = ReactiveNotifier<UserViewModel>(() => UserViewModel());
-    final asyncDataState = ReactiveNotifier<DataAsyncViewModel>(() => DataAsyncViewModel());
+    final asyncDataState =
+        ReactiveNotifier<DataAsyncViewModel>(() => DataAsyncViewModel());
 
     group('ReactiveBuilder State Updates', () {
       goldenTest(
@@ -39,7 +39,7 @@ void main() {
         fileName: 'reactive_builder_initial_state',
         constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+          scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
           columns: 1,
           children: [
             GoldenTestScenario(
@@ -54,7 +54,8 @@ void main() {
                         children: [
                           Text(
                             'Counter Value: $value',
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                                fontSize: 24, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 16),
                           keep(const Text(
@@ -66,12 +67,14 @@ void main() {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               ElevatedButton(
-                                onPressed: () => counterState.updateState(value - 1),
+                                onPressed: () =>
+                                    counterState.updateState(value - 1),
                                 child: const Text('-'),
                               ),
                               const SizedBox(width: 16),
                               ElevatedButton(
-                                onPressed: () => counterState.updateState(value + 1),
+                                onPressed: () =>
+                                    counterState.updateState(value + 1),
                                 child: const Text('+'),
                               ),
                             ],
@@ -92,7 +95,7 @@ void main() {
         fileName: 'reactive_builder_updated_state',
         constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+          scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
           children: [
             GoldenTestScenario(
               name: 'Updated Counter State',
@@ -110,7 +113,7 @@ void main() {
                           counterState.updateState(15);
                         });
                       }
-                      
+
                       return Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -157,7 +160,7 @@ void main() {
         fileName: 'reactive_builder_silent_updates',
         constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+          scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
           children: [
             GoldenTestScenario(
               name: 'Silent Update Behavior',
@@ -170,21 +173,23 @@ void main() {
                       if (value == 0) {
                         Future.microtask(() {
                           counterState.updateSilently(100); // Silent update
-                          counterState.updateState(25);     // Normal update
+                          counterState.updateState(25); // Normal update
                         });
                       }
-                      
+
                       return Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             'Displayed Value: $value',
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                                fontSize: 24, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 16),
                           Text(
                             'Actual Internal Value: ${counterState.notifier}',
-                            style: const TextStyle(fontSize: 16, color: Colors.grey),
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.grey),
                           ),
                           const SizedBox(height: 16),
                           Container(
@@ -217,7 +222,7 @@ void main() {
         fileName: 'reactive_viewmodel_user_state',
         constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+          scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
           children: [
             GoldenTestScenario(
               name: 'User Profile State',
@@ -241,22 +246,29 @@ void main() {
                                   radius: 30,
                                   backgroundColor: Colors.blue,
                                   child: Text(
-                                    user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-                                    style: const TextStyle(fontSize: 24, color: Colors.white),
+                                    user.name.isNotEmpty
+                                        ? user.name[0].toUpperCase()
+                                        : '?',
+                                    style: const TextStyle(
+                                        fontSize: 24, color: Colors.white),
                                   ),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         user.name,
-                                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold),
                                       ),
                                       Text(
                                         user.email,
-                                        style: const TextStyle(fontSize: 16, color: Colors.grey),
+                                        style: const TextStyle(
+                                            fontSize: 16, color: Colors.grey),
                                       ),
                                     ],
                                   ),
@@ -272,29 +284,41 @@ void main() {
                                   children: [
                                     const Text(
                                       'Profile Statistics',
-                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                     const SizedBox(height: 12),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         const Text('Login Count:'),
                                         Text('${user.loginCount}'),
                                       ],
                                     ),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         const Text('Status:'),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color: user.isActive ? Colors.green : Colors.red,
-                                            borderRadius: BorderRadius.circular(4),
+                                            color: user.isActive
+                                                ? Colors.green
+                                                : Colors.red,
+                                            borderRadius:
+                                                BorderRadius.circular(4),
                                           ),
                                           child: Text(
-                                            user.isActive ? 'Active' : 'Inactive',
-                                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                                            user.isActive
+                                                ? 'Active'
+                                                : 'Inactive',
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12),
                                           ),
                                         ),
                                       ],
@@ -309,7 +333,9 @@ void main() {
                                 padding: EdgeInsets.all(16.0),
                                 child: Text(
                                   'This section never rebuilds\neven when user state changes',
-                                  style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontStyle: FontStyle.italic),
                                 ),
                               ),
                             )),
@@ -330,7 +356,7 @@ void main() {
         fileName: 'reactive_viewmodel_updated_user',
         constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+          scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
           children: [
             GoldenTestScenario(
               name: 'Updated User Profile',
@@ -354,7 +380,7 @@ void main() {
                           );
                         });
                       }
-                      
+
                       return Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
@@ -364,24 +390,32 @@ void main() {
                               children: [
                                 CircleAvatar(
                                   radius: 30,
-                                  backgroundColor: user.isActive ? Colors.green : Colors.red,
+                                  backgroundColor:
+                                      user.isActive ? Colors.green : Colors.red,
                                   child: Text(
-                                    user.name.isNotEmpty ? user.name[0].toUpperCase() : '?',
-                                    style: const TextStyle(fontSize: 24, color: Colors.white),
+                                    user.name.isNotEmpty
+                                        ? user.name[0].toUpperCase()
+                                        : '?',
+                                    style: const TextStyle(
+                                        fontSize: 24, color: Colors.white),
                                   ),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         user.name,
-                                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold),
                                       ),
                                       Text(
                                         user.email,
-                                        style: const TextStyle(fontSize: 16, color: Colors.grey),
+                                        style: const TextStyle(
+                                            fontSize: 16, color: Colors.grey),
                                       ),
                                     ],
                                   ),
@@ -397,29 +431,41 @@ void main() {
                                   children: [
                                     const Text(
                                       'Profile Statistics',
-                                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                     const SizedBox(height: 12),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         const Text('Login Count:'),
                                         Text('${user.loginCount}'),
                                       ],
                                     ),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         const Text('Status:'),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color: user.isActive ? Colors.green : Colors.red,
-                                            borderRadius: BorderRadius.circular(4),
+                                            color: user.isActive
+                                                ? Colors.green
+                                                : Colors.red,
+                                            borderRadius:
+                                                BorderRadius.circular(4),
                                           ),
                                           child: Text(
-                                            user.isActive ? 'Active' : 'Inactive',
-                                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                                            user.isActive
+                                                ? 'Active'
+                                                : 'Inactive',
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12),
                                           ),
                                         ),
                                       ],
@@ -447,7 +493,7 @@ void main() {
         fileName: 'reactive_async_loading_state',
         constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+          scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
           children: [
             GoldenTestScenario(
               name: 'Loading State',
@@ -488,7 +534,8 @@ void main() {
                           const SizedBox(height: 16),
                           Text(
                             'Error: $error',
-                            style: const TextStyle(fontSize: 16, color: Colors.red),
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.red),
                           ),
                         ],
                       ),
@@ -506,7 +553,7 @@ void main() {
         fileName: 'reactive_async_success_state',
         constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+          scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
           children: [
             GoldenTestScenario(
               name: 'Success State with Data',
@@ -518,7 +565,8 @@ void main() {
                   ),
                   body: ReactiveAsyncBuilder<DataAsyncViewModel, List<String>>(
                     notifier: asyncDataState.notifier,
-                    onLoading: () => const Center(child: CircularProgressIndicator()),
+                    onLoading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     onData: (data, viewModel, keep) {
                       // Simulate loading success data
                       if (data.isEmpty) {
@@ -532,7 +580,7 @@ void main() {
                           ]);
                         });
                       }
-                      
+
                       return Column(
                         children: [
                           Container(
@@ -540,11 +588,14 @@ void main() {
                             color: Colors.green[50],
                             child: Row(
                               children: [
-                                const Icon(Icons.check_circle, color: Colors.green),
+                                const Icon(Icons.check_circle,
+                                    color: Colors.green),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Data loaded successfully (${data.length} items)',
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
@@ -553,14 +604,16 @@ void main() {
                             child: ListView.builder(
                               itemCount: data.length,
                               itemBuilder: (context, index) => Card(
-                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 4),
                                 child: ListTile(
                                   leading: CircleAvatar(
                                     backgroundColor: Colors.green,
                                     child: Text('${index + 1}'),
                                   ),
                                   title: Text(data[index]),
-                                  subtitle: Text('Loaded at ${DateTime.now().toString().substring(11, 19)}'),
+                                  subtitle: Text(
+                                      'Loaded at ${DateTime.now().toString().substring(11, 19)}'),
                                   trailing: const Icon(Icons.arrow_forward_ios),
                                 ),
                               ),
@@ -592,7 +645,7 @@ void main() {
         fileName: 'reactive_async_error_state',
         constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+          scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
           children: [
             GoldenTestScenario(
               name: 'Error State',
@@ -604,7 +657,8 @@ void main() {
                   ),
                   body: ReactiveAsyncBuilder<DataAsyncViewModel, List<String>>(
                     notifier: asyncDataState.notifier,
-                    onLoading: () => const Center(child: CircularProgressIndicator()),
+                    onLoading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     onData: (data, viewModel, keep) => ListView.builder(
                       itemCount: data.length,
                       itemBuilder: (context, index) => ListTile(
@@ -615,31 +669,36 @@ void main() {
                       // Simulate error state
                       if (error.toString().isEmpty) {
                         Future.microtask(() {
-                          asyncDataState.notifier.simulateError('Network connection failed');
+                          asyncDataState.notifier
+                              .simulateError('Network connection failed');
                         });
                       }
-                      
+
                       return Center(
                         child: Padding(
                           padding: const EdgeInsets.all(24.0),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                              const Icon(Icons.error_outline,
+                                  color: Colors.red, size: 64),
                               const SizedBox(height: 16),
                               const Text(
                                 'Oops! Something went wrong',
-                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 'Error: $error',
-                                style: const TextStyle(fontSize: 16, color: Colors.red),
+                                style: const TextStyle(
+                                    fontSize: 16, color: Colors.red),
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 24),
                               ElevatedButton.icon(
-                                onPressed: () => asyncDataState.notifier.reload(),
+                                onPressed: () =>
+                                    asyncDataState.notifier.reload(),
                                 icon: const Icon(Icons.refresh),
                                 label: const Text('Retry'),
                                 style: ElevatedButton.styleFrom(
@@ -667,7 +726,7 @@ void main() {
         fileName: 'cross_component_communication',
         constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+          scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
           children: [
             GoldenTestScenario(
               name: 'Reactive Communication',
@@ -692,7 +751,9 @@ void main() {
                                 children: [
                                   const Text(
                                     'Counter Component',
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
@@ -716,7 +777,8 @@ void main() {
                       ),
                       // User component that reacts to counter changes
                       Expanded(
-                        child: ReactiveViewModelBuilder<UserViewModel, UserModel>(
+                        child:
+                            ReactiveViewModelBuilder<UserViewModel, UserModel>(
                           viewmodel: userState.notifier,
                           build: (user, viewmodel, keep) {
                             return Container(
@@ -727,7 +789,9 @@ void main() {
                                 children: [
                                   const Text(
                                     'User Component',
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
@@ -742,12 +806,17 @@ void main() {
                                   Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: user.isActive ? Colors.green : Colors.red,
+                                      color: user.isActive
+                                          ? Colors.green
+                                          : Colors.red,
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
-                                      user.isActive ? 'Active User' : 'Inactive User',
-                                      style: const TextStyle(color: Colors.white),
+                                      user.isActive
+                                          ? 'Active User'
+                                          : 'Inactive User',
+                                      style:
+                                          const TextStyle(color: Colors.white),
                                     ),
                                   ),
                                 ],
@@ -772,7 +841,7 @@ void main() {
         fileName: 'performance_rapid_updates',
         constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+          scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
           children: [
             GoldenTestScenario(
               name: 'Rapid Updates Performance',
@@ -793,14 +862,15 @@ void main() {
                           }
                         });
                       }
-                      
+
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Text(
                               'Performance Test',
-                              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  fontSize: 24, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -811,7 +881,8 @@ void main() {
                             LinearProgressIndicator(
                               value: value / 50.0,
                               backgroundColor: Colors.grey[300],
-                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.orange),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                  Colors.orange),
                             ),
                             const SizedBox(height: 8),
                             Text(
@@ -825,7 +896,9 @@ void main() {
                                 child: Text(
                                   'This widget survives rapid updates\nand never rebuilds',
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontStyle: FontStyle.italic),
                                 ),
                               ),
                             )),
@@ -875,12 +948,13 @@ class UserModel {
 }
 
 class UserViewModel extends ViewModel<UserModel> {
-  UserViewModel() : super(UserModel(
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    isActive: false,
-    loginCount: 0,
-  ));
+  UserViewModel()
+      : super(UserModel(
+          name: 'John Doe',
+          email: 'john.doe@example.com',
+          isActive: false,
+          loginCount: 0,
+        ));
 
   @override
   void init() {
@@ -903,9 +977,9 @@ class UserViewModel extends ViewModel<UserModel> {
 
   void incrementLoginCount() {
     transformState((current) => current.copyWith(
-      loginCount: current.loginCount + 1,
-      isActive: true,
-    ));
+          loginCount: current.loginCount + 1,
+          isActive: true,
+        ));
   }
 }
 

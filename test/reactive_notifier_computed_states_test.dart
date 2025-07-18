@@ -3,14 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 /// Tests for ReactiveNotifier computed states and derived values
-/// 
+///
 /// This test suite covers computed state capabilities of ReactiveNotifier:
 /// - Basic computed states derived from other states
 /// - Multiple dependent states and complex dependency chains
 /// - Efficient updates for computed state hierarchies
 /// - Dependency injection patterns with reactive states
 /// - Performance optimization for computed state networks
-/// 
+///
 /// These tests verify that ReactiveNotifier can handle derived state patterns
 /// where one state's value is computed from other states, creating reactive
 /// dependency chains essential for complex state management architectures.
@@ -24,10 +24,12 @@ void main() {
       test('should handle simple computed states correctly', () {
         // Setup: Create base state and computed state
         final baseState = ReactiveNotifier<int>(() => 1);
-        final computedState = ReactiveNotifier<int>(() => baseState.notifier * 2);
+        final computedState =
+            ReactiveNotifier<int>(() => baseState.notifier * 2);
 
         // Setup: Link base state to computed state
-        baseState.addListener(() => computedState.updateState(baseState.notifier * 2));
+        baseState.addListener(
+            () => computedState.updateState(baseState.notifier * 2));
 
         // Assert: Initial computed state should be correct
         expect(computedState.notifier, 2,
@@ -40,7 +42,8 @@ void main() {
         expect(baseState.notifier, 5,
             reason: 'Base state should be updated to 5');
         expect(computedState.notifier, 10,
-            reason: 'Computed state should be updated to base * 2 (5 * 2 = 10)');
+            reason:
+                'Computed state should be updated to base * 2 (5 * 2 = 10)');
       });
 
       test('should handle computed states with complex transformations', () {
@@ -86,7 +89,7 @@ void main() {
         // Setup: Conditional computed state logic
         scoreState.addListener(() {
           final score = scoreState.notifier;
-          
+
           // Grade computation
           String grade;
           if (score >= 90) {
@@ -101,13 +104,14 @@ void main() {
             grade = 'F';
           }
           gradeState.updateState(grade);
-          
+
           // Pass/fail computation
           passFailState.updateState(score >= 60);
-          
+
           // Message computation
           final status = score >= 60 ? 'PASSED' : 'FAILED';
-          messageState.updateState('Score: $score, Grade: $grade, Status: $status');
+          messageState
+              .updateState('Score: $score, Grade: $grade, Status: $status');
         });
 
         // Act: Test different score ranges
@@ -115,8 +119,10 @@ void main() {
 
         // Assert: Computed states should reflect A grade
         expect(scoreState.notifier, 95, reason: 'Score should be 95');
-        expect(gradeState.notifier, 'A', reason: 'Grade should be A for score 95');
-        expect(passFailState.notifier, true, reason: 'Should pass with score 95');
+        expect(gradeState.notifier, 'A',
+            reason: 'Grade should be A for score 95');
+        expect(passFailState.notifier, true,
+            reason: 'Should pass with score 95');
         expect(messageState.notifier, 'Score: 95, Grade: A, Status: PASSED',
             reason: 'Message should reflect A grade pass');
 
@@ -124,8 +130,10 @@ void main() {
         scoreState.updateState(45); // F grade
 
         // Assert: Computed states should reflect F grade
-        expect(gradeState.notifier, 'F', reason: 'Grade should be F for score 45');
-        expect(passFailState.notifier, false, reason: 'Should fail with score 45');
+        expect(gradeState.notifier, 'F',
+            reason: 'Grade should be F for score 45');
+        expect(passFailState.notifier, false,
+            reason: 'Should fail with score 45');
         expect(messageState.notifier, 'Score: 45, Grade: F, Status: FAILED',
             reason: 'Message should reflect F grade fail');
 
@@ -133,8 +141,10 @@ void main() {
         scoreState.updateState(60); // D grade
 
         // Assert: Computed states should reflect D grade pass
-        expect(gradeState.notifier, 'D', reason: 'Grade should be D for score 60');
-        expect(passFailState.notifier, true, reason: 'Should pass with score 60');
+        expect(gradeState.notifier, 'D',
+            reason: 'Grade should be D for score 60');
+        expect(passFailState.notifier, true,
+            reason: 'Should pass with score 60');
         expect(messageState.notifier, 'Score: 60, Grade: D, Status: PASSED',
             reason: 'Message should reflect D grade pass');
       });
@@ -144,9 +154,10 @@ void main() {
       test('should efficiently update multiple dependent states', () {
         // Setup: Create multi-level dependency chain
         final rootState = ReactiveNotifier<int>(() => 0);
-        final computed1 = ReactiveNotifier<int>(() => 1);  // root + 1
-        final computed2 = ReactiveNotifier<int>(() => 0);  // root * 2
-        final computed3 = ReactiveNotifier<int>(() => 1);  // computed1 + computed2
+        final computed1 = ReactiveNotifier<int>(() => 1); // root + 1
+        final computed2 = ReactiveNotifier<int>(() => 0); // root * 2
+        final computed3 =
+            ReactiveNotifier<int>(() => 1); // computed1 + computed2
 
         var rootUpdateCount = 0;
         var computed1UpdateCount = 0;
@@ -165,7 +176,7 @@ void main() {
           computed1UpdateCount++;
           computed3.updateState(computed1.notifier + computed2.notifier);
         });
-        
+
         computed2.addListener(() {
           computed2UpdateCount++;
           computed3.updateState(computed1.notifier + computed2.notifier);
@@ -180,25 +191,30 @@ void main() {
 
         // Assert: All levels should update correctly
         expect(rootState.notifier, 5, reason: 'Root state should be 5');
-        expect(computed1.notifier, 6, reason: 'Computed1 should be root + 1 (5 + 1 = 6)');
-        expect(computed2.notifier, 10, reason: 'Computed2 should be root * 2 (5 * 2 = 10)');
-        expect(computed3.notifier, 16, reason: 'Computed3 should be computed1 + computed2 (6 + 10 = 16)');
+        expect(computed1.notifier, 6,
+            reason: 'Computed1 should be root + 1 (5 + 1 = 6)');
+        expect(computed2.notifier, 10,
+            reason: 'Computed2 should be root * 2 (5 * 2 = 10)');
+        expect(computed3.notifier, 16,
+            reason: 'Computed3 should be computed1 + computed2 (6 + 10 = 16)');
 
         // Assert: Update counts should be reasonable
         expect(rootUpdateCount, 1, reason: 'Root should update once');
         expect(computed1UpdateCount, 1, reason: 'Computed1 should update once');
         expect(computed2UpdateCount, 1, reason: 'Computed2 should update once');
-        expect(computed3UpdateCount, 2, reason: 'Computed3 should update twice (once for each dependency)');
+        expect(computed3UpdateCount, 2,
+            reason: 'Computed3 should update twice (once for each dependency)');
       });
 
       test('should handle complex dependency networks correctly', () {
         // Setup: Create complex dependency network
         final inputA = ReactiveNotifier<int>(() => 2);
         final inputB = ReactiveNotifier<int>(() => 3);
-        final sumAB = ReactiveNotifier<int>(() => 5);       // A + B
-        final productAB = ReactiveNotifier<int>(() => 6);   // A * B
-        final powerSum = ReactiveNotifier<int>(() => 25);   // sum²
-        final finalResult = ReactiveNotifier<String>(() => ''); // Complex combination
+        final sumAB = ReactiveNotifier<int>(() => 5); // A + B
+        final productAB = ReactiveNotifier<int>(() => 6); // A * B
+        final powerSum = ReactiveNotifier<int>(() => 25); // sum²
+        final finalResult =
+            ReactiveNotifier<String>(() => ''); // Complex combination
 
         // Setup: First level computations
         inputA.addListener(() {
@@ -223,7 +239,8 @@ void main() {
           final sum = sumAB.notifier;
           final product = productAB.notifier;
           final power = powerSum.notifier;
-          finalResult.updateState('A:$a, B:$b, Sum:$sum, Product:$product, Power:$power');
+          finalResult.updateState(
+              'A:$a, B:$b, Sum:$sum, Product:$product, Power:$power');
         }
 
         sumAB.addListener(updateFinalResult);
@@ -237,7 +254,8 @@ void main() {
         expect(inputA.notifier, 4, reason: 'Input A should be 4');
         expect(inputB.notifier, 3, reason: 'Input B should remain 3');
         expect(sumAB.notifier, 7, reason: 'Sum should be A + B (4 + 3 = 7)');
-        expect(productAB.notifier, 12, reason: 'Product should be A * B (4 * 3 = 12)');
+        expect(productAB.notifier, 12,
+            reason: 'Product should be A * B (4 * 3 = 12)');
         expect(powerSum.notifier, 49, reason: 'Power should be sum² (7² = 49)');
         expect(finalResult.notifier, 'A:4, B:3, Sum:7, Product:12, Power:49',
             reason: 'Final result should combine all computations');
@@ -247,8 +265,10 @@ void main() {
 
         // Assert: Network should recompute correctly
         expect(sumAB.notifier, 9, reason: 'Sum should be updated (4 + 5 = 9)');
-        expect(productAB.notifier, 20, reason: 'Product should be updated (4 * 5 = 20)');
-        expect(powerSum.notifier, 81, reason: 'Power should be updated (9² = 81)');
+        expect(productAB.notifier, 20,
+            reason: 'Product should be updated (4 * 5 = 20)');
+        expect(powerSum.notifier, 81,
+            reason: 'Power should be updated (9² = 81)');
         expect(finalResult.notifier, 'A:4, B:5, Sum:9, Product:20, Power:81',
             reason: 'Final result should reflect all updates');
       });
@@ -256,9 +276,9 @@ void main() {
       test('should handle computed states with shared dependencies', () {
         // Setup: Create shared dependency scenario
         final sharedBase = ReactiveNotifier<int>(() => 10);
-        final derivedA = ReactiveNotifier<int>(() => 20);   // base * 2
-        final derivedB = ReactiveNotifier<int>(() => 100);  // base²
-        final derivedC = ReactiveNotifier<int>(() => 50);   // base * 5
+        final derivedA = ReactiveNotifier<int>(() => 20); // base * 2
+        final derivedB = ReactiveNotifier<int>(() => 100); // base²
+        final derivedC = ReactiveNotifier<int>(() => 50); // base * 5
         final combinedResult = ReactiveNotifier<int>(() => 170); // A + B + C
 
         final updateHistory = <String>[];
@@ -276,8 +296,7 @@ void main() {
         void updateCombined() {
           updateHistory.add('combined_updated');
           combinedResult.updateState(
-            derivedA.notifier + derivedB.notifier + derivedC.notifier
-          );
+              derivedA.notifier + derivedB.notifier + derivedC.notifier);
         }
 
         derivedA.addListener(updateCombined);
@@ -289,17 +308,21 @@ void main() {
 
         // Assert: All derived states should update from shared dependency
         expect(sharedBase.notifier, 6, reason: 'Shared base should be 6');
-        expect(derivedA.notifier, 12, reason: 'Derived A should be base * 2 (6 * 2 = 12)');
-        expect(derivedB.notifier, 36, reason: 'Derived B should be base² (6² = 36)');
-        expect(derivedC.notifier, 30, reason: 'Derived C should be base * 5 (6 * 5 = 30)');
-        expect(combinedResult.notifier, 78, 
+        expect(derivedA.notifier, 12,
+            reason: 'Derived A should be base * 2 (6 * 2 = 12)');
+        expect(derivedB.notifier, 36,
+            reason: 'Derived B should be base² (6² = 36)');
+        expect(derivedC.notifier, 30,
+            reason: 'Derived C should be base * 5 (6 * 5 = 30)');
+        expect(combinedResult.notifier, 78,
             reason: 'Combined result should be A + B + C (12 + 36 + 30 = 78)');
 
         // Assert: Update history should show correct sequence
         expect(updateHistory.contains('base_updated'), true,
             reason: 'Base update should be recorded');
         expect(updateHistory.where((h) => h == 'combined_updated').length, 3,
-            reason: 'Combined should be updated 3 times (once for each derived state)');
+            reason:
+                'Combined should be updated 3 times (once for each derived state)');
       });
     });
 
@@ -318,12 +341,15 @@ void main() {
 
         // Setup: Dependent state uses both service and injected dependency
         serviceState.addListener(() {
-          dependentState.updateState('${serviceState.notifier} and $injectedDependency');
+          dependentState
+              .updateState('${serviceState.notifier} and $injectedDependency');
         });
 
         // Assert: Initial state should use defaults
-        expect(serviceState.notifier, 'Initial', reason: 'Service should start with initial state');
-        expect(dependentState.notifier, 'Initial', reason: 'Dependent should start with initial state');
+        expect(serviceState.notifier, 'Initial',
+            reason: 'Service should start with initial state');
+        expect(dependentState.notifier, 'Initial',
+            reason: 'Dependent should start with initial state');
 
         // Act: Update configuration (simulating dependency injection)
         configState.updateState('production_config');
@@ -333,8 +359,10 @@ void main() {
             reason: 'Configuration should be updated');
         expect(serviceState.notifier, 'Service with production_config',
             reason: 'Service should use injected configuration');
-        expect(dependentState.notifier, 'Service with production_config and Injected Value',
-            reason: 'Dependent should combine service state and injected dependency');
+        expect(dependentState.notifier,
+            'Service with production_config and Injected Value',
+            reason:
+                'Dependent should combine service state and injected dependency');
       });
 
       test('should handle service locator patterns with computed states', () {
@@ -347,11 +375,11 @@ void main() {
         // Setup: Services depend on registry
         serviceRegistry.addListener(() {
           final registry = serviceRegistry.notifier;
-          
+
           if (registry.containsKey('userService')) {
             userService.updateState('User Service: ${registry['userService']}');
           }
-          
+
           if (registry.containsKey('dataService')) {
             dataService.updateState('Data Service: ${registry['dataService']}');
           }
@@ -370,17 +398,16 @@ void main() {
         dataService.addListener(updateAppState);
 
         // Act: Register services in the service locator
-        serviceRegistry.updateState({
-          'userService': 'Active',
-          'dataService': 'Connected'
-        });
+        serviceRegistry
+            .updateState({'userService': 'Active', 'dataService': 'Connected'});
 
         // Assert: All services should be resolved and app should be ready
         expect(userService.notifier, 'User Service: Active',
             reason: 'User service should be resolved from registry');
         expect(dataService.notifier, 'Data Service: Connected',
             reason: 'Data service should be resolved from registry');
-        expect(appState.notifier, 'App Ready with User Service: Active and Data Service: Connected',
+        expect(appState.notifier,
+            'App Ready with User Service: Active and Data Service: Connected',
             reason: 'App state should reflect all resolved services');
       });
 
@@ -394,27 +421,17 @@ void main() {
         // Setup: Configurations depend on environment
         environmentConfig.addListener(() {
           final env = environmentConfig.notifier;
-          
+
           if (env == 'development') {
-            databaseConfig.updateState({
-              'host': 'localhost',
-              'port': '5432',
-              'name': 'dev_db'
-            });
-            apiConfig.updateState({
-              'baseUrl': 'http://localhost:3000',
-              'timeout': '5000'
-            });
+            databaseConfig.updateState(
+                {'host': 'localhost', 'port': '5432', 'name': 'dev_db'});
+            apiConfig.updateState(
+                {'baseUrl': 'http://localhost:3000', 'timeout': '5000'});
           } else if (env == 'production') {
-            databaseConfig.updateState({
-              'host': 'prod-server.com',
-              'port': '5432',
-              'name': 'prod_db'
-            });
-            apiConfig.updateState({
-              'baseUrl': 'https://api.production.com',
-              'timeout': '10000'
-            });
+            databaseConfig.updateState(
+                {'host': 'prod-server.com', 'port': '5432', 'name': 'prod_db'});
+            apiConfig.updateState(
+                {'baseUrl': 'https://api.production.com', 'timeout': '10000'});
           }
         });
 
@@ -422,13 +439,12 @@ void main() {
         void updateFactory() {
           final dbConfig = databaseConfig.notifier;
           final apiConf = apiConfig.notifier;
-          
+
           if (dbConfig.isNotEmpty && apiConf.isNotEmpty) {
             factoryOutput.updateState(
-              'Factory configured for ${environmentConfig.notifier}: '
-              'DB=${dbConfig['host']}:${dbConfig['port']}/${dbConfig['name']}, '
-              'API=${apiConf['baseUrl']} (timeout=${apiConf['timeout']}ms)'
-            );
+                'Factory configured for ${environmentConfig.notifier}: '
+                'DB=${dbConfig['host']}:${dbConfig['port']}/${dbConfig['name']}, '
+                'API=${apiConf['baseUrl']} (timeout=${apiConf['timeout']}ms)');
           }
         }
 
@@ -445,7 +461,8 @@ void main() {
             reason: 'Database config should be for production');
         expect(apiConfig.notifier['baseUrl'], 'https://api.production.com',
             reason: 'API config should be for production');
-        expect(factoryOutput.notifier, 
+        expect(
+            factoryOutput.notifier,
             'Factory configured for production: '
             'DB=prod-server.com:5432/prod_db, '
             'API=https://api.production.com (timeout=10000ms)',
@@ -459,7 +476,8 @@ void main() {
             reason: 'Database config should switch to development');
         expect(apiConfig.notifier['baseUrl'], 'http://localhost:3000',
             reason: 'API config should switch to development');
-        expect(factoryOutput.notifier,
+        expect(
+            factoryOutput.notifier,
             'Factory configured for development: '
             'DB=localhost:5432/dev_db, '
             'API=http://localhost:3000 (timeout=5000ms)',
@@ -470,8 +488,10 @@ void main() {
     group('Performance Optimization for Computed Networks', () {
       test('should efficiently handle large computed state networks', () {
         // Setup: Create large network of computed states
-        final sourceStates = List.generate(10, (i) => ReactiveNotifier<int>(() => i));
-        final computedStates = List.generate(10, (i) => ReactiveNotifier<int>(() => 0));
+        final sourceStates =
+            List.generate(10, (i) => ReactiveNotifier<int>(() => i));
+        final computedStates =
+            List.generate(10, (i) => ReactiveNotifier<int>(() => 0));
         final finalAggregation = ReactiveNotifier<int>(() => 0);
 
         var totalUpdates = 0;
@@ -488,7 +508,8 @@ void main() {
         for (final computedState in computedStates) {
           computedState.addListener(() {
             totalUpdates++;
-            final sum = computedStates.fold<int>(0, (sum, state) => sum + state.notifier);
+            final sum = computedStates.fold<int>(
+                0, (sum, state) => sum + state.notifier);
             finalAggregation.updateState(sum);
           });
         }
@@ -508,7 +529,8 @@ void main() {
             reason: 'Should have updates for sources and aggregations');
 
         // Verify final aggregation is correct
-        final expectedSum = computedStates.fold<int>(0, (sum, state) => sum + state.notifier);
+        final expectedSum =
+            computedStates.fold<int>(0, (sum, state) => sum + state.notifier);
         expect(finalAggregation.notifier, expectedSum,
             reason: 'Final aggregation should be sum of all computed states');
       });
@@ -546,12 +568,10 @@ void main() {
 
         // Setup: Final result combines all computations
         void updateFinalResult() {
-          finalResult.updateState(
-            'Base:${baseValue.notifier}, '
-            'Expensive:${expensiveComputation.notifier}, '
-            'Cheap1:${cheapComputation1.notifier}, '
-            'Cheap2:${cheapComputation2.notifier}'
-          );
+          finalResult.updateState('Base:${baseValue.notifier}, '
+              'Expensive:${expensiveComputation.notifier}, '
+              'Cheap1:${cheapComputation1.notifier}, '
+              'Cheap2:${cheapComputation2.notifier}');
         }
 
         expensiveComputation.addListener(updateFinalResult);
@@ -568,7 +588,8 @@ void main() {
             reason: 'Cheap computation 1 should run exactly once');
         expect(cheapComputation2Count, 1,
             reason: 'Cheap computation 2 should run exactly once');
-        expect(finalResult.notifier, 'Base:8, Expensive:64, Cheap1:16, Cheap2:24',
+        expect(
+            finalResult.notifier, 'Base:8, Expensive:64, Cheap1:16, Cheap2:24',
             reason: 'Final result should reflect all computations');
       });
     });

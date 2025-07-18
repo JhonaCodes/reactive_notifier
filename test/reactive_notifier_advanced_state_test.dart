@@ -2,14 +2,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 /// Tests for ReactiveNotifier advanced state management
-/// 
+///
 /// This test suite covers advanced state management capabilities of ReactiveNotifier:
 /// - Complex object state handling and updates
 /// - Nullable state management and null safety
 /// - State transitions and lifecycle tracking
 /// - Custom object serialization and deserialization
 /// - State history management and undo operations
-/// 
+///
 /// These tests verify that ReactiveNotifier can handle sophisticated state patterns
 /// required for complex applications including nullable states, custom objects,
 /// and state transition tracking essential for advanced business logic.
@@ -37,10 +37,11 @@ void main() {
             reason: 'Complex state should be updated with new values');
       });
 
-      test('should handle custom object states with properties and methods', () {
+      test('should handle custom object states with properties and methods',
+          () {
         // Setup: Create ReactiveNotifier with custom object state
-        final customState = ReactiveNotifier<CustomObject>(
-            () => CustomObject(1, 'initial'));
+        final customState =
+            ReactiveNotifier<CustomObject>(() => CustomObject(1, 'initial'));
 
         // Assert: Initial custom object should be correct
         expect(customState.notifier.id, 1,
@@ -61,18 +62,19 @@ void main() {
       test('should handle deeply nested object structures', () {
         // Setup: Create ReactiveNotifier with deeply nested object
         final nestedState = ReactiveNotifier<Map<String, dynamic>>(() => {
-          'user': {
-            'profile': {
-              'personal': {'name': 'John', 'age': 30},
-              'settings': {'theme': 'dark', 'notifications': true}
-            },
-            'permissions': ['read', 'write']
-          },
-          'session': {'active': true, 'timestamp': 1234567890}
-        });
+              'user': {
+                'profile': {
+                  'personal': {'name': 'John', 'age': 30},
+                  'settings': {'theme': 'dark', 'notifications': true}
+                },
+                'permissions': ['read', 'write']
+              },
+              'session': {'active': true, 'timestamp': 1234567890}
+            });
 
         // Assert: Initial nested structure should be accessible
-        expect(nestedState.notifier['user']['profile']['personal']['name'], 'John',
+        expect(
+            nestedState.notifier['user']['profile']['personal']['name'], 'John',
             reason: 'Deeply nested initial values should be accessible');
         expect(nestedState.notifier['session']['active'], true,
             reason: 'Session state should be accessible');
@@ -92,8 +94,7 @@ void main() {
 
       test('should handle list and collection states correctly', () {
         // Setup: Create ReactiveNotifier with collection states
-        final listState = ReactiveNotifier<List<Map<String, dynamic>>>(
-            () => [
+        final listState = ReactiveNotifier<List<Map<String, dynamic>>>(() => [
               {'id': 1, 'name': 'Item 1', 'active': true},
               {'id': 2, 'name': 'Item 2', 'active': false}
             ]);
@@ -116,7 +117,8 @@ void main() {
             reason: 'New item should be added correctly');
 
         // Act: Update existing item in list
-        final modifiedList = List<Map<String, dynamic>>.from(listState.notifier);
+        final modifiedList =
+            List<Map<String, dynamic>>.from(listState.notifier);
         modifiedList[1]['active'] = true;
         listState.updateState(modifiedList);
 
@@ -262,12 +264,12 @@ void main() {
         }
 
         // Act: Perform valid state transitions
-        validateAndUpdate('loading');   // idle -> loading (valid)
-        validateAndUpdate('success');   // loading -> success (valid)
-        validateAndUpdate('idle');      // success -> idle (valid)
-        validateAndUpdate('error');     // idle -> error (invalid)
-        validateAndUpdate('loading');   // idle -> loading (valid)
-        validateAndUpdate('error');     // loading -> error (valid)
+        validateAndUpdate('loading'); // idle -> loading (valid)
+        validateAndUpdate('success'); // loading -> success (valid)
+        validateAndUpdate('idle'); // success -> idle (valid)
+        validateAndUpdate('error'); // idle -> error (invalid)
+        validateAndUpdate('loading'); // idle -> loading (valid)
+        validateAndUpdate('error'); // loading -> error (valid)
 
         // Assert: Valid transitions should be executed, invalid ones rejected
         expect(validTransitions, 5,
@@ -304,11 +306,11 @@ void main() {
         expect(stateLifecycle.map((e) => e['state']),
             ['initialized', 'active', 'suspended', 'terminated'],
             reason: 'Lifecycle states should be in correct order');
-        
+
         // Assert: Timestamps should be in chronological order
         for (int i = 1; i < stateLifecycle.length; i++) {
           expect(stateLifecycle[i]['timestamp'] as int,
-              greaterThanOrEqualTo(stateLifecycle[i-1]['timestamp'] as int),
+              greaterThanOrEqualTo(stateLifecycle[i - 1]['timestamp'] as int),
               reason: 'Timestamps should be in chronological order');
         }
       });
@@ -320,7 +322,8 @@ void main() {
         final historicalState = ReactiveNotifier<int>(() => 0);
         final history = <int>[];
 
-        historicalState.addListener(() => history.add(historicalState.notifier));
+        historicalState
+            .addListener(() => history.add(historicalState.notifier));
 
         // Act: Perform multiple state updates
         historicalState.updateState(1);
@@ -344,7 +347,7 @@ void main() {
         // Act: Perform operations that can be undone
         undoableState.updateState(1);
         undoableState.updateState(2);
-        
+
         // Perform undo operation (go back to previous state)
         final previousState = history[history.length - 2];
         undoableState.updateState(previousState);
@@ -424,8 +427,7 @@ void main() {
         // Assert: Redo should work correctly
         expect(editorState.notifier, 'edit2',
             reason: 'Redo should restore next state');
-        expect(redoStack, ['edit3'],
-            reason: 'Redo stack should be updated');
+        expect(redoStack, ['edit3'], reason: 'Redo stack should be updated');
 
         // Act: Perform new edit after undo/redo
         performEdit('newEdit');
@@ -446,12 +448,12 @@ void main() {
 class CustomObject {
   final int id;
   final String name;
-  
+
   CustomObject(this.id, this.name);
-  
+
   @override
   String toString() => 'CustomObject(id: $id, name: $name)';
-  
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

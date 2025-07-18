@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
 /// Tests for ReactiveAsyncBuilder widget
-/// 
+///
 /// This comprehensive test suite covers the ReactiveAsyncBuilder widget functionality:
 /// - Basic builder functionality with different AsyncState types
 /// - Listener management and widget lifecycle
@@ -15,7 +15,7 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 /// - Widget updates when notifier changes
 /// - Deprecated onSuccess callback compatibility
 /// - Auto-dispose functionality
-/// 
+///
 /// These tests ensure that ReactiveAsyncBuilder correctly handles all AsyncState
 /// variations and provides proper widget lifecycle management with reactive updates.
 
@@ -34,7 +34,7 @@ void main() {
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel with initial state
         final viewModel = TestAsyncViewModel();
-        
+
         // Build widget
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -58,7 +58,7 @@ void main() {
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel with loading state
         final viewModel = TestAsyncViewModel();
-        
+
         // Build widget
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -73,7 +73,7 @@ void main() {
         ));
 
         // Act: Set loading state
-        viewModel.loadingState();
+        viewModel.testLoadingState();
         await tester.pump();
 
         // Assert: Should show loading state
@@ -86,7 +86,7 @@ void main() {
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel with success state
         final viewModel = TestAsyncViewModel();
-        
+
         // Build widget
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -114,7 +114,7 @@ void main() {
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel with error state
         final viewModel = TestAsyncViewModel();
-        
+
         // Build widget
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -142,7 +142,7 @@ void main() {
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel without all callbacks
         final viewModel = TestAsyncViewModel();
-        
+
         // Build widget with minimal callbacks
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -157,7 +157,7 @@ void main() {
         expect(find.byType(SizedBox), findsOneWidget);
 
         // Act: Set loading state
-        viewModel.loadingState();
+        viewModel.testLoadingState();
         await tester.pump();
 
         // Assert: Should show default loading widget (CircularProgressIndicator)
@@ -187,12 +187,12 @@ void main() {
               onData: (data, vm, keep) {
                 receivedData = data;
                 receivedViewModel = vm;
-                
+
                 // Test keep function
                 final keptWidget = keep(const Text('Kept Widget'));
                 expect(keptWidget, isNotNull);
                 keepFunctionCalled = true;
-                
+
                 return Text('Success: $data');
               },
             ),
@@ -216,7 +216,7 @@ void main() {
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
-        
+
         // Build widget
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -234,7 +234,7 @@ void main() {
         expect(find.text('Initial'), findsOneWidget);
 
         // Act: Transition to loading
-        viewModel.loadingState();
+        viewModel.testLoadingState();
         await tester.pump();
 
         // Assert: Should show loading
@@ -258,7 +258,7 @@ void main() {
         expect(find.text('Data: success data'), findsNothing);
 
         // Act: Transition back to loading
-        viewModel.loadingState();
+        viewModel.testLoadingState();
         await tester.pump();
 
         // Assert: Should show loading again
@@ -270,7 +270,7 @@ void main() {
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
-        
+
         // Build widget
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -284,10 +284,10 @@ void main() {
         ));
 
         // Act: Perform rapid state changes
-        viewModel.loadingState();
+        viewModel.testLoadingState();
         viewModel.updateState('data1');
         viewModel.errorState('error1');
-        viewModel.loadingState();
+        viewModel.testLoadingState();
         viewModel.updateState('data2');
         await tester.pump();
 
@@ -353,7 +353,7 @@ void main() {
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
-        
+
         // Build widget
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -388,7 +388,7 @@ void main() {
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel and track listener count
         final viewModel = TestAsyncViewModel();
-        
+
         // Build widget
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -400,7 +400,7 @@ void main() {
         ));
 
         // Assert: Should have listener attached
-        expect(viewModel.hasListeners, isTrue);
+        expect(viewModel.testHasListeners, isTrue);
 
         // Act: Remove widget
         await tester.pumpWidget(const MaterialApp(
@@ -408,7 +408,7 @@ void main() {
         ));
 
         // Assert: Should have removed listener
-        expect(viewModel.hasListeners, isFalse);
+        expect(viewModel.testHasListeners, isFalse);
       });
 
       testWidgets('should handle notifier changes correctly',
@@ -416,7 +416,7 @@ void main() {
         // Setup: Create two AsyncViewModels
         final viewModel1 = TestAsyncViewModel();
         final viewModel2 = TestAsyncViewModel();
-        
+
         // Build widget with first viewModel
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -433,8 +433,8 @@ void main() {
 
         // Assert: Should show first viewModel data
         expect(find.text('VM1: data1'), findsOneWidget);
-        expect(viewModel1.hasListeners, isTrue);
-        expect(viewModel2.hasListeners, isFalse);
+        expect(viewModel1.testHasListeners, isTrue);
+        expect(viewModel2.testHasListeners, isFalse);
 
         // Act: Switch to second viewModel
         await tester.pumpWidget(MaterialApp(
@@ -453,15 +453,15 @@ void main() {
         // Assert: Should show second viewModel data and update listeners
         expect(find.text('VM2: data2'), findsOneWidget);
         expect(find.text('VM1: data1'), findsNothing);
-        expect(viewModel1.hasListeners, isFalse);
-        expect(viewModel2.hasListeners, isTrue);
+        expect(viewModel1.testHasListeners, isFalse);
+        expect(viewModel2.testHasListeners, isTrue);
       });
 
       testWidgets('should handle widget disposal correctly',
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
-        
+
         // Build widget
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -473,13 +473,13 @@ void main() {
         ));
 
         // Assert: Should have listener
-        expect(viewModel.hasListeners, isTrue);
+        expect(viewModel.testHasListeners, isTrue);
 
         // Act: Dispose widget
         await tester.pumpWidget(const SizedBox.shrink());
 
         // Assert: Should clean up listener
-        expect(viewModel.hasListeners, isFalse);
+        expect(viewModel.testHasListeners, isFalse);
       });
     });
 
@@ -488,7 +488,7 @@ void main() {
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel with nullable data
         final viewModel = NullableAsyncViewModel();
-        
+
         // Build widget
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -511,7 +511,7 @@ void main() {
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
-        
+
         // Build widget with throwing callback
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -528,7 +528,7 @@ void main() {
         // Act: Set success state (should trigger exception)
         viewModel.updateState('test');
         await tester.pump();
-        
+
         // Assert: Should handle exception gracefully
         expect(tester.takeException(), isA<Exception>());
       });
@@ -538,7 +538,7 @@ void main() {
         // Setup: Create AsyncViewModel with complex error
         final viewModel = TestAsyncViewModel();
         final complexError = CustomError('Complex error message', 404);
-        
+
         // Build widget
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -560,7 +560,8 @@ void main() {
         await tester.pump();
 
         // Assert: Should handle complex error
-        expect(find.text('Custom Error: Complex error message (404)'), findsOneWidget);
+        expect(find.text('Custom Error: Complex error message (404)'),
+            findsOneWidget);
       });
     });
 
@@ -569,7 +570,7 @@ void main() {
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
-        
+
         // Build widget with deprecated callback
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -593,7 +594,7 @@ void main() {
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
-        
+
         // Build widget with both callbacks
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -651,7 +652,7 @@ void main() {
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
-        
+
         // Build widget
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
@@ -667,13 +668,13 @@ void main() {
         await tester.pump();
 
         // Assert: Should have resources allocated
-        expect(viewModel.hasListeners, isTrue);
+        expect(viewModel.testHasListeners, isTrue);
 
         // Act: Dispose widget
         await tester.pumpWidget(const SizedBox.shrink());
 
         // Assert: Should clean up resources
-        expect(viewModel.hasListeners, isFalse);
+        expect(viewModel.testHasListeners, isFalse);
       });
     });
 
@@ -682,14 +683,15 @@ void main() {
           (WidgetTester tester) async {
         // Setup: Create AsyncViewModel with complex behavior
         final viewModel = ComplexAsyncViewModel();
-        
+
         // Build widget
         await tester.pumpWidget(MaterialApp(
           home: Scaffold(
             body: ReactiveAsyncBuilder<ComplexAsyncViewModel, ComplexData>(
               notifier: viewModel,
               onLoading: () => const Text('Loading complex data'),
-              onData: (data, vm, keep) => Text('Complex: ${data.value} (${data.timestamp})'),
+              onData: (data, vm, keep) =>
+                  Text('Complex: ${data.value} (${data.timestamp})'),
               onError: (error, stackTrace) => Text('Error: $error'),
             ),
           ),
@@ -729,6 +731,14 @@ class TestAsyncViewModel extends AsyncViewModelImpl<String> {
       updateState('loaded data');
     });
   }
+
+  // Expose protected methods for testing
+  void testLoadingState() {
+    loadingState();
+  }
+
+  // Helper to check if has listeners
+  bool get testHasListeners => hasListeners;
 }
 
 class NullableAsyncViewModel extends AsyncViewModelImpl<String?> {
@@ -761,6 +771,14 @@ class ComplexAsyncViewModel extends AsyncViewModelImpl<ComplexData> {
     await Future.delayed(const Duration(milliseconds: 100));
     updateState(ComplexData('loaded data', DateTime.now()));
   }
+
+  // Expose protected methods for testing
+  void testLoadingState() {
+    loadingState();
+  }
+
+  // Helper to check if has listeners
+  bool get testHasListeners => hasListeners;
 }
 
 class CustomError {

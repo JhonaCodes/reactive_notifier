@@ -46,10 +46,10 @@ class MockScreenLayout extends StatelessWidget {
 }
 
 /// Simple Golden Tests for ReactiveNotifier Visual Validation
-/// 
+///
 /// This test suite provides basic visual regression testing for ReactiveNotifier
 /// components to verify that state updates and rebuilds render correctly.
-/// 
+///
 /// These tests serve as a foundation for more complex golden test scenarios
 /// and help ensure that basic ReactiveNotifier functionality works as expected
 /// from a visual perspective.
@@ -65,7 +65,7 @@ void main() {
       fileName: 'simple_counter_initial',
       constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
       builder: () => GoldenTestGroup(
-        scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+        scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         children: [
           GoldenTestScenario(
             name: 'Initial State',
@@ -80,7 +80,8 @@ void main() {
                     children: [
                       const Text(
                         'Counter with ReactiveBuilder',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
@@ -101,7 +102,8 @@ void main() {
                           children: [
                             const Text(
                               'Current Count',
-                              style: TextStyle(fontSize: 16, color: Colors.black54),
+                              style: TextStyle(
+                                  fontSize: 16, color: Colors.black54),
                             ),
                             const SizedBox(height: 8),
                             Text(
@@ -144,7 +146,7 @@ void main() {
       fileName: 'simple_counter_updated',
       constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
       builder: () => GoldenTestGroup(
-        scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+        scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         children: [
           GoldenTestScenario(
             name: 'Updated State',
@@ -159,7 +161,8 @@ void main() {
                     children: [
                       const Text(
                         'Counter Updated Demo',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
@@ -180,7 +183,8 @@ void main() {
                           children: [
                             const Text(
                               'Updated Count',
-                              style: TextStyle(fontSize: 16, color: Colors.black54),
+                              style: TextStyle(
+                                  fontSize: 16, color: Colors.black54),
                             ),
                             const SizedBox(height: 8),
                             Text(
@@ -193,7 +197,8 @@ void main() {
                             ),
                             const SizedBox(height: 12),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
                                 color: Colors.green[600],
                                 borderRadius: BorderRadius.circular(16),
@@ -238,7 +243,7 @@ void main() {
       fileName: 'simple_different_types',
       constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
       builder: () => GoldenTestGroup(
-        scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+        scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         children: [
           GoldenTestScenario(
             name: 'String State',
@@ -246,14 +251,16 @@ void main() {
               title: 'String Data Demo',
               backgroundColor: Colors.orange[50],
               body: ReactiveBuilder<String>(
-                notifier: ReactiveNotifier<String>(() => 'Hello ReactiveNotifier!'),
+                notifier:
+                    ReactiveNotifier<String>(() => 'Hello ReactiveNotifier!'),
                 build: (value, notifier, keep) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const Text(
                         'String Data Type Support',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
@@ -274,7 +281,8 @@ void main() {
                           children: [
                             const Text(
                               'String Message',
-                              style: TextStyle(fontSize: 16, color: Colors.black54),
+                              style: TextStyle(
+                                  fontSize: 16, color: Colors.black54),
                             ),
                             const SizedBox(height: 12),
                             Container(
@@ -297,7 +305,8 @@ void main() {
                             const SizedBox(height: 16),
                             Center(
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: Colors.orange[600],
                                   borderRadius: BorderRadius.circular(16),
@@ -356,7 +365,7 @@ void main() {
       fileName: 'simple_boolean_conditional',
       constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
       builder: () => GoldenTestGroup(
-        scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+        scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         children: [
           GoldenTestScenario(
             name: 'Boolean True State',
@@ -371,7 +380,8 @@ void main() {
                     children: [
                       const Text(
                         'Boolean Conditional Rendering',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
@@ -406,9 +416,11 @@ void main() {
                             ),
                             const SizedBox(height: 12),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: value ? Colors.green[600] : Colors.red[600],
+                                color:
+                                    value ? Colors.green[600] : Colors.red[600],
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Text(
@@ -451,7 +463,7 @@ void main() {
       fileName: 'simple_null_safe',
       constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
       builder: () => GoldenTestGroup(
-        scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+        scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         children: [
           GoldenTestScenario(
             name: 'Null State',
@@ -466,14 +478,17 @@ void main() {
                     children: [
                       const Text(
                         'Null Safety Handling',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: value == null ? Colors.orange[100] : Colors.green[100],
+                          color: value == null
+                              ? Colors.orange[100]
+                              : Colors.green[100],
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
@@ -486,8 +501,11 @@ void main() {
                         child: Column(
                           children: [
                             Icon(
-                              value == null ? Icons.warning : Icons.check_circle,
-                              color: value == null ? Colors.orange : Colors.green,
+                              value == null
+                                  ? Icons.warning
+                                  : Icons.check_circle,
+                              color:
+                                  value == null ? Colors.orange : Colors.green,
                               size: 64,
                             ),
                             const SizedBox(height: 16),
@@ -496,27 +514,37 @@ void main() {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: value == null ? Colors.orange[200]! : Colors.green[200]!),
+                                border: Border.all(
+                                    color: value == null
+                                        ? Colors.orange[200]!
+                                        : Colors.green[200]!),
                               ),
                               child: Text(
                                 value ?? 'No value',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w500,
-                                  color: value == null ? Colors.orange : Colors.green,
+                                  color: value == null
+                                      ? Colors.orange
+                                      : Colors.green,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
                             ),
                             const SizedBox(height: 16),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: value == null ? Colors.orange[600] : Colors.green[600],
+                                color: value == null
+                                    ? Colors.orange[600]
+                                    : Colors.green[600],
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Text(
-                                value == null ? 'Null value detected' : 'Value present',
+                                value == null
+                                    ? 'Null value detected'
+                                    : 'Value present',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -544,7 +572,8 @@ void main() {
                             const SizedBox(height: 12),
                             const Text(
                               'Null-safe rendering demonstrates Flutter\'s null safety features working seamlessly with ReactiveNotifier.',
-                              style: TextStyle(fontSize: 14, color: Colors.black87),
+                              style: TextStyle(
+                                  fontSize: 14, color: Colors.black87),
                               textAlign: TextAlign.center,
                             ),
                           ],

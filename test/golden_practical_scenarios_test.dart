@@ -5,7 +5,7 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 import 'config/alchemist_config.dart';
 
 /// Practical Golden Tests for ReactiveNotifier
-/// 
+///
 /// These tests demonstrate real-world usage patterns with stable states
 /// that show the practical benefits of ReactiveNotifier:
 /// 1. E-commerce App Components
@@ -39,7 +39,7 @@ class CartItem {
   final int quantity;
 
   CartItem({required this.product, required this.quantity});
-  
+
   double get total => product.price * quantity;
 }
 
@@ -79,49 +79,49 @@ class OrderSummary {
 
 // Services
 mixin ProductCatalogService {
-  static final ReactiveNotifier<List<Product>> products = 
-    ReactiveNotifier<List<Product>>(() => []);
+  static final ReactiveNotifier<List<Product>> products =
+      ReactiveNotifier<List<Product>>(() => []);
 
-  static final ReactiveNotifier<String> selectedCategory = 
-    ReactiveNotifier<String>(() => 'All');
+  static final ReactiveNotifier<String> selectedCategory =
+      ReactiveNotifier<String>(() => 'All');
 
-  static final ReactiveNotifier<String> sortBy = 
-    ReactiveNotifier<String>(() => 'name');
+  static final ReactiveNotifier<String> sortBy =
+      ReactiveNotifier<String>(() => 'name');
 }
 
 mixin ShoppingCartService {
-  static final ReactiveNotifier<List<CartItem>> cartItems = 
-    ReactiveNotifier<List<CartItem>>(() => []);
+  static final ReactiveNotifier<List<CartItem>> cartItems =
+      ReactiveNotifier<List<CartItem>>(() => []);
 
-  static final ReactiveNotifier<bool> isCheckingOut = 
-    ReactiveNotifier<bool>(() => false);
+  static final ReactiveNotifier<bool> isCheckingOut =
+      ReactiveNotifier<bool>(() => false);
 }
 
 mixin UserService {
-  static final ReactiveNotifier<User?> currentUser = 
-    ReactiveNotifier<User?>(() => null);
+  static final ReactiveNotifier<User?> currentUser =
+      ReactiveNotifier<User?>(() => null);
 
-  static final ReactiveNotifier<bool> isLoggedIn = 
-    ReactiveNotifier<bool>(() => false);
+  static final ReactiveNotifier<bool> isLoggedIn =
+      ReactiveNotifier<bool>(() => false);
 }
 
 mixin OrderService {
-  static final ReactiveNotifier<OrderSummary?> currentOrder = 
-    ReactiveNotifier<OrderSummary?>(() => null);
+  static final ReactiveNotifier<OrderSummary?> currentOrder =
+      ReactiveNotifier<OrderSummary?>(() => null);
 
-  static final ReactiveNotifier<String> orderStatus = 
-    ReactiveNotifier<String>(() => 'pending');
+  static final ReactiveNotifier<String> orderStatus =
+      ReactiveNotifier<String>(() => 'pending');
 }
 
 mixin UIStateService {
-  static final ReactiveNotifier<bool> isDarkMode = 
-    ReactiveNotifier<bool>(() => false);
+  static final ReactiveNotifier<bool> isDarkMode =
+      ReactiveNotifier<bool>(() => false);
 
-  static final ReactiveNotifier<double> fontSize = 
-    ReactiveNotifier<double>(() => 16.0);
+  static final ReactiveNotifier<double> fontSize =
+      ReactiveNotifier<double>(() => 16.0);
 
-  static final ReactiveNotifier<bool> showNotifications = 
-    ReactiveNotifier<bool>(() => true);
+  static final ReactiveNotifier<bool> showNotifications =
+      ReactiveNotifier<bool>(() => true);
 }
 
 // Components
@@ -140,15 +140,18 @@ class ProductCatalogWidget extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  const Text('Category: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text('Category: ',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: Colors.blue.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text(category, style: const TextStyle(color: Colors.blue)),
+                      child: Text(category,
+                          style: const TextStyle(color: Colors.blue)),
                     ),
                   ),
                 ],
@@ -166,7 +169,8 @@ class ProductCatalogWidget extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.shopping_bag_outlined, size: 64, color: Colors.grey),
+                      Icon(Icons.shopping_bag_outlined,
+                          size: 64, color: Colors.grey),
                       SizedBox(height: 16),
                       Text(
                         'No products available',
@@ -181,18 +185,22 @@ class ProductCatalogWidget extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final product = products[index];
                   return Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: ListTile(
                       leading: Container(
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: product.isAvailable ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                          color: product.isAvailable
+                              ? Colors.green.withOpacity(0.1)
+                              : Colors.red.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
                           Icons.shopping_bag,
-                          color: product.isAvailable ? Colors.green : Colors.red,
+                          color:
+                              product.isAvailable ? Colors.green : Colors.red,
                         ),
                       ),
                       title: Text(
@@ -202,11 +210,13 @@ class ProductCatalogWidget extends StatelessWidget {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(product.category, style: const TextStyle(color: Colors.grey)),
+                          Text(product.category,
+                              style: const TextStyle(color: Colors.grey)),
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(Icons.star, size: 16, color: Colors.amber),
+                              const Icon(Icons.star,
+                                  size: 16, color: Colors.amber),
                               Text(' ${product.rating.toStringAsFixed(1)}'),
                             ],
                           ),
@@ -228,7 +238,9 @@ class ProductCatalogWidget extends StatelessWidget {
                             product.isAvailable ? 'In Stock' : 'Out of Stock',
                             style: TextStyle(
                               fontSize: 12,
-                              color: product.isAvailable ? Colors.green : Colors.red,
+                              color: product.isAvailable
+                                  ? Colors.green
+                                  : Colors.red,
                             ),
                           ),
                         ],
@@ -276,7 +288,8 @@ class ShoppingCartWidget extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.red,
                       borderRadius: BorderRadius.circular(16),
@@ -299,7 +312,8 @@ class ShoppingCartWidget extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.shopping_cart_outlined, size: 64, color: Colors.grey),
+                      Icon(Icons.shopping_cart_outlined,
+                          size: 64, color: Colors.grey),
                       SizedBox(height: 16),
                       Text(
                         'Your cart is empty',
@@ -324,7 +338,8 @@ class ShoppingCartWidget extends StatelessWidget {
                         itemBuilder: (context, index) {
                           final item = items[index];
                           return Card(
-                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             child: ListTile(
                               leading: Container(
                                 width: 50,
@@ -333,11 +348,13 @@ class ShoppingCartWidget extends StatelessWidget {
                                   color: Colors.blue.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Icon(Icons.shopping_bag, color: Colors.blue),
+                                child: const Icon(Icons.shopping_bag,
+                                    color: Colors.blue),
                               ),
                               title: Text(
                                 item.product.name,
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
                               ),
                               subtitle: Text(
                                 'Quantity: ${item.quantity} × \$${item.product.price.toStringAsFixed(2)}',
@@ -366,16 +383,20 @@ class ShoppingCartWidget extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('Subtotal:', style: TextStyle(fontSize: 16)),
-                              Text('\$${subtotal.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16)),
+                              const Text('Subtotal:',
+                                  style: TextStyle(fontSize: 16)),
+                              Text('\$${subtotal.toStringAsFixed(2)}',
+                                  style: const TextStyle(fontSize: 16)),
                             ],
                           ),
                           const SizedBox(height: 8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text('Tax (8%):', style: TextStyle(fontSize: 16)),
-                              Text('\$${tax.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16)),
+                              const Text('Tax (8%):',
+                                  style: TextStyle(fontSize: 16)),
+                              Text('\$${tax.toStringAsFixed(2)}',
+                                  style: const TextStyle(fontSize: 16)),
                             ],
                           ),
                           const Divider(),
@@ -384,7 +405,8 @@ class ShoppingCartWidget extends StatelessWidget {
                             children: [
                               const Text(
                                 'Total:',
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
                               ),
                               Text(
                                 '\$${total.toStringAsFixed(2)}',
@@ -437,7 +459,8 @@ class UserProfileWidget extends StatelessWidget {
                     SizedBox(height: 16),
                     Text(
                       'Guest User',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
                     Text(
@@ -464,7 +487,8 @@ class UserProfileWidget extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       user.name,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -473,7 +497,8 @@ class UserProfileWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: _getMembershipColor(user.membershipLevel),
                         borderRadius: BorderRadius.circular(16),
@@ -562,41 +587,43 @@ class OrderSummaryWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 ...order.items.map((item) => Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.product.name,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              'Qty: ${item.quantity} × \$${item.product.price.toStringAsFixed(2)}',
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                          ],
-                        ),
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      Text(
-                        '\$${item.total.toStringAsFixed(2)}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.product.name,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  'Qty: ${item.quantity} × \$${item.product.price.toStringAsFixed(2)}',
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            '\$${item.total.toStringAsFixed(2)}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                )),
+                    )),
                 const SizedBox(height: 16),
                 const Divider(),
                 _buildSummaryRow('Subtotal', order.subtotal),
-                _buildSummaryRow('Discount', -order.discount, color: Colors.green),
+                _buildSummaryRow('Discount', -order.discount,
+                    color: Colors.green),
                 _buildSummaryRow('Tax', order.tax),
                 _buildSummaryRow('Shipping', order.shipping),
                 const Divider(),
@@ -609,7 +636,8 @@ class OrderSummaryWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryRow(String label, double amount, {Color? color, bool isTotal = false}) {
+  Widget _buildSummaryRow(String label, double amount,
+      {Color? color, bool isTotal = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -653,7 +681,8 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: '1. Empty Catalog',
@@ -671,7 +700,8 @@ void main() {
                     appBar: AppBar(title: const Text('Products - Electronics')),
                     body: Builder(
                       builder: (context) {
-                        ProductCatalogService.selectedCategory.updateSilently('Electronics');
+                        ProductCatalogService.selectedCategory
+                            .updateSilently('Electronics');
                         ProductCatalogService.products.updateSilently([
                           Product(
                             id: '1',
@@ -711,7 +741,8 @@ void main() {
                     appBar: AppBar(title: const Text('Products - Books')),
                     body: Builder(
                       builder: (context) {
-                        ProductCatalogService.selectedCategory.updateSilently('Books');
+                        ProductCatalogService.selectedCategory
+                            .updateSilently('Books');
                         ProductCatalogService.products.updateSilently([
                           Product(
                             id: '4',
@@ -743,7 +774,8 @@ void main() {
                     appBar: AppBar(title: const Text('Products - Mixed')),
                     body: Builder(
                       builder: (context) {
-                        ProductCatalogService.selectedCategory.updateSilently('All');
+                        ProductCatalogService.selectedCategory
+                            .updateSilently('All');
                         ProductCatalogService.products.updateSilently([
                           Product(
                             id: '6',
@@ -789,7 +821,8 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: '1. Empty Cart',
@@ -935,7 +968,8 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: '1. Guest User',
@@ -1019,7 +1053,8 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: '1. No Order',

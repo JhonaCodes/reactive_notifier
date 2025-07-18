@@ -3,14 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 /// Tests for ReactiveNotifier asynchronous operations
-/// 
+///
 /// This test suite covers asynchronous operation capabilities of ReactiveNotifier:
 /// - Async state updates and timing management
 /// - Concurrent async operations and coordination
 /// - Multi-threading support with isolates
 /// - Async operation sequencing and dependencies
 /// - Performance optimization for frequent async updates
-/// 
+///
 /// These tests verify that ReactiveNotifier can handle asynchronous patterns
 /// required for real-world applications including API calls, background processing,
 /// and multi-threaded operations while maintaining state consistency.
@@ -41,9 +41,11 @@ void main() {
         // Act: Start async operation and verify initial state
         final updateFuture = updateStateAsync();
         expect(asyncState.notifier, 'initial',
-            reason: 'State should remain initial while async operation is pending');
+            reason:
+                'State should remain initial while async operation is pending');
         expect(listenerCallCount, 0,
-            reason: 'Listener should not be called before async operation completes');
+            reason:
+                'Listener should not be called before async operation completes');
 
         // Act: Wait for async operation to complete
         await updateFuture;
@@ -73,9 +75,9 @@ void main() {
         }
 
         // Act: Perform sequential async updates
-        await incrementAsync(1, 50);   // 0 + 1 = 1
-        await incrementAsync(2, 30);   // 1 + 2 = 3
-        await incrementAsync(3, 20);   // 3 + 3 = 6
+        await incrementAsync(1, 50); // 0 + 1 = 1
+        await incrementAsync(2, 30); // 1 + 2 = 3
+        await incrementAsync(3, 20); // 3 + 3 = 6
 
         // Assert: All updates should be applied in sequence
         expect(sequentialState.notifier, 6,
@@ -153,11 +155,8 @@ void main() {
         }
 
         // Act: Start multiple concurrent async operations
-        await Future.wait([
-          incrementAsync(),
-          incrementAsync(),
-          incrementAsync()
-        ]);
+        await Future.wait(
+            [incrementAsync(), incrementAsync(), incrementAsync()]);
 
         // Assert: All concurrent operations should complete
         expect(concurrentState.notifier, 3,
@@ -166,7 +165,8 @@ void main() {
             reason: 'Listener should be called for each concurrent update');
       });
 
-      test('should handle race conditions in concurrent updates safely', () async {
+      test('should handle race conditions in concurrent updates safely',
+          () async {
         // Setup: Create ReactiveNotifier for race condition testing
         final raceState = ReactiveNotifier<List<String>>(() => []);
         final finalResults = <String>[];
@@ -186,9 +186,9 @@ void main() {
 
         // Act: Perform concurrent updates with different delays
         await Future.wait([
-          addItemAsync('fast', 10),     // Should complete first
-          addItemAsync('medium', 50),   // Should complete second
-          addItemAsync('slow', 100),    // Should complete last
+          addItemAsync('fast', 10), // Should complete first
+          addItemAsync('medium', 50), // Should complete second
+          addItemAsync('slow', 100), // Should complete last
         ]);
 
         // Assert: All updates should be applied despite race conditions
@@ -283,7 +283,7 @@ void main() {
           await Isolate.spawn((Map<String, dynamic> params) {
             final SendPort sendPort = params['sendPort'] as SendPort;
             final int multiplier = params['multiplier'] as int;
-            
+
             // Simulate computation in isolate
             final result = multiplier * multiplier;
             sendPort.send(result);
@@ -304,7 +304,8 @@ void main() {
 
         // Assert: All isolate computations should be collected
         expect(multiIsolateState.notifier, [4, 9, 16],
-            reason: 'State should contain results from all isolates (2²=4, 3²=9, 4²=16)');
+            reason:
+                'State should contain results from all isolates (2²=4, 3²=9, 4²=16)');
         expect(results.length, 3,
             reason: 'Should receive results from all 3 isolates');
       });
@@ -338,15 +339,17 @@ void main() {
         expect(optimizedState.notifier, greaterThan(0),
             reason: 'Final state should be updated');
         expect(duration.inMilliseconds, lessThan(1000),
-            reason: 'Frequent async updates should complete within reasonable time');
+            reason:
+                'Frequent async updates should complete within reasonable time');
       });
 
-      test('should maintain consistency during high-frequency async operations', () async {
+      test('should maintain consistency during high-frequency async operations',
+          () async {
         // Setup: Create system for high-frequency operations
         final highFrequencyState = ReactiveNotifier<Map<String, int>>(() => {
-          'counter': 0,
-          'sum': 0,
-        });
+              'counter': 0,
+              'sum': 0,
+            });
 
         var consistencyChecks = 0;
         var inconsistentStates = 0;
@@ -356,7 +359,7 @@ void main() {
           final state = highFrequencyState.notifier;
           final counter = state['counter']!;
           final sum = state['sum']!;
-          
+
           // Check if sum matches expected value (sum of 1 to counter)
           final expectedSum = counter * (counter + 1) ~/ 2;
           if (sum != expectedSum) {
@@ -370,7 +373,8 @@ void main() {
           futures.add(Future.delayed(
             Duration(milliseconds: i * 2),
             () {
-              final currentState = Map<String, int>.from(highFrequencyState.notifier);
+              final currentState =
+                  Map<String, int>.from(highFrequencyState.notifier);
               currentState['counter'] = i;
               currentState['sum'] = i * (i + 1) ~/ 2; // Sum of 1 to i
               highFrequencyState.updateState(currentState);
@@ -403,7 +407,7 @@ void main() {
             await Future.delayed(const Duration(milliseconds: 50));
             cleanupState.updateState('processing');
             operationResults.add('processed');
-            
+
             await Future.delayed(const Duration(milliseconds: 30));
             cleanupState.updateState('completed');
             operationResults.add('completed');
@@ -420,8 +424,7 @@ void main() {
         // Assert: Operation and cleanup should complete correctly
         expect(cleanupState.notifier, 'completed',
             reason: 'Async operation should complete successfully');
-        expect(cleanupCalled, true,
-            reason: 'Cleanup should be called');
+        expect(cleanupCalled, true, reason: 'Cleanup should be called');
         expect(operationResults, ['processed', 'completed', 'cleanup'],
             reason: 'Operation should complete with proper cleanup sequence');
       });

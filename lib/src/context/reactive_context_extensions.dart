@@ -25,9 +25,15 @@ extension ReactiveContextBase on BuildContext {
 
 /// Optional generic extension
 ///
-/// Allows using: context<MyType>() and context.getByKey('key')
+/// Allows using:
+/// ```dart
+/// context<MyType>() and context.getByKey('key')
+/// ```
 extension ReactiveContextGeneric on BuildContext {
-  /// Access by type: context<MyLang>()
+  /// Access by type:
+  /// ```dart
+  /// context<MyLang>()
+  /// ```
   T call<T>() {
     // Search for ReactiveNotifier in global ReactiveNotifier registry
     final instances = ReactiveNotifier.getInstances;

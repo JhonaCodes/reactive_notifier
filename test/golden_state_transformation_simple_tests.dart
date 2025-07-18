@@ -45,14 +45,14 @@ class MockScreenLayout extends StatelessWidget {
 }
 
 /// Simple Golden Tests for State Transformation and Update Methods
-/// 
+///
 /// This test suite provides visual regression testing for different state
 /// update methods and their effects on UI rendering:
-/// 
+///
 /// 1. updateState() vs updateSilently() visual differences
 /// 2. transformState() vs transformStateSilently() behaviors
 /// 3. Simple state transformations with immediate values
-/// 
+///
 /// These tests ensure that state transformation methods work correctly
 /// and that the UI responds appropriately to different update patterns.
 
@@ -62,8 +62,7 @@ void main() {
       ReactiveNotifier.cleanup();
     });
 
-    final counterState = ReactiveNotifier<int>(() => 0);
-    final stringState = ReactiveNotifier<String>(() => 'Initial');
+    // Use service mixins instead of direct instances
 
     group('updateState vs updateSilently Visual Comparison', () {
       goldenTest(
@@ -71,7 +70,8 @@ void main() {
         fileName: 'simple_update_state_immediate',
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+          scenarioConstraints:
+              ReactiveNotifierAlchemistConfig.mobileConstraints,
           children: [
             GoldenTestScenario(
               name: 'Immediate Update',
@@ -79,14 +79,15 @@ void main() {
                 title: 'updateState() Demo',
                 backgroundColor: Colors.blue[50],
                 body: ReactiveBuilder<int>(
-                  notifier: counterState,
+                  notifier: _CounterTestService.counterState,
                   build: (value, notifier, keep) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const Text(
                           'Counter with updateState()',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
@@ -107,7 +108,8 @@ void main() {
                             children: [
                               const Text(
                                 'Current Value',
-                                style: TextStyle(fontSize: 16, color: Colors.black54),
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.black54),
                               ),
                               const SizedBox(height: 8),
                               Text(
@@ -123,7 +125,8 @@ void main() {
                         ),
                         const SizedBox(height: 24),
                         ElevatedButton(
-                          onPressed: () => notifier.updateState(value + 1),
+                          onPressed: () =>
+                              _CounterTestService.incrementCounter(value),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
                             foregroundColor: Colors.white,
@@ -147,7 +150,8 @@ void main() {
                           ),
                           child: const Text(
                             'This button uses updateState() which immediately triggers UI rebuilds and notifies all listeners.',
-                            style: TextStyle(fontSize: 14, color: Colors.black87),
+                            style:
+                                TextStyle(fontSize: 14, color: Colors.black87),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -166,7 +170,8 @@ void main() {
         fileName: 'simple_update_silently_internal',
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+          scenarioConstraints:
+              ReactiveNotifierAlchemistConfig.mobileConstraints,
           children: [
             GoldenTestScenario(
               name: 'Silent Update',
@@ -174,14 +179,15 @@ void main() {
                 title: 'updateSilently() Demo',
                 backgroundColor: Colors.orange[50],
                 body: ReactiveBuilder<int>(
-                  notifier: counterState,
+                  notifier: _CounterTestService.counterState,
                   build: (value, notifier, keep) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const Text(
                           'Counter with updateSilently()',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
@@ -202,7 +208,8 @@ void main() {
                             children: [
                               const Text(
                                 'Displayed Value',
-                                style: TextStyle(fontSize: 16, color: Colors.black54),
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.black54),
                               ),
                               const SizedBox(height: 8),
                               Text(
@@ -224,7 +231,8 @@ void main() {
                                   children: [
                                     const Text(
                                       'Internal Value',
-                                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                                      style: TextStyle(
+                                          fontSize: 14, color: Colors.black54),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
@@ -246,11 +254,16 @@ void main() {
                           children: [
                             Expanded(
                               child: ElevatedButton(
-                                onPressed: () => notifier.updateSilently(notifier.notifier + 1),
+                                onPressed: () => _CounterTestService
+                                    .counterState
+                                    .updateSilently(_CounterTestService
+                                            .counterState.notifier +
+                                        1),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.orange,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -264,11 +277,15 @@ void main() {
                             const SizedBox(width: 16),
                             Expanded(
                               child: ElevatedButton(
-                                onPressed: () => notifier.updateState(notifier.notifier),
+                                onPressed: () => _CounterTestService
+                                    .counterState
+                                    .updateState(_CounterTestService
+                                        .counterState.notifier),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -291,7 +308,8 @@ void main() {
                           ),
                           child: const Text(
                             'updateSilently() modifies internal state without triggering UI updates. Use "Force Update" to refresh the display.',
-                            style: TextStyle(fontSize: 14, color: Colors.black87),
+                            style:
+                                TextStyle(fontSize: 14, color: Colors.black87),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -304,7 +322,6 @@ void main() {
           ],
         ),
       );
-
     });
 
     group('transformState vs transformStateSilently Visual Comparison', () {
@@ -313,7 +330,8 @@ void main() {
         fileName: 'simple_transform_state_notify',
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+          scenarioConstraints:
+              ReactiveNotifierAlchemistConfig.mobileConstraints,
           children: [
             GoldenTestScenario(
               name: 'Transform with Notify',
@@ -321,14 +339,15 @@ void main() {
                 title: 'transformState() Demo',
                 backgroundColor: Colors.green[50],
                 body: ReactiveBuilder<String>(
-                  notifier: stringState,
+                  notifier: _StringTestService.stringState,
                   build: (value, notifier, keep) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const Text(
                           'String with transformState()',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
@@ -349,7 +368,8 @@ void main() {
                             children: [
                               const Text(
                                 'Current Text',
-                                style: TextStyle(fontSize: 16, color: Colors.black54),
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.black54),
                               ),
                               const SizedBox(height: 8),
                               Container(
@@ -376,11 +396,13 @@ void main() {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     const Text(
                                       'Length:',
-                                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                                      style: TextStyle(
+                                          fontSize: 14, color: Colors.black54),
                                     ),
                                     Text(
                                       '${value.length}',
@@ -401,11 +423,13 @@ void main() {
                           children: [
                             Expanded(
                               child: ElevatedButton(
-                                onPressed: () => notifier.transformState((current) => '$current!'),
+                                onPressed: () => _StringTestService.stringState
+                                    .transformState((current) => '$current!'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.green,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -419,11 +443,13 @@ void main() {
                             const SizedBox(width: 8),
                             Expanded(
                               child: ElevatedButton(
-                                onPressed: () => notifier.transformState((current) => current.toUpperCase()),
+                                onPressed: () =>
+                                    _StringTestService.transformToUpper(),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.green,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -438,7 +464,7 @@ void main() {
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () => notifier.transformState((current) => 'Initial'),
+                          onPressed: () => _StringTestService.resetString(),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                             foregroundColor: Colors.white,
@@ -462,7 +488,8 @@ void main() {
                           ),
                           child: const Text(
                             'transformState() applies transformations to the current state and immediately notifies all listeners.',
-                            style: TextStyle(fontSize: 14, color: Colors.black87),
+                            style:
+                                TextStyle(fontSize: 14, color: Colors.black87),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -481,7 +508,8 @@ void main() {
         fileName: 'simple_transform_silently_background',
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+          scenarioConstraints:
+              ReactiveNotifierAlchemistConfig.mobileConstraints,
           children: [
             GoldenTestScenario(
               name: 'Silent Transform',
@@ -489,14 +517,15 @@ void main() {
                 title: 'transformStateSilently() Demo',
                 backgroundColor: Colors.purple[50],
                 body: ReactiveBuilder<String>(
-                  notifier: stringState,
+                  notifier: _StringTestService.stringState,
                   build: (value, notifier, keep) {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const Text(
                           'String with transformStateSilently()',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
@@ -517,7 +546,8 @@ void main() {
                             children: [
                               const Text(
                                 'Displayed Text',
-                                style: TextStyle(fontSize: 16, color: Colors.black54),
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.black54),
                               ),
                               const SizedBox(height: 8),
                               Container(
@@ -525,7 +555,8 @@ void main() {
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.purple[200]!),
+                                  border:
+                                      Border.all(color: Colors.purple[200]!),
                                 ),
                                 child: Text(
                                   '"$value"',
@@ -547,7 +578,8 @@ void main() {
                                   children: [
                                     const Text(
                                       'Internal Text',
-                                      style: TextStyle(fontSize: 14, color: Colors.black54),
+                                      style: TextStyle(
+                                          fontSize: 14, color: Colors.black54),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
@@ -569,11 +601,14 @@ void main() {
                           children: [
                             Expanded(
                               child: ElevatedButton(
-                                onPressed: () => notifier.transformStateSilently((current) => '$current*'),
+                                onPressed: () =>
+                                    _StringTestService.transformSilently(
+                                        (current) => '$current*'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.purple,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -587,11 +622,14 @@ void main() {
                             const SizedBox(width: 8),
                             Expanded(
                               child: ElevatedButton(
-                                onPressed: () => notifier.transformStateSilently((current) => current.toUpperCase()),
+                                onPressed: () =>
+                                    _StringTestService.transformSilently(
+                                        (current) => current.toUpperCase()),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.purple,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -606,7 +644,7 @@ void main() {
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () => notifier.updateState(notifier.notifier),
+                          onPressed: () => _StringTestService.showChanges(),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
                             foregroundColor: Colors.white,
@@ -630,7 +668,8 @@ void main() {
                           ),
                           child: const Text(
                             'transformStateSilently() modifies internal state without triggering UI updates. Use "Show Changes" to display modifications.',
-                            style: TextStyle(fontSize: 14, color: Colors.black87),
+                            style:
+                                TextStyle(fontSize: 14, color: Colors.black87),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -645,4 +684,35 @@ void main() {
       );
     });
   });
+}
+
+// Test services for state transformation testing
+mixin _CounterTestService {
+  static final ReactiveNotifier<int> counterState =
+      ReactiveNotifier<int>(() => 0);
+
+  static void incrementCounter(int currentValue) {
+    counterState.updateState(currentValue + 1);
+  }
+}
+
+mixin _StringTestService {
+  static final ReactiveNotifier<String> stringState =
+      ReactiveNotifier<String>(() => 'Initial');
+
+  static void transformToUpper() {
+    stringState.transformState((current) => current.toUpperCase());
+  }
+
+  static void transformSilently(String Function(String) transform) {
+    stringState.transformStateSilently(transform);
+  }
+
+  static void resetString() {
+    stringState.updateState('Initial');
+  }
+
+  static void showChanges() {
+    stringState.updateState(stringState.notifier);
+  }
 }

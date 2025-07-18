@@ -2,7 +2,7 @@ import 'package:alchemist/alchemist.dart';
 import 'package:flutter/material.dart';
 
 /// Alchemist configuration for ReactiveNotifier golden tests
-/// 
+///
 /// This configuration ensures consistent golden test image generation
 /// across all platforms and test scenarios.
 class ReactiveNotifierAlchemistConfig {
@@ -10,7 +10,7 @@ class ReactiveNotifierAlchemistConfig {
   static const AlchemistConfig standard = AlchemistConfig(
     // Don't force update golden files by default
     forceUpdateGoldenFiles: false,
-    
+
     // Configure platform-specific golden test settings
     platformGoldensConfig: PlatformGoldensConfig(
       enabled: true,

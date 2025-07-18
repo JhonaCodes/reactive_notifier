@@ -5,12 +5,12 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 import 'config/alchemist_config.dart';
 
 /// Golden Tests for AsyncViewModelImpl Transform Methods
-/// 
+///
 /// These tests visually demonstrate the transform methods:
 /// - transformDataState() - transforms data within success state with notifications
 /// - transformDataStateSilently() - transforms data within success state without notifications
 /// - transformStateSilently() - transforms entire AsyncState without notifications
-/// 
+///
 /// Each test shows 4 scenarios demonstrating the progression and effects
 /// of different transformation methods.
 
@@ -24,15 +24,19 @@ class SimpleTestViewModel extends AsyncViewModelImpl<List<String>> {
   }
 
   // Expose transform methods for testing
-  void testTransformDataState(List<String>? Function(List<String>? data) transformer) {
+  void testTransformDataState(
+      List<String>? Function(List<String>? data) transformer) {
     transformDataState(transformer);
   }
 
-  void testTransformDataStateSilently(List<String>? Function(List<String>? data) transformer) {
+  void testTransformDataStateSilently(
+      List<String>? Function(List<String>? data) transformer) {
     transformDataStateSilently(transformer);
   }
 
-  void testTransformStateSilently(AsyncState<List<String>> Function(AsyncState<List<String>> state) transformer) {
+  void testTransformStateSilently(
+      AsyncState<List<String>> Function(AsyncState<List<String>> state)
+          transformer) {
     transformStateSilently(transformer);
   }
 }
@@ -53,7 +57,8 @@ class SimpleCounterViewModel extends AsyncViewModelImpl<int> {
     transformDataStateSilently(transformer);
   }
 
-  void testTransformStateSilently(AsyncState<int> Function(AsyncState<int> state) transformer) {
+  void testTransformStateSilently(
+      AsyncState<int> Function(AsyncState<int> state) transformer) {
     transformStateSilently(transformer);
   }
 }
@@ -108,36 +113,36 @@ class SimpleListWidget extends StatelessWidget {
             )
           else
             ...items.map((item) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: color.withOpacity(0.3)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                      ),
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: color.withOpacity(0.3)),
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      item,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          item,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-            )),
+                  ),
+                )),
         ],
       ),
     );
@@ -272,13 +277,15 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: '1. Empty List',
                 child: MaterialApp(
                   home: Scaffold(
-                    appBar: AppBar(title: const Text('transformDataState - Empty')),
+                    appBar:
+                        AppBar(title: const Text('transformDataState - Empty')),
                     body: const Center(
                       child: SimpleListWidget(
                         items: [],
@@ -293,7 +300,8 @@ void main() {
                 name: '2. Single Item',
                 child: MaterialApp(
                   home: Scaffold(
-                    appBar: AppBar(title: const Text('transformDataState - Single')),
+                    appBar: AppBar(
+                        title: const Text('transformDataState - Single')),
                     body: const Center(
                       child: SimpleListWidget(
                         items: ['Item 1'],
@@ -308,7 +316,8 @@ void main() {
                 name: '3. Multiple Items',
                 child: MaterialApp(
                   home: Scaffold(
-                    appBar: AppBar(title: const Text('transformDataState - Multiple')),
+                    appBar: AppBar(
+                        title: const Text('transformDataState - Multiple')),
                     body: const Center(
                       child: SimpleListWidget(
                         items: ['Item 1', 'Item 2', 'Item 3'],
@@ -323,10 +332,16 @@ void main() {
                 name: '4. Transformed Items',
                 child: MaterialApp(
                   home: Scaffold(
-                    appBar: AppBar(title: const Text('transformDataState - Transformed')),
+                    appBar: AppBar(
+                        title: const Text('transformDataState - Transformed')),
                     body: const Center(
                       child: SimpleListWidget(
-                        items: ['Item 1', 'Item 2', 'Item 3', 'Added via transform'],
+                        items: [
+                          'Item 1',
+                          'Item 2',
+                          'Item 3',
+                          'Added via transform'
+                        ],
                         title: 'transformDataState',
                         color: Colors.blue,
                       ),
@@ -347,13 +362,16 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: '1. Empty List',
                 child: MaterialApp(
                   home: Scaffold(
-                    appBar: AppBar(title: const Text('transformDataStateSilently - Empty')),
+                    appBar: AppBar(
+                        title:
+                            const Text('transformDataStateSilently - Empty')),
                     body: const Center(
                       child: SimpleListWidget(
                         items: [],
@@ -368,7 +386,9 @@ void main() {
                 name: '2. Initial Items',
                 child: MaterialApp(
                   home: Scaffold(
-                    appBar: AppBar(title: const Text('transformDataStateSilently - Initial')),
+                    appBar: AppBar(
+                        title:
+                            const Text('transformDataStateSilently - Initial')),
                     body: const Center(
                       child: SimpleListWidget(
                         items: ['First', 'Second'],
@@ -383,7 +403,9 @@ void main() {
                 name: '3. Silently Added',
                 child: MaterialApp(
                   home: Scaffold(
-                    appBar: AppBar(title: const Text('transformDataStateSilently - Added')),
+                    appBar: AppBar(
+                        title:
+                            const Text('transformDataStateSilently - Added')),
                     body: const Center(
                       child: SimpleListWidget(
                         items: ['First', 'Second', 'Third (silent)'],
@@ -398,10 +420,17 @@ void main() {
                 name: '4. Fully Transformed',
                 child: MaterialApp(
                   home: Scaffold(
-                    appBar: AppBar(title: const Text('transformDataStateSilently - Full')),
+                    appBar: AppBar(
+                        title: const Text('transformDataStateSilently - Full')),
                     body: const Center(
                       child: SimpleListWidget(
-                        items: ['First', 'Second', 'Third (silent)', 'Fourth (silent)', 'Fifth (silent)'],
+                        items: [
+                          'First',
+                          'Second',
+                          'Third (silent)',
+                          'Fourth (silent)',
+                          'Fifth (silent)'
+                        ],
                         title: 'transformDataStateSilently',
                         color: Colors.green,
                       ),
@@ -422,13 +451,15 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: '1. Initial State',
                 child: MaterialApp(
                   home: Scaffold(
-                    appBar: AppBar(title: const Text('transformStateSilently - Initial')),
+                    appBar: AppBar(
+                        title: const Text('transformStateSilently - Initial')),
                     body: const Center(
                       child: SimpleStateWidget(
                         state: 'Initial',
@@ -443,7 +474,8 @@ void main() {
                 name: '2. Loading State',
                 child: MaterialApp(
                   home: Scaffold(
-                    appBar: AppBar(title: const Text('transformStateSilently - Loading')),
+                    appBar: AppBar(
+                        title: const Text('transformStateSilently - Loading')),
                     body: const Center(
                       child: SimpleStateWidget(
                         state: 'Loading',
@@ -458,7 +490,8 @@ void main() {
                 name: '3. Success State',
                 child: MaterialApp(
                   home: Scaffold(
-                    appBar: AppBar(title: const Text('transformStateSilently - Success')),
+                    appBar: AppBar(
+                        title: const Text('transformStateSilently - Success')),
                     body: const Center(
                       child: SimpleStateWidget(
                         state: 'Success',
@@ -473,7 +506,8 @@ void main() {
                 name: '4. Error State',
                 child: MaterialApp(
                   home: Scaffold(
-                    appBar: AppBar(title: const Text('transformStateSilently - Error')),
+                    appBar: AppBar(
+                        title: const Text('transformStateSilently - Error')),
                     body: const Center(
                       child: SimpleStateWidget(
                         state: 'Error',
@@ -497,7 +531,8 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: '1. Counter Initial',

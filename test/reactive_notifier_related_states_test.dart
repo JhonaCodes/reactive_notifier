@@ -3,14 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 /// Tests for ReactiveNotifier related states and batch updates
-/// 
+///
 /// This test suite covers advanced ReactiveNotifier features:
 /// - Singleton behavior with keys and instance management
 /// - Related states system for state coordination
 /// - Batch updates and notification batching
 /// - Complex scenarios with state chains and dependencies
 /// - State access patterns and error handling
-/// 
+///
 /// These tests verify that ReactiveNotifier can handle sophisticated state
 /// coordination patterns including related states, batch operations, and
 /// complex update chains essential for enterprise-level state management.
@@ -59,7 +59,8 @@ void main() {
 
         // Test that creating a notifier with duplicate key is prevented
         expect(() => ReactiveNotifier(() => 'A2', key: key1), throwsStateError,
-            reason: 'Creating a notifier with duplicate key should throw StateError');
+            reason:
+                'Creating a notifier with duplicate key should throw StateError');
 
         // Verify original instances still work correctly
         expect(stateA1.notifier, 'A1',
@@ -116,8 +117,7 @@ void main() {
         // Assert: Listener should be notified with new value
         expect(notifications, 1,
             reason: 'Listener should be called once for value change');
-        expect(state.notifier, 42,
-            reason: 'State should have updated value');
+        expect(state.notifier, 42, reason: 'State should have updated value');
         expect(lastNotifiedValue, 42,
             reason: 'Listener should receive updated value');
       });
@@ -152,10 +152,10 @@ void main() {
 
         // Act: Perform multiple state changes
         state.updateState('first');
-        state.updateState('first');     // Same value - should not notify
+        state.updateState('first'); // Same value - should not notify
         state.updateState('second');
         state.updateState('third');
-        state.updateState('third');     // Same value - should not notify
+        state.updateState('third'); // Same value - should not notify
 
         // Assert: Only actual changes should trigger notifications
         expect(totalNotifications, 3,
@@ -173,10 +173,8 @@ void main() {
         final cartState = ReactiveNotifier(() => CartState(0));
         final totalState = ReactiveNotifier(() => TotalState(0.0));
 
-        final orderState = ReactiveNotifier(
-            () => 'order',
-            related: [cartState, totalState]
-        );
+        final orderState =
+            ReactiveNotifier(() => 'order', related: [cartState, totalState]);
 
         // Assert: Should be able to access related states
         expect(orderState.from<CartState>().items, 0,
@@ -202,12 +200,10 @@ void main() {
         // Act & Assert: Should throw error for non-existent related state
         expect(
             () => state.from<CartState>(),
-            throwsA(isA<StateError>().having(
-                (error) => error.message,
-                'message',
-                contains('No Related States Found'))),
-            reason: 'Should throw StateError when accessing non-existent related state'
-        );
+            throwsA(isA<StateError>().having((error) => error.message,
+                'message', contains('No Related States Found'))),
+            reason:
+                'Should throw StateError when accessing non-existent related state');
       });
 
       test('should handle complex related state relationships', () {
@@ -217,10 +213,8 @@ void main() {
         final totalState = ReactiveNotifier(() => TotalState(0.0));
         final discountState = ReactiveNotifier(() => DiscountState(0.0));
 
-        final orderState = ReactiveNotifier(
-            () => OrderState('pending'),
-            related: [userState, cartState, totalState, discountState]
-        );
+        final orderState = ReactiveNotifier(() => OrderState('pending'),
+            related: [userState, cartState, totalState, discountState]);
 
         // Assert: Should access all related states
         expect(orderState.from<UserState>().name, 'John',
@@ -254,10 +248,8 @@ void main() {
         final stateA = ReactiveNotifier(() => 'A');
         final stateB = ReactiveNotifier(() => 'B');
 
-        final combined = ReactiveNotifier(
-            () => 'combined',
-            related: [stateA, stateB]
-        );
+        final combined =
+            ReactiveNotifier(() => 'combined', related: [stateA, stateB]);
 
         // Assert: Should access related states by key
         expect(combined.from<String>(stateA.keyNotifier), 'A',
@@ -283,10 +275,8 @@ void main() {
         final cartState = ReactiveNotifier(() => CartState(0));
         final totalState = ReactiveNotifier(() => TotalState(0.0));
 
-        final orderState = ReactiveNotifier(
-            () => 'initial',
-            related: [cartState, totalState]
-        );
+        final orderState =
+            ReactiveNotifier(() => 'initial', related: [cartState, totalState]);
 
         int notifications = 0;
         final notificationOrder = <String>[];
@@ -310,7 +300,8 @@ void main() {
 
         // Assert: Related states should be updated and order should notify
         expect(notifications, 2,
-            reason: 'Order state should be notified for each related state update');
+            reason:
+                'Order state should be notified for each related state update');
         expect(orderState.from<CartState>().items, 2,
             reason: 'Cart state should be updated in order state');
         expect(orderState.from<TotalState>().amount, 100.0,
@@ -326,10 +317,8 @@ void main() {
         final stateA = ReactiveNotifier(() => 'A');
         final stateB = ReactiveNotifier(() => 'B');
 
-        final combined = ReactiveNotifier(
-            () => 'combined',
-            related: [stateA, stateB]
-        );
+        final combined =
+            ReactiveNotifier(() => 'combined', related: [stateA, stateB]);
 
         // Setup: Track update order
         stateA.addListener(() => updates.add('A'));
@@ -349,20 +338,17 @@ void main() {
 
         // Act: Perform coordinated updates
         stateA.updateState('A2');
-        expect(stateA.notifier, 'A2',
-            reason: 'State A should be updated');
+        expect(stateA.notifier, 'A2', reason: 'State A should be updated');
         expect(combined.from<String>(stateA.keyNotifier), 'A2',
             reason: 'Combined should access updated state A');
 
         stateB.updateState('B2');
-        expect(stateB.notifier, 'B2',
-            reason: 'State B should be updated');
+        expect(stateB.notifier, 'B2', reason: 'State B should be updated');
         expect(combined.from<String>(stateB.keyNotifier), 'B2',
             reason: 'Combined should access updated state B');
 
         // Assert: Updates should happen in correct order
-        expect(updates.length, 4,
-            reason: 'Should have 4 updates total');
+        expect(updates.length, 4, reason: 'Should have 4 updates total');
         expect(updates.last, 'combined',
             reason: 'Combined state should be notified last');
       });
@@ -370,14 +356,10 @@ void main() {
       test('should handle large batch operations efficiently', () {
         // Setup: Create large batch operation scenario
         final batchStates = List.generate(
-            10,
-            (index) => ReactiveNotifier(() => 'state_$index')
-        );
+            10, (index) => ReactiveNotifier(() => 'state_$index'));
 
-        final aggregatorState = ReactiveNotifier(
-            () => 'aggregated',
-            related: batchStates
-        );
+        final aggregatorState =
+            ReactiveNotifier(() => 'aggregated', related: batchStates);
 
         var totalNotifications = 0;
         final notificationTimes = <DateTime>[];
@@ -403,7 +385,8 @@ void main() {
 
         // Verify all states are accessible through aggregator
         for (int i = 0; i < batchStates.length; i++) {
-          expect(aggregatorState.from<String>(batchStates[i].keyNotifier), 'updated_$i',
+          expect(aggregatorState.from<String>(batchStates[i].keyNotifier),
+              'updated_$i',
               reason: 'Batch state $i should be accessible through aggregator');
         }
       });
@@ -416,14 +399,10 @@ void main() {
 
         // Create a chain of dependent states
         final userState = ReactiveNotifier(() => UserState('John'));
-        final cartState = ReactiveNotifier(
-            () => CartState(0),
-            related: [userState]
-        );
-        final totalState = ReactiveNotifier(
-            () => TotalState(0.0),
-            related: [userState]
-        );
+        final cartState =
+            ReactiveNotifier(() => CartState(0), related: [userState]);
+        final totalState =
+            ReactiveNotifier(() => TotalState(0.0), related: [userState]);
 
         // Setup: Track update chain
         userState.addListener(() => updates.add('user'));
@@ -434,8 +413,7 @@ void main() {
         userState.updateState(UserState('Jane'));
 
         // Assert: Update chain should propagate correctly
-        expect(updates.length, 3,
-            reason: 'Should have 3 updates in the chain');
+        expect(updates.length, 3, reason: 'Should have 3 updates in the chain');
         expect(updates, containsAllInOrder(['user', 'cart', 'total']),
             reason: 'Updates should happen in dependency order');
 
@@ -448,20 +426,19 @@ void main() {
 
       test('should handle cascading updates with complex business logic', () {
         // Setup: Create business logic scenario with independent states
-        final productState = ReactiveNotifier(() => ProductState('Widget', 10.0));
+        final productState =
+            ReactiveNotifier(() => ProductState('Widget', 10.0));
         final quantityState = ReactiveNotifier(() => QuantityState(1));
         final discountState = ReactiveNotifier(() => DiscountState(0.0));
 
         // Create calculation state that depends on product, quantity, and discount
         final calculationState = ReactiveNotifier(
             () => CalculationState(10.0, 0.0, 10.0),
-            related: [productState, quantityState, discountState]
-        );
+            related: [productState, quantityState, discountState]);
 
         // Create order summary state independently (no related states to avoid circular reference)
-        final orderSummaryState = ReactiveNotifier(
-            () => OrderSummaryState('Order Summary')
-        );
+        final orderSummaryState =
+            ReactiveNotifier(() => OrderSummaryState('Order Summary'));
 
         var calculationUpdates = 0;
         var summaryUpdates = 0;
@@ -477,7 +454,8 @@ void main() {
           final discountAmount = subtotal * (discount.percentage / 100);
           final total = subtotal - discountAmount;
 
-          calculationState.updateState(CalculationState(subtotal, discountAmount, total));
+          calculationState
+              .updateState(CalculationState(subtotal, discountAmount, total));
         }
 
         productState.addListener(updateCalculations);
@@ -488,16 +466,15 @@ void main() {
         calculationState.addListener(() {
           summaryUpdates++;
           final calc = calculationState.notifier;
-          orderSummaryState.updateState(OrderSummaryState(
-              'Total: \$${calc.total.toStringAsFixed(2)} '
-              '(Subtotal: \$${calc.subtotal.toStringAsFixed(2)}, '
-              'Discount: \$${calc.discountAmount.toStringAsFixed(2)})'
-          ));
+          orderSummaryState.updateState(
+              OrderSummaryState('Total: \$${calc.total.toStringAsFixed(2)} '
+                  '(Subtotal: \$${calc.subtotal.toStringAsFixed(2)}, '
+                  'Discount: \$${calc.discountAmount.toStringAsFixed(2)})'));
         });
 
         // Act: Perform business logic updates
-        quantityState.updateState(QuantityState(3));        // 3 widgets
-        discountState.updateState(DiscountState(15.0));     // 15% discount
+        quantityState.updateState(QuantityState(3)); // 3 widgets
+        discountState.updateState(DiscountState(15.0)); // 15% discount
 
         // Assert: Business logic should cascade correctly
         final finalCalc = calculationState.notifier;

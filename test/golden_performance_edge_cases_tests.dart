@@ -6,10 +6,10 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 import 'config/alchemist_config.dart';
 
 /// Golden Tests for Performance Scenarios and Edge Cases
-/// 
+///
 /// This test suite provides visual regression testing for performance-critical
 /// scenarios and edge cases in ReactiveNotifier:
-/// 
+///
 /// 1. Rapid state updates and their visual impact
 /// 2. Memory pressure scenarios with large state objects
 /// 3. Error states and recovery scenarios
@@ -17,7 +17,7 @@ import 'config/alchemist_config.dart';
 /// 5. Complex reactive chains and dependencies
 /// 6. Null safety and nullable state handling
 /// 7. Circular reference detection and error display
-/// 
+///
 /// These tests ensure that ReactiveNotifier performs well under stress
 /// and handles edge cases gracefully with appropriate visual feedback.
 
@@ -27,9 +27,12 @@ void main() {
       ReactiveNotifier.cleanup();
     });
 
-    final performanceState = ReactiveNotifier<PerformanceViewModel>(() => PerformanceViewModel());
-    final networkState = ReactiveNotifier<NetworkSimulatorViewModel>(() => NetworkSimulatorViewModel());
-    final errorState = ReactiveNotifier<ErrorHandlingViewModel>(() => ErrorHandlingViewModel());
+    final performanceState =
+        ReactiveNotifier<PerformanceViewModel>(() => PerformanceViewModel());
+    final networkState = ReactiveNotifier<NetworkSimulatorViewModel>(
+        () => NetworkSimulatorViewModel());
+    final errorState = ReactiveNotifier<ErrorHandlingViewModel>(
+        () => ErrorHandlingViewModel());
 
     group('Performance Scenarios', () {
       goldenTest(
@@ -37,7 +40,7 @@ void main() {
         fileName: 'performance_rapid_updates',
         constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+          scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
           children: [
             GoldenTestScenario(
               name: 'Rapid Updates Performance',
@@ -47,7 +50,8 @@ void main() {
                     title: const Text('Performance Test'),
                     backgroundColor: Colors.deepPurple,
                   ),
-                  body: ReactiveViewModelBuilder<PerformanceViewModel, PerformanceModel>(
+                  body: ReactiveViewModelBuilder<PerformanceViewModel,
+                      PerformanceModel>(
                     viewmodel: performanceState.notifier,
                     build: (perf, viewmodel, keep) {
                       return Padding(
@@ -57,7 +61,8 @@ void main() {
                           children: [
                             const Text(
                               'Performance Metrics',
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 16),
                             Card(
@@ -67,7 +72,8 @@ void main() {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         const Text('Current Value:'),
                                         Text(
@@ -82,7 +88,8 @@ void main() {
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         const Text('Updates/sec:'),
                                         Text('${perf.updatesPerSecond}'),
@@ -90,7 +97,8 @@ void main() {
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         const Text('Total Updates:'),
                                         Text('${perf.totalUpdates}'),
@@ -98,18 +106,26 @@ void main() {
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         const Text('Performance:'),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color: perf.isPerformant ? Colors.green : Colors.orange,
-                                            borderRadius: BorderRadius.circular(4),
+                                            color: perf.isPerformant
+                                                ? Colors.green
+                                                : Colors.orange,
+                                            borderRadius:
+                                                BorderRadius.circular(4),
                                           ),
                                           child: Text(
-                                            perf.isPerformant ? 'Optimal' : 'Degraded',
-                                            style: const TextStyle(color: Colors.white),
+                                            perf.isPerformant
+                                                ? 'Optimal'
+                                                : 'Degraded',
+                                            style: const TextStyle(
+                                                color: Colors.white),
                                           ),
                                         ),
                                       ],
@@ -123,20 +139,24 @@ void main() {
                               value: perf.currentValue / 1000.0,
                               backgroundColor: Colors.grey[300],
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                perf.isPerformant ? Colors.green : Colors.orange,
+                                perf.isPerformant
+                                    ? Colors.green
+                                    : Colors.orange,
                               ),
                             ),
                             const SizedBox(height: 16),
                             Row(
                               children: [
                                 ElevatedButton(
-                                  onPressed: () => viewmodel.startRapidUpdates(),
+                                  onPressed: () =>
+                                      viewmodel.startRapidUpdates(),
                                   child: const Text('Start Rapid Updates'),
                                 ),
                                 const SizedBox(width: 16),
                                 ElevatedButton(
                                   onPressed: () => viewmodel.stopUpdates(),
-                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red),
                                   child: const Text('Stop Updates'),
                                 ),
                               ],
@@ -149,7 +169,9 @@ void main() {
                                   'This widget never rebuilds during performance tests.\n'
                                   'It serves as a control to verify that non-rebuilding widgets\n'
                                   'remain stable during rapid state changes.',
-                                  style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontStyle: FontStyle.italic),
                                 ),
                               ),
                             )),
@@ -170,7 +192,7 @@ void main() {
         fileName: 'memory_pressure_large_objects',
         constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+          scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
           children: [
             GoldenTestScenario(
               name: 'Memory Pressure Test',
@@ -180,7 +202,8 @@ void main() {
                     title: const Text('Memory Pressure Test'),
                     backgroundColor: Colors.orange,
                   ),
-                  body: ReactiveViewModelBuilder<PerformanceViewModel, PerformanceModel>(
+                  body: ReactiveViewModelBuilder<PerformanceViewModel,
+                      PerformanceModel>(
                     viewmodel: performanceState.notifier,
                     build: (perf, viewmodel, keep) {
                       return Padding(
@@ -190,7 +213,8 @@ void main() {
                           children: [
                             const Text(
                               'Memory Usage Simulation',
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 16),
                             Card(
@@ -201,7 +225,8 @@ void main() {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         const Text('Memory Objects:'),
                                         Text('${perf.memoryObjects.length}'),
@@ -209,26 +234,37 @@ void main() {
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         const Text('Est. Memory Usage:'),
-                                        Text('${(perf.memoryObjects.length * 0.001).toStringAsFixed(3)} MB'),
+                                        Text(
+                                            '${(perf.memoryObjects.length * 0.001).toStringAsFixed(3)} MB'),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         const Text('Memory Status:'),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color: perf.memoryObjects.length < 10000 ? Colors.green : Colors.red,
-                                            borderRadius: BorderRadius.circular(4),
+                                            color: perf.memoryObjects.length <
+                                                    10000
+                                                ? Colors.green
+                                                : Colors.red,
+                                            borderRadius:
+                                                BorderRadius.circular(4),
                                           ),
                                           child: Text(
-                                            perf.memoryObjects.length < 10000 ? 'Normal' : 'High',
-                                            style: const TextStyle(color: Colors.white),
+                                            perf.memoryObjects.length < 10000
+                                                ? 'Normal'
+                                                : 'High',
+                                            style: const TextStyle(
+                                                color: Colors.white),
                                           ),
                                         ),
                                       ],
@@ -239,10 +275,13 @@ void main() {
                             ),
                             const SizedBox(height: 16),
                             LinearProgressIndicator(
-                              value: (perf.memoryObjects.length / 50000.0).clamp(0.0, 1.0),
+                              value: (perf.memoryObjects.length / 50000.0)
+                                  .clamp(0.0, 1.0),
                               backgroundColor: Colors.grey[300],
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                perf.memoryObjects.length < 10000 ? Colors.green : Colors.red,
+                                perf.memoryObjects.length < 10000
+                                    ? Colors.green
+                                    : Colors.red,
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -251,16 +290,19 @@ void main() {
                               runSpacing: 8,
                               children: [
                                 ElevatedButton(
-                                  onPressed: () => viewmodel.allocateMemory(1000),
+                                  onPressed: () =>
+                                      viewmodel.allocateMemory(1000),
                                   child: const Text('Allocate 1K Objects'),
                                 ),
                                 ElevatedButton(
-                                  onPressed: () => viewmodel.allocateMemory(10000),
+                                  onPressed: () =>
+                                      viewmodel.allocateMemory(10000),
                                   child: const Text('Allocate 10K Objects'),
                                 ),
                                 ElevatedButton(
                                   onPressed: () => viewmodel.clearMemory(),
-                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red),
                                   child: const Text('Clear Memory'),
                                 ),
                               ],
@@ -273,15 +315,19 @@ void main() {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: ListView.builder(
-                                  itemCount: (perf.memoryObjects.length / 1000).ceil(),
+                                  itemCount:
+                                      (perf.memoryObjects.length / 1000).ceil(),
                                   itemBuilder: (context, index) {
                                     final startIndex = index * 1000;
-                                    final endIndex = (startIndex + 1000).clamp(0, perf.memoryObjects.length);
+                                    final endIndex = (startIndex + 1000)
+                                        .clamp(0, perf.memoryObjects.length);
                                     return ListTile(
                                       leading: const Icon(Icons.memory),
                                       title: Text('Memory Block ${index + 1}'),
-                                      subtitle: Text('Objects ${startIndex + 1} - $endIndex'),
-                                      trailing: Text('${endIndex - startIndex} items'),
+                                      subtitle: Text(
+                                          'Objects ${startIndex + 1} - $endIndex'),
+                                      trailing: Text(
+                                          '${endIndex - startIndex} items'),
                                     );
                                   },
                                 ),
@@ -306,7 +352,7 @@ void main() {
         fileName: 'network_failure_simulation',
         constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+          scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
           children: [
             GoldenTestScenario(
               name: 'Network Failure Test',
@@ -316,7 +362,8 @@ void main() {
                     title: const Text('Network Simulation'),
                     backgroundColor: Colors.red,
                   ),
-                  body: ReactiveAsyncBuilder<NetworkSimulatorViewModel, NetworkResponse>(
+                  body: ReactiveAsyncBuilder<NetworkSimulatorViewModel,
+                      NetworkResponse>(
                     notifier: networkState.notifier,
                     onLoading: () => const Center(
                       child: Column(
@@ -341,7 +388,8 @@ void main() {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.check_circle, color: Colors.green),
+                                const Icon(Icons.check_circle,
+                                    color: Colors.green),
                                 const SizedBox(width: 8),
                                 const Text(
                                   'Connection Successful',
@@ -358,7 +406,8 @@ void main() {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       const Text('Status Code:'),
                                       Text('${data.statusCode}'),
@@ -366,7 +415,8 @@ void main() {
                                   ),
                                   const SizedBox(height: 8),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       const Text('Response Time:'),
                                       Text('${data.responseTime}ms'),
@@ -374,7 +424,8 @@ void main() {
                                   ),
                                   const SizedBox(height: 8),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       const Text('Data Size:'),
                                       Text('${data.dataSize} bytes'),
@@ -390,7 +441,8 @@ void main() {
                                     ),
                                     child: Text(
                                       data.responseData,
-                                      style: const TextStyle(fontFamily: 'monospace'),
+                                      style: const TextStyle(
+                                          fontFamily: 'monospace'),
                                     ),
                                   ),
                                 ],
@@ -417,7 +469,9 @@ void main() {
                                 const SizedBox(width: 8),
                                 const Text(
                                   'Network Error',
-                                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red),
                                 ),
                               ],
                             ),
@@ -431,7 +485,8 @@ void main() {
                                 children: [
                                   const Text(
                                     'Error Details:',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
@@ -441,15 +496,18 @@ void main() {
                                   const SizedBox(height: 16),
                                   const Text(
                                     'Retry Attempts:',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                   const SizedBox(height: 8),
-                                  Text('${networkState.notifier.data?.retryCount}/3'),
+                                  Text(
+                                      '${networkState.notifier.data?.retryCount}/3'),
                                   const SizedBox(height: 16),
                                   SizedBox(
                                     width: double.infinity,
                                     child: ElevatedButton.icon(
-                                      onPressed: () => networkState.notifier.retryConnection(),
+                                      onPressed: () => networkState.notifier
+                                          .retryConnection(),
                                       icon: const Icon(Icons.refresh),
                                       label: const Text('Retry Connection'),
                                       style: ElevatedButton.styleFrom(
@@ -480,7 +538,7 @@ void main() {
         fileName: 'error_handling_recovery',
         constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+          scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
           children: [
             GoldenTestScenario(
               name: 'Error Recovery Test',
@@ -490,7 +548,8 @@ void main() {
                     title: const Text('Error Handling'),
                     backgroundColor: Colors.red,
                   ),
-                  body: ReactiveViewModelBuilder<ErrorHandlingViewModel, ErrorHandlingModel>(
+                  body: ReactiveViewModelBuilder<ErrorHandlingViewModel,
+                      ErrorHandlingModel>(
                     viewmodel: errorState.notifier,
                     build: (errorModel, viewmodel, keep) {
                       return Padding(
@@ -500,7 +559,8 @@ void main() {
                           children: [
                             const Text(
                               'Error Handling Simulation',
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 16),
                             if (errorModel.hasError) ...[
@@ -509,11 +569,13 @@ void main() {
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
-                                          const Icon(Icons.error_outline, color: Colors.red),
+                                          const Icon(Icons.error_outline,
+                                              color: Colors.red),
                                           const SizedBox(width: 8),
                                           const Text(
                                             'Error Occurred',
@@ -527,12 +589,15 @@ void main() {
                                       const SizedBox(height: 8),
                                       Text(
                                         'Error: ${errorModel.errorMessage}',
-                                        style: const TextStyle(color: Colors.red),
+                                        style:
+                                            const TextStyle(color: Colors.red),
                                       ),
                                       const SizedBox(height: 8),
-                                      Text('Error Count: ${errorModel.errorCount}'),
+                                      Text(
+                                          'Error Count: ${errorModel.errorCount}'),
                                       const SizedBox(height: 8),
-                                      Text('Recovery Attempts: ${errorModel.recoveryAttempts}'),
+                                      Text(
+                                          'Recovery Attempts: ${errorModel.recoveryAttempts}'),
                                     ],
                                   ),
                                 ),
@@ -543,11 +608,13 @@ void main() {
                                 child: Padding(
                                   padding: const EdgeInsets.all(16.0),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
-                                          const Icon(Icons.check_circle, color: Colors.green),
+                                          const Icon(Icons.check_circle,
+                                              color: Colors.green),
                                           const SizedBox(width: 8),
                                           const Text(
                                             'System Operational',
@@ -559,7 +626,8 @@ void main() {
                                         ],
                                       ),
                                       const SizedBox(height: 8),
-                                      Text('Success Operations: ${errorModel.successCount}'),
+                                      Text(
+                                          'Success Operations: ${errorModel.successCount}'),
                                       const SizedBox(height: 8),
                                       Text('Uptime: ${errorModel.uptime}'),
                                     ],
@@ -576,34 +644,45 @@ void main() {
                                   children: [
                                     const Text(
                                       'System Status',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         const Text('Current State:'),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color: errorModel.hasError ? Colors.red : Colors.green,
-                                            borderRadius: BorderRadius.circular(4),
+                                            color: errorModel.hasError
+                                                ? Colors.red
+                                                : Colors.green,
+                                            borderRadius:
+                                                BorderRadius.circular(4),
                                           ),
                                           child: Text(
-                                            errorModel.hasError ? 'Error' : 'Healthy',
-                                            style: const TextStyle(color: Colors.white),
+                                            errorModel.hasError
+                                                ? 'Error'
+                                                : 'Healthy',
+                                            style: const TextStyle(
+                                                color: Colors.white),
                                           ),
                                         ),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         const Text('Auto-Recovery:'),
                                         Switch(
                                           value: errorModel.autoRecoveryEnabled,
-                                          onChanged: (value) => viewmodel.toggleAutoRecovery(),
+                                          onChanged: (value) =>
+                                              viewmodel.toggleAutoRecovery(),
                                         ),
                                       ],
                                     ),
@@ -618,17 +697,20 @@ void main() {
                               children: [
                                 ElevatedButton(
                                   onPressed: () => viewmodel.simulateError(),
-                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red),
                                   child: const Text('Simulate Error'),
                                 ),
                                 ElevatedButton(
                                   onPressed: () => viewmodel.performOperation(),
-                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green),
                                   child: const Text('Perform Operation'),
                                 ),
                                 ElevatedButton(
                                   onPressed: () => viewmodel.resetSystem(),
-                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blue),
                                   child: const Text('Reset System'),
                                 ),
                               ],
@@ -652,7 +734,7 @@ void main() {
         fileName: 'null_safety_handling',
         constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+          scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
           children: [
             GoldenTestScenario(
               name: 'Null Safety Test',
@@ -663,7 +745,7 @@ void main() {
                     backgroundColor: Colors.indigo,
                   ),
                   body: ReactiveBuilder<String?>(
-                    notifier: ReactiveNotifier<String?>(() => null),
+                    notifier: _NullSafetyTestService.nullableState,
                     build: (value, notifier, keep) {
                       return Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -672,11 +754,14 @@ void main() {
                           children: [
                             const Text(
                               'Nullable State Management',
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 16),
                             Card(
-                              color: value == null ? Colors.orange[50] : Colors.green[50],
+                              color: value == null
+                                  ? Colors.orange[50]
+                                  : Colors.green[50],
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Column(
@@ -685,15 +770,23 @@ void main() {
                                     Row(
                                       children: [
                                         Icon(
-                                          value == null ? Icons.warning : Icons.check_circle,
-                                          color: value == null ? Colors.orange : Colors.green,
+                                          value == null
+                                              ? Icons.warning
+                                              : Icons.check_circle,
+                                          color: value == null
+                                              ? Colors.orange
+                                              : Colors.green,
                                         ),
                                         const SizedBox(width: 8),
                                         Text(
-                                          value == null ? 'Null Value' : 'Value Present',
+                                          value == null
+                                              ? 'Null Value'
+                                              : 'Value Present',
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            color: value == null ? Colors.orange : Colors.green,
+                                            color: value == null
+                                                ? Colors.orange
+                                                : Colors.green,
                                           ),
                                         ),
                                       ],
@@ -723,16 +816,21 @@ void main() {
                               runSpacing: 8,
                               children: [
                                 ElevatedButton(
-                                  onPressed: () => notifier.updateState('Hello World'),
+                                  onPressed: () =>
+                                      _NullSafetyTestService.setValue(
+                                          'Hello World'),
                                   child: const Text('Set Value'),
                                 ),
                                 ElevatedButton(
-                                  onPressed: () => notifier.updateState(''),
+                                  onPressed: () =>
+                                      _NullSafetyTestService.setValue(''),
                                   child: const Text('Set Empty'),
                                 ),
                                 ElevatedButton(
-                                  onPressed: () => notifier.updateState(null),
-                                  style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                                  onPressed: () =>
+                                      _NullSafetyTestService.setValue(null),
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.orange),
                                   child: const Text('Set Null'),
                                 ),
                               ],
@@ -749,7 +847,8 @@ void main() {
                                 children: [
                                   const Text(
                                     'Null Safety Features:',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                   const SizedBox(height: 8),
                                   const Text('✓ Nullable type support'),
@@ -810,13 +909,14 @@ class PerformanceModel {
 }
 
 class PerformanceViewModel extends ViewModel<PerformanceModel> {
-  PerformanceViewModel() : super(PerformanceModel(
-    currentValue: 0,
-    updatesPerSecond: 0,
-    totalUpdates: 0,
-    isPerformant: true,
-    memoryObjects: [],
-  ));
+  PerformanceViewModel()
+      : super(PerformanceModel(
+          currentValue: 0,
+          updatesPerSecond: 0,
+          totalUpdates: 0,
+          isPerformant: true,
+          memoryObjects: [],
+        ));
 
   @override
   void init() {
@@ -825,23 +925,24 @@ class PerformanceViewModel extends ViewModel<PerformanceModel> {
 
   void startRapidUpdates() {
     transformState((current) => current.copyWith(
-      currentValue: 500,
-      updatesPerSecond: 60,
-      totalUpdates: current.totalUpdates + 500,
-      isPerformant: true,
-    ));
+          currentValue: 500,
+          updatesPerSecond: 60,
+          totalUpdates: current.totalUpdates + 500,
+          isPerformant: true,
+        ));
   }
 
   void stopUpdates() {
     transformState((current) => current.copyWith(
-      updatesPerSecond: 0,
-      isPerformant: true,
-    ));
+          updatesPerSecond: 0,
+          isPerformant: true,
+        ));
   }
 
   void allocateMemory(int count) {
     transformState((current) {
-      final newObjects = List.generate(count, (index) => 'Object_${current.memoryObjects.length + index}');
+      final newObjects = List.generate(
+          count, (index) => 'Object_${current.memoryObjects.length + index}');
       return current.copyWith(
         memoryObjects: [...current.memoryObjects, ...newObjects],
       );
@@ -850,8 +951,8 @@ class PerformanceViewModel extends ViewModel<PerformanceModel> {
 
   void clearMemory() {
     transformState((current) => current.copyWith(
-      memoryObjects: [],
-    ));
+          memoryObjects: [],
+        ));
   }
 }
 
@@ -936,15 +1037,16 @@ class ErrorHandlingModel {
 }
 
 class ErrorHandlingViewModel extends ViewModel<ErrorHandlingModel> {
-  ErrorHandlingViewModel() : super(ErrorHandlingModel(
-    hasError: false,
-    errorMessage: '',
-    errorCount: 0,
-    recoveryAttempts: 0,
-    successCount: 0,
-    uptime: '00:00:00',
-    autoRecoveryEnabled: false,
-  ));
+  ErrorHandlingViewModel()
+      : super(ErrorHandlingModel(
+          hasError: false,
+          errorMessage: '',
+          errorCount: 0,
+          recoveryAttempts: 0,
+          successCount: 0,
+          uptime: '00:00:00',
+          autoRecoveryEnabled: false,
+        ));
 
   @override
   void init() {
@@ -953,35 +1055,45 @@ class ErrorHandlingViewModel extends ViewModel<ErrorHandlingModel> {
 
   void simulateError() {
     transformState((current) => current.copyWith(
-      hasError: true,
-      errorMessage: 'Simulated system error occurred',
-      errorCount: current.errorCount + 1,
-    ));
+          hasError: true,
+          errorMessage: 'Simulated system error occurred',
+          errorCount: current.errorCount + 1,
+        ));
   }
 
   void performOperation() {
     transformState((current) => current.copyWith(
-      hasError: false,
-      errorMessage: '',
-      successCount: current.successCount + 1,
-    ));
+          hasError: false,
+          errorMessage: '',
+          successCount: current.successCount + 1,
+        ));
   }
 
   void resetSystem() {
     transformState((current) => ErrorHandlingModel(
-      hasError: false,
-      errorMessage: '',
-      errorCount: 0,
-      recoveryAttempts: 0,
-      successCount: 0,
-      uptime: '00:00:00',
-      autoRecoveryEnabled: current.autoRecoveryEnabled,
-    ));
+          hasError: false,
+          errorMessage: '',
+          errorCount: 0,
+          recoveryAttempts: 0,
+          successCount: 0,
+          uptime: '00:00:00',
+          autoRecoveryEnabled: current.autoRecoveryEnabled,
+        ));
   }
 
   void toggleAutoRecovery() {
     transformState((current) => current.copyWith(
-      autoRecoveryEnabled: !current.autoRecoveryEnabled,
-    ));
+          autoRecoveryEnabled: !current.autoRecoveryEnabled,
+        ));
+  }
+}
+
+// Test service for null safety testing
+mixin _NullSafetyTestService {
+  static final ReactiveNotifier<String?> nullableState =
+      ReactiveNotifier<String?>(() => null);
+
+  static void setValue(String? value) {
+    nullableState.updateState(value);
   }
 }

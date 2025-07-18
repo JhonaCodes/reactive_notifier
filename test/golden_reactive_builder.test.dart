@@ -16,7 +16,7 @@ void main() {
       fileName: 'golden_reactive_builder_default_test',
       constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
       builder: () => GoldenTestGroup(
-        scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+        scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         children: [
           GoldenTestScenario(
             name: 'Change value 0',
@@ -44,7 +44,7 @@ void main() {
       fileName: 'golden_reactive_builder_test',
       constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
       builder: () => GoldenTestGroup(
-        scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
+        scenarioConstraints: ReactiveNotifierAlchemistConfig.wideConstraints,
         children: [
           GoldenTestScenario(
             name: 'Change value 200',

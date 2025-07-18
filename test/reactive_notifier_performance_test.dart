@@ -3,14 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 /// Tests for ReactiveNotifier performance and memory management
-/// 
+///
 /// This test suite covers performance-critical aspects of ReactiveNotifier:
 /// - Large-scale instance creation and management
 /// - Efficient cleanup operations for memory management
 /// - Memory leak prevention with listener management
 /// - Performance benchmarks for creation and cleanup operations
 /// - Stress testing with high-volume operations
-/// 
+///
 /// These tests ensure that ReactiveNotifier can handle demanding scenarios
 /// without performance degradation or memory leaks, making it suitable
 /// for production applications with complex state management needs.
@@ -40,12 +40,14 @@ void main() {
             reason: 'Instance creation should complete within 1 second');
       });
 
-      test('should handle creation of instances with different types efficiently', () {
+      test(
+          'should handle creation of instances with different types efficiently',
+          () {
         // Setup: Create various types in bulk
         const iterations = 1000;
-        
+
         final startTime = DateTime.now();
-        
+
         // Create instances of different types
         for (int i = 0; i < iterations; i++) {
           ReactiveNotifier<int>(() => i);
@@ -53,7 +55,7 @@ void main() {
           ReactiveNotifier<bool>(() => i % 2 == 0);
           ReactiveNotifier<double>(() => i * 1.5);
         }
-        
+
         final endTime = DateTime.now();
         final duration = endTime.difference(startTime);
 
@@ -62,7 +64,7 @@ void main() {
             reason: 'All instances of different types should be tracked');
         expect(duration.inMilliseconds, lessThan(2000),
             reason: 'Mixed type creation should complete in reasonable time');
-        
+
         // Verify type-specific counts
         expect(ReactiveNotifier.instanceCountByType<int>(), iterations,
             reason: 'Int instances should be tracked correctly');
@@ -74,23 +76,25 @@ void main() {
             reason: 'Double instances should be tracked correctly');
       });
 
-      test('should handle creation of complex object instances efficiently', () {
+      test('should handle creation of complex object instances efficiently',
+          () {
         // Setup: Create instances with complex objects
         const iterations = 1000;
-        
+
         final startTime = DateTime.now();
-        
+
         for (int i = 0; i < iterations; i++) {
           // Create instances with complex data structures
-          ReactiveNotifier<List<int>>(() => List.generate(10, (index) => index + i));
+          ReactiveNotifier<List<int>>(
+              () => List.generate(10, (index) => index + i));
           ReactiveNotifier<Map<String, dynamic>>(() => {
-            'id': i,
-            'name': 'item_$i',
-            'active': i % 2 == 0,
-            'metadata': {'created': DateTime.now().millisecondsSinceEpoch}
-          });
+                'id': i,
+                'name': 'item_$i',
+                'active': i % 2 == 0,
+                'metadata': {'created': DateTime.now().millisecondsSinceEpoch}
+              });
         }
-        
+
         final endTime = DateTime.now();
         final duration = endTime.difference(startTime);
 
@@ -98,7 +102,8 @@ void main() {
         expect(ReactiveNotifier.instanceCount, iterations * 2,
             reason: 'Complex object instances should be tracked');
         expect(duration.inMilliseconds, lessThan(1500),
-            reason: 'Complex object creation should complete in reasonable time');
+            reason:
+                'Complex object creation should complete in reasonable time');
       });
     });
 
@@ -109,7 +114,7 @@ void main() {
         for (int i = 0; i < iterations; i++) {
           ReactiveNotifier<int>(() => i);
         }
-        
+
         expect(ReactiveNotifier.instanceCount, iterations,
             reason: 'All instances should be created before cleanup test');
 
@@ -129,11 +134,12 @@ void main() {
       test('should efficiently clean up mixed type instances', () {
         // Setup: Create instances of various types
         const iterations = 2000;
-        
+
         for (int i = 0; i < iterations; i++) {
           ReactiveNotifier<int>(() => i);
           ReactiveNotifier<String>(() => 'test_$i');
-          ReactiveNotifier<List<double>>(() => [i.toDouble(), (i + 1).toDouble()]);
+          ReactiveNotifier<List<double>>(
+              () => [i.toDouble(), (i + 1).toDouble()]);
           ReactiveNotifier<Map<String, int>>(() => {'value': i});
         }
 
@@ -151,7 +157,7 @@ void main() {
             reason: 'All mixed type instances should be cleaned up');
         expect(duration.inMilliseconds, lessThan(150),
             reason: 'Mixed type cleanup should complete quickly');
-        
+
         // Verify all type counts are reset
         expect(ReactiveNotifier.instanceCountByType<int>(), 0);
         expect(ReactiveNotifier.instanceCountByType<String>(), 0);
@@ -170,7 +176,7 @@ void main() {
           for (int i = 0; i < instancesPerCycle; i++) {
             ReactiveNotifier<int>(() => i + cycle * instancesPerCycle);
           }
-          
+
           expect(ReactiveNotifier.instanceCount, instancesPerCycle,
               reason: 'Instances should be created for cycle $cycle');
 
@@ -179,17 +185,18 @@ void main() {
           ReactiveNotifier.cleanup();
           final endTime = DateTime.now();
           final duration = endTime.difference(startTime).inMilliseconds;
-          
+
           durations.add(duration);
-          
+
           expect(ReactiveNotifier.instanceCount, 0,
               reason: 'Cleanup should work for cycle $cycle');
         }
 
         // Assert: All cleanup operations should be consistently fast
         final maxDuration = durations.reduce((a, b) => a > b ? a : b);
-        final avgDuration = durations.reduce((a, b) => a + b) / durations.length;
-        
+        final avgDuration =
+            durations.reduce((a, b) => a + b) / durations.length;
+
         expect(maxDuration, lessThan(100),
             reason: 'Maximum cleanup time should be reasonable');
         expect(avgDuration, lessThan(50),
@@ -225,13 +232,14 @@ void main() {
             reason: 'Adding $listenerCount listeners should be fast');
         expect(removeDuration.inMilliseconds, lessThan(200),
             reason: 'Removing $listenerCount listeners should be fast');
-        
+
         // Verify notifier still works after listener operations
         var listenerCalled = false;
         notifier.addListener(() => listenerCalled = true);
         notifier.updateState(42);
         expect(listenerCalled, isTrue,
-            reason: 'Notifier should still work after mass listener operations');
+            reason:
+                'Notifier should still work after mass listener operations');
       });
 
       test('should handle rapid listener addition and removal cycles', () {
@@ -244,16 +252,16 @@ void main() {
 
         for (int cycle = 0; cycle < cycles; cycle++) {
           // Add listeners
-          final listeners = List.generate(listenersPerCycle, 
-              (index) => () => 'listener_${cycle}_$index');
-          
+          final listeners = List.generate(
+              listenersPerCycle, (index) => () => 'listener_${cycle}_$index');
+
           for (final listener in listeners) {
             notifier.addListener(listener);
           }
-          
+
           // Update state to trigger listeners
           notifier.updateState('cycle_$cycle');
-          
+
           // Remove listeners
           for (final listener in listeners) {
             notifier.removeListener(listener);
@@ -266,7 +274,7 @@ void main() {
         // Assert: Should handle rapid cycles efficiently
         expect(totalDuration.inMilliseconds, lessThan(1000),
             reason: 'Rapid listener cycles should complete within 1 second');
-        
+
         // Verify final state
         expect(notifier.notifier, 'cycle_${cycles - 1}',
             reason: 'Final state should be from last cycle');
@@ -276,7 +284,7 @@ void main() {
         // Setup: Test memory efficiency during rapid state updates
         final notifier = ReactiveNotifier<List<int>>(() => []);
         var callbackCount = 0;
-        
+
         notifier.addListener(() {
           callbackCount++;
         });
@@ -311,7 +319,7 @@ void main() {
         for (int i = 0; i < iterations; i++) {
           final instance = ReactiveNotifier<int>(() => i);
           instances.add(instance);
-          
+
           // Perform some operations on each instance
           if (i % 100 == 0) {
             instance.updateState(i * 2);
@@ -327,10 +335,12 @@ void main() {
             reason: 'All instances should be tracked');
         expect(duration.inMilliseconds, lessThan(1500),
             reason: 'Stress test should complete in reasonable time');
-        
+
         // Verify some instances were updated correctly
-        expect(instances[0].notifier, 0, reason: 'First instance should have correct value');
-        expect(instances[100].notifier, 200, reason: 'Updated instance should have correct value');
+        expect(instances[0].notifier, 0,
+            reason: 'First instance should have correct value');
+        expect(instances[100].notifier, 200,
+            reason: 'Updated instance should have correct value');
       });
 
       test('should maintain performance with heavy listener activity', () {
@@ -363,7 +373,8 @@ void main() {
         expect(totalCallbacks, listenerCount * 100,
             reason: 'All listeners should be called for all updates');
         expect(duration.inMilliseconds, lessThan(1000),
-            reason: 'Heavy listener activity should complete in reasonable time');
+            reason:
+                'Heavy listener activity should complete in reasonable time');
         expect(results.length, 100 * (listenerCount / 5).ceil(),
             reason: 'Expected number of results should be generated');
       });
@@ -375,24 +386,24 @@ void main() {
 
         for (final complexity in complexities) {
           ReactiveNotifier.cleanup(); // Start fresh for each complexity level
-          
+
           final startTime = DateTime.now();
-          
+
           // Create instances with increasing complexity
           for (int i = 0; i < complexity; i++) {
             final notifier = ReactiveNotifier<Map<String, dynamic>>(() => {
-              'id': i,
-              'data': List.generate(i % 10 + 1, (index) => index),
-              'timestamp': DateTime.now().millisecondsSinceEpoch,
-            });
-            
+                  'id': i,
+                  'data': List.generate(i % 10 + 1, (index) => index),
+                  'timestamp': DateTime.now().millisecondsSinceEpoch,
+                });
+
             // Add some listeners
             notifier.addListener(() {
               // Simulate some processing
               final data = notifier.notifier;
               data['processed'] = true;
             });
-            
+
             // Update the state
             notifier.updateState({
               'id': i,
@@ -401,24 +412,27 @@ void main() {
               'updated': true,
             });
           }
-          
+
           final endTime = DateTime.now();
           final duration = endTime.difference(startTime).inMilliseconds;
           durations.add(duration);
-          
+
           expect(ReactiveNotifier.instanceCount, complexity,
-              reason: 'Complexity level $complexity should create correct number of instances');
+              reason:
+                  'Complexity level $complexity should create correct number of instances');
         }
 
         // Assert: Performance should scale reasonably
         for (int i = 0; i < durations.length; i++) {
           final complexity = complexities[i];
           final duration = durations[i];
-          
+
           // Performance should be roughly linear or better
-          final expectedMaxDuration = (complexity / 100) * 200; // 200ms per 100 instances
+          final expectedMaxDuration =
+              (complexity / 100) * 200; // 200ms per 100 instances
           expect(duration, lessThan(expectedMaxDuration),
-              reason: 'Complexity $complexity should complete within expected time ($expectedMaxDuration ms), actual: $duration ms');
+              reason:
+                  'Complexity $complexity should complete within expected time ($expectedMaxDuration ms), actual: $duration ms');
         }
       });
     });

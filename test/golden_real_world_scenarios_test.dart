@@ -5,7 +5,7 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 import 'config/alchemist_config.dart';
 
 /// Real-World Scenario Golden Tests
-/// 
+///
 /// These tests demonstrate practical use cases of ReactiveNotifier:
 /// 1. Shopping Cart Management
 /// 2. User Authentication Flow
@@ -13,7 +13,7 @@ import 'config/alchemist_config.dart';
 /// 4. Settings Management
 /// 5. Data Loading and Error Handling
 /// 6. Multi-state Dashboard
-/// 
+///
 /// Each test shows how ReactiveNotifier works in realistic scenarios
 /// that developers would actually implement in their apps.
 
@@ -168,12 +168,13 @@ class AppSettings {
 
 // Service classes following CLAUDE.md patterns
 mixin ShoppingCartService {
-  static final ReactiveNotifier<ShoppingCart> cart = 
-    ReactiveNotifier<ShoppingCart>(() => ShoppingCart());
+  static final ReactiveNotifier<ShoppingCart> cart =
+      ReactiveNotifier<ShoppingCart>(() => ShoppingCart());
 
   static void addItem(CartItem item) {
     cart.transformState((currentCart) {
-      final existingIndex = currentCart.items.indexWhere((i) => i.id == item.id);
+      final existingIndex =
+          currentCart.items.indexWhere((i) => i.id == item.id);
       if (existingIndex >= 0) {
         final items = List<CartItem>.from(currentCart.items);
         items[existingIndex] = items[existingIndex].copyWith(
@@ -214,8 +215,8 @@ mixin ShoppingCartService {
 }
 
 mixin UserService {
-  static final ReactiveNotifier<User?> currentUser = 
-    ReactiveNotifier<User?>(() => null);
+  static final ReactiveNotifier<User?> currentUser =
+      ReactiveNotifier<User?>(() => null);
 
   static void login(User user) {
     currentUser.updateState(user);
@@ -231,16 +232,17 @@ mixin UserService {
 }
 
 mixin ThemeService {
-  static final ReactiveNotifier<AppTheme> theme = 
-    ReactiveNotifier<AppTheme>(() => AppTheme(
-      isDark: false,
-      primaryColor: Colors.blue,
-      fontFamily: 'System',
-      fontSize: 16.0,
-    ));
+  static final ReactiveNotifier<AppTheme> theme =
+      ReactiveNotifier<AppTheme>(() => AppTheme(
+            isDark: false,
+            primaryColor: Colors.blue,
+            fontFamily: 'System',
+            fontSize: 16.0,
+          ));
 
   static void toggleTheme() {
-    theme.transformState((current) => current.copyWith(isDark: !current.isDark));
+    theme
+        .transformState((current) => current.copyWith(isDark: !current.isDark));
   }
 
   static void updatePrimaryColor(Color color) {
@@ -253,32 +255,30 @@ mixin ThemeService {
 }
 
 mixin SettingsService {
-  static final ReactiveNotifier<AppSettings> settings = 
-    ReactiveNotifier<AppSettings>(() => AppSettings(
-      notifications: true,
-      autoSync: true,
-      language: 'en',
-      volume: 0.5,
-    ));
+  static final ReactiveNotifier<AppSettings> settings =
+      ReactiveNotifier<AppSettings>(() => AppSettings(
+            notifications: true,
+            autoSync: true,
+            language: 'en',
+            volume: 0.5,
+          ));
 
   static void toggleNotifications() {
-    settings.transformState((current) => 
-      current.copyWith(notifications: !current.notifications));
+    settings.transformState(
+        (current) => current.copyWith(notifications: !current.notifications));
   }
 
   static void toggleAutoSync() {
-    settings.transformState((current) => 
-      current.copyWith(autoSync: !current.autoSync));
+    settings.transformState(
+        (current) => current.copyWith(autoSync: !current.autoSync));
   }
 
   static void updateLanguage(String language) {
-    settings.transformState((current) => 
-      current.copyWith(language: language));
+    settings.transformState((current) => current.copyWith(language: language));
   }
 
   static void updateVolume(double volume) {
-    settings.transformState((current) => 
-      current.copyWith(volume: volume));
+    settings.transformState((current) => current.copyWith(volume: volume));
   }
 }
 
@@ -351,44 +351,44 @@ class ShoppingCartWidget extends StatelessWidget {
                 Column(
                   children: [
                     ...cart.items.map((item) => Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[50],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  '\$${item.price.toStringAsFixed(2)} x ${item.quantity}',
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          Text(
-                            '\$${item.total.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      '\$${item.price.toStringAsFixed(2)} x ${item.quantity}',
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text(
+                                '\$${item.total.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    )),
+                        )),
                     const Divider(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -856,7 +856,8 @@ void main() {
         fileName: 'shopping_cart_empty',
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+          scenarioConstraints:
+              ReactiveNotifierAlchemistConfig.mobileConstraints,
           children: [
             GoldenTestScenario(
               name: 'Empty Cart',
@@ -893,7 +894,8 @@ void main() {
           ));
 
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: 'Cart with Items',
@@ -918,7 +920,8 @@ void main() {
         fileName: 'user_profile_logged_out',
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+          scenarioConstraints:
+              ReactiveNotifierAlchemistConfig.mobileConstraints,
           children: [
             GoldenTestScenario(
               name: 'Logged Out',
@@ -949,7 +952,8 @@ void main() {
           ));
 
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: 'Logged In User',
@@ -974,7 +978,8 @@ void main() {
         fileName: 'theme_settings_light',
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () => GoldenTestGroup(
-          scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+          scenarioConstraints:
+              ReactiveNotifierAlchemistConfig.mobileConstraints,
           children: [
             GoldenTestScenario(
               name: 'Light Theme',
@@ -1002,7 +1007,8 @@ void main() {
           ThemeService.updateFontSize(18.0);
 
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: 'Dark Theme',
@@ -1028,7 +1034,8 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: '1. Default Settings',
@@ -1123,14 +1130,16 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           return GoldenTestGroup(
-            scenarioConstraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
+            scenarioConstraints:
+                ReactiveNotifierAlchemistConfig.mobileConstraints,
             children: [
               GoldenTestScenario(
                 name: '1. Fresh Start',
                 child: MaterialApp(
                   home: Scaffold(
                     backgroundColor: Colors.grey[100],
-                    appBar: AppBar(title: const Text('Dashboard - Fresh Start')),
+                    appBar:
+                        AppBar(title: const Text('Dashboard - Fresh Start')),
                     body: Builder(
                       builder: (context) {
                         // Reset all states
@@ -1244,7 +1253,8 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     backgroundColor: Colors.grey[100],
-                    appBar: AppBar(title: const Text('Dashboard - Full Experience')),
+                    appBar: AppBar(
+                        title: const Text('Dashboard - Full Experience')),
                     body: Builder(
                       builder: (context) {
                         // Full cart with premium user
