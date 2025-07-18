@@ -118,7 +118,7 @@ void main() {
     //     ),
     //   );
     //
-    //   // Act - múltiples actualizaciones rápidas
+    //   // Act - multiple rapid updates
     //   mockNotifier.updateValue('update1');
     //   mockNotifier.updateValue('update2');
     //   mockNotifier.updateValue('update3');
@@ -126,13 +126,13 @@ void main() {
     //   // Esperamos menos que el tiempo de debounce
     //   await tester.pump(const Duration(milliseconds: 50));
     //
-    //   // No debería haber actualizado aún
+    //   // Should not have updated yet
     //   expect(find.text('initial'), findsOneWidget);
     //
     //   // Esperamos que complete el debounce
     //   await tester.pump(const Duration(milliseconds: 50));
     //
-    //   // Assert - debería tener solo la última actualización
+    //   // Assert - should have only the last update
     //   expect(find.text('update3'), findsOneWidget);
     // });
 
@@ -154,11 +154,11 @@ void main() {
       // Act
       await tester.pumpWidget(const MaterialApp(home: SizedBox()));
 
-      // Intentamos actualizar después de dispose
+      // Try to update after dispose
       mockNotifier.updateValue('after dispose');
       await tester.pump(const Duration(milliseconds: 100));
 
-      // No debería causar errores
+      // Should not cause errors
       expect(tester.takeException(), isNull);
     });
 
@@ -185,7 +185,7 @@ void main() {
         ),
       );
 
-      // El nuevo notifier debería funcionar
+      // The new notifier should work
       newNotifier.updateValue('new notifier value');
       await tester.pump(const Duration(milliseconds: 100));
 

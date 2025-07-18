@@ -370,18 +370,18 @@ void main() {
       test('should handle updates from different isolates', () async {
         final isolateState = ReactiveNotifier<int>(() => 0);
 
-        // Crear un puerto de recepción para recibir datos del isolate
+        // Create a receive port to receive data from the isolate
         final receivePort = ReceivePort();
 
         // Iniciar un isolate
         await Isolate.spawn((SendPort sendPort) {
-          // Aquí estamos en el nuevo isolate
+          // Here we are in the new isolate
           const updatedState = 42;
           sendPort.send(
               updatedState); // Enviar el estado actualizado al isolate principal
         }, receivePort.sendPort);
 
-        // Escuchar el puerto de recepción para obtener el estado actualizado
+        // Listen to the receive port to get the updated state
         final updatedState = await receivePort.first;
 
         // Actualizar el estado en el isolate principal

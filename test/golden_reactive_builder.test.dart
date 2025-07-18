@@ -22,9 +22,9 @@ void main() {
                 build: (value, vm, child) {
                   return Column(
                     children: [
-                      Text("Widget que se recontruye $value"),
-                      child(const Text("Mi widget que no se recontruye")),
-                      Text("Widget que se recontruye $value"),
+                      Text("Widget that rebuilds $value"),
+                      child(const Text("My widget that doesn't rebuild")),
+                      Text("Widget that rebuilds $value"),
                     ],
                   );
                   // return ListTile(
@@ -70,12 +70,12 @@ void main() {
           body: ReactiveBuilder<int>(
             notifier: valueNotifier,
             build: (value, vm, noRebuildable) {
-              rebuildCount++; // Contador para verificar reconstrucciones
-              log("Widget que se reconstruye: $value");
-              log("Widget que se reconstruye: $value");
+              rebuildCount++; // Counter to verify rebuilds
+              log("Widget that rebuilds: $value");
+              log("Widget that rebuilds: $value");
               return Column(
                 children: [
-                  Text("Widget que se reconstruye: $value"),
+                  Text("Widget that rebuilds: $value"),
                   noRebuildable(
                     const NonRebuildWidget(),
                   ),
@@ -87,20 +87,20 @@ void main() {
       ),
     );
 
-    // Verificar el texto inicial
-    expect(find.text("Widget que se reconstruye: 0"), findsOneWidget);
-    expect(find.text("Widget que no se reconstruye"), findsOneWidget);
-    expect(rebuildCount, 1); // Se ha construido una vez
+    // Verify initial text
+    expect(find.text("Widget that rebuilds: 0"), findsOneWidget);
+    expect(find.text("Widget that doesn't rebuild"), findsOneWidget);
+    expect(rebuildCount, 1); // Has been built once
 
-    // Cambiar el valor del ValueNotifier
+    // Change the ValueNotifier value
     valueNotifier.updateState(1);
-    await tester.pump(); // Actualizar la UI
+    await tester.pump(); // Update the UI
 
-    // Verificar que el widget que se reconstruye ha cambiado
-    expect(find.text("Widget que se reconstruye: 1"), findsOneWidget);
+    // Verify that the rebuilding widget has changed
+    expect(find.text("Widget that rebuilds: 1"), findsOneWidget);
 
     // Verificar que el widget no se ha reconstruido
-    expect(rebuildCount, 2); // Se debería haber incrementado solo una vez
+    expect(rebuildCount, 2); // Should have incremented only once
   });
 }
 
@@ -110,6 +110,6 @@ class NonRebuildWidget extends StatelessWidget {
   const NonRebuildWidget({super.key});
   @override
   Widget build(BuildContext context) {
-    return const Text("Widget que no se reconstruye");
+    return const Text("Widget that doesn't rebuild");
   }
 }

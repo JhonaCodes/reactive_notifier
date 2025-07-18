@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 import 'package:reactive_notifier/src/context/reactive_context_enhanced.dart';
 
-/// Base extension para crear extensions específicas
+/// Base extension for creating specific extensions
 ///
-/// Los developers deben crear sus propias extensions usando este patrón:
+/// Developers should create their own extensions using this pattern:
 ///
 /// ```dart
 /// extension YourStateContext on BuildContext {
@@ -17,19 +17,19 @@ import 'package:reactive_notifier/src/context/reactive_context_enhanced.dart';
 /// }
 /// ```
 extension ReactiveContextBase on BuildContext {
-  /// Método helper para crear extensions personalizadas
+  /// Helper method for creating custom extensions
   T getReactiveState<T>(ReactiveNotifier<T> notifier) {
     return ReactiveContextEnhanced.getReactiveState<T>(this, notifier);
   }
 }
 
-/// Extension genérica opcional
+/// Optional generic extension
 ///
-/// Permite usar: context<MyType>() y context.getByKey('key')
+/// Allows using: context<MyType>() and context.getByKey('key')
 extension ReactiveContextGeneric on BuildContext {
-  /// Acceso por tipo: context<MyLang>()
+  /// Access by type: context<MyLang>()
   T call<T>() {
-    // Buscar ReactiveNotifier en registry global de ReactiveNotifier
+    // Search for ReactiveNotifier in global ReactiveNotifier registry
     final instances = ReactiveNotifier.getInstances;
     for (final instance in instances) {
       // Check if this ReactiveNotifier is parametrized with type T
@@ -41,12 +41,12 @@ extension ReactiveContextGeneric on BuildContext {
         'No ReactiveNotifier found for type $T. Make sure it\'s registered in a Service mixin.');
   }
 
-  /// Acceso por clave: context.getByKey('languageService')
+  /// Access by key: context.getByKey('languageService')
   T getByKey<T>(String key) {
-    // Buscar ReactiveNotifier por clave personalizada
+    // Search for ReactiveNotifier by custom key
     final instances = ReactiveNotifier.getInstances;
     for (final instance in instances) {
-      // Buscar por nombre de clase o clave personalizada
+      // Search by class name or custom key
       if (instance.runtimeType
               .toString()
               .toLowerCase()
