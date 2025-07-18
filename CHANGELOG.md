@@ -1,3 +1,6 @@
+# 2.11.1
+- Update git ignore and some tweaks.
+
 # 2.11.0
 ## 🚀 ReactiveContext - Clean Global State Access
 
