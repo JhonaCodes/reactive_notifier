@@ -30,3 +30,5 @@ build/
 /example/app/
 /CLAUDE.md
 /REACTIVE_NOTIFIER_MASTER_GUIDE.md
+.claude/
+/coverage/
