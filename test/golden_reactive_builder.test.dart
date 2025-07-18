@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
+import 'config/alchemist_config.dart';
+
 ReactiveNotifier<int> state = ReactiveNotifier<int>(() => 0);
 
 void main() {
@@ -12,8 +14,9 @@ void main() {
     goldenTest(
       'ReactiveBuilder should default value',
       fileName: 'golden_reactive_builder_default_test',
+      constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
       builder: () => GoldenTestGroup(
-        scenarioConstraints: const BoxConstraints(maxWidth: 600),
+        scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
         children: [
           GoldenTestScenario(
             name: 'Change value 0',
@@ -39,8 +42,9 @@ void main() {
     goldenTest(
       'ReactiveBuilder should rebuild to new value',
       fileName: 'golden_reactive_builder_test',
+      constraints: ReactiveNotifierAlchemistConfig.wideConstraints,
       builder: () => GoldenTestGroup(
-        scenarioConstraints: const BoxConstraints(maxWidth: 600),
+        scenarioConstraints:  ReactiveNotifierAlchemistConfig.wideConstraints,
         children: [
           GoldenTestScenario(
             name: 'Change value 200',

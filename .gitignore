@@ -32,3 +32,8 @@ build/
 /REACTIVE_NOTIFIER_MASTER_GUIDE.md
 .claude/
 /coverage/
+/COMPREHENSIVE_TEST_PLAN.md
+/TEST_ORGANIZATION_PLAN.md
+/TEST_COVERAGE_ANALYSIS.md
+/test_fixes.md
+/test/failures/

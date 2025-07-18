@@ -146,6 +146,12 @@ void main() {
       }
     });
 
+    tearDown(() {
+      ReactiveNotifier.cleanup();
+      TestLanguageService.reset();
+      TestThemeService.reset();
+    });
+
     testWidgets('should provide reactive state through context extensions',
         (tester) async {
       await tester.pumpWidget(
@@ -330,6 +336,12 @@ void main() {
       }
     });
 
+    tearDown(() {
+      ReactiveNotifier.cleanup();
+      TestLanguageService.reset();
+      TestThemeService.reset();
+    });
+
     testWidgets('should preserve widgets with .keep() extension',
         (tester) async {
       int normalWidgetBuilds = 0;
@@ -448,6 +460,12 @@ void main() {
       }
     });
 
+    tearDown(() {
+      ReactiveNotifier.cleanup();
+      TestLanguageService.reset();
+      TestThemeService.reset();
+    });
+
     testWidgets('should handle ReactiveContextOptimizer', (tester) async {
       await tester.pumpWidget(
         ReactiveContextOptimizer(
@@ -507,6 +525,12 @@ void main() {
       } catch (e) {
         // Ignore if not available
       }
+    });
+
+    tearDown(() {
+      ReactiveNotifier.cleanup();
+      TestLanguageService.reset();
+      TestThemeService.reset();
     });
 
     testWidgets('should handle missing state gracefully', (tester) async {

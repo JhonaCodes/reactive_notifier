@@ -22,7 +22,12 @@ void main() {
     late MockStateNotifier mockNotifier;
 
     setUp(() {
+      ReactiveNotifier.cleanup();
       mockNotifier = MockStateNotifier();
+    });
+
+    tearDown(() {
+      ReactiveNotifier.cleanup();
     });
 
     testWidgets('should build with initial state', (WidgetTester tester) async {
