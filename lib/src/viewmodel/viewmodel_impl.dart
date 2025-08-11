@@ -35,10 +35,17 @@ abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier, ViewMode
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
 
-    _safeInitialization();
-
-    /// Yes and only if it is changed to true when the entire initialization process is finished.
-    hasInitializedListenerExecution = true;
+    // Only initialize if context is available OR if init() doesn't require context
+    if (hasContext) {
+      _safeInitialization();
+      /// Yes and only if it is changed to true when the entire initialization process is finished.
+      hasInitializedListenerExecution = true;
+    } else {
+      // Mark that we were initialized without context
+      _initializedWithoutContext = true;
+      /// Set to false until we get context and can properly initialize
+      hasInitializedListenerExecution = false;
+    }
 
     assert(() {
       log('''
@@ -124,12 +131,13 @@ Context now available: ✓
         return true;
       }());
       
-      // Reset flags and re-initialize
+      // Reset flags and perform full initialization
       _initializedWithoutContext = false;
       _initialized = false;
-      hasInitializedListenerExecution = false;
       
+      // Now perform safe initialization with context
       _safeInitialization();
+      hasInitializedListenerExecution = true;
     }
   }
 

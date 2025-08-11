@@ -141,7 +141,8 @@ void main() {
       
       expect(viewModel.hasContext, false);
       expect(viewModel.hadContextDuringInit, false);
-      expect(viewModel.data, 'initialized without context');
+      // With new behavior: ViewModel stays in initial state until context is available
+      expect(viewModel.data, 'initial');
     });
 
     testWidgets('requireContext should throw when context is not available', (tester) async {

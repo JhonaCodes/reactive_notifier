@@ -1800,6 +1800,126 @@ class OrderRepositoryImpl {
 
 The main advantage of this approach is that it keeps business logic and cross-module communication in the appropriate layers (ViewModel, Repository), leaving the UI clean and focused solely on presentation. No complex event systems, or additional controllers are required.
 
+## 🧪 Testing with ReactiveNotifier
+
+ReactiveNotifier v2.12.0 includes comprehensive testing support, especially for ViewModels that require BuildContext access during migration scenarios.
+
+### Essential Testing Setup
+
+```dart
+setUp(() {
+  // CRITICAL: Always cleanup before each test
+  ReactiveNotifier.cleanup();
+  
+  // Create fresh instances to avoid cross-test contamination
+  MyService.createNew();
+});
+```
+
+### Testing ViewModels with Context Requirements
+
+```dart
+// Production-like ViewModel requiring context
+class MigrationViewModel extends ViewModel<UserState> {
+  MigrationViewModel() : super(UserState.initial());
+
+  @override
+  void init() {
+    // Require context for migration scenarios
+    if (!hasContext) {
+      throw StateError('ViewModel REQUIRES context for Riverpod migration');
+    }
+    
+    // Initialize safely first
+    updateSilently(UserState.initializing());
+    
+    // Use postFrameCallback for safe InheritedWidget access
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!isDisposed && hasContext) {
+        try {
+          // Safe to access Theme, MediaQuery, Provider, etc.
+          final theme = Theme.of(requireContext('migration'));
+          updateState(UserState.fromTheme(theme));
+        } catch (e) {
+          updateState(UserState.error('Context access failed'));
+        }
+      }
+    });
+  }
+}
+
+// Test implementation
+testWidgets('ViewModel receives context for migration', (tester) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      theme: ThemeData(brightness: Brightness.dark),
+      home: ReactiveViewModelBuilder<MigrationViewModel, UserState>(
+        viewmodel: MyService.instance.notifier,
+        build: (state, viewModel, keep) => Text('Theme: ${state.theme}'),
+      ),
+    ),
+  );
+
+  await tester.pumpAndSettle();
+  await tester.pump(); // Wait for postFrameCallback
+  
+  // Verify context access worked
+  expect(find.text('Theme: dark'), findsOneWidget);
+  
+  final vm = MyService.instance.notifier;
+  expect(vm.hasContext, isTrue);
+});
+```
+
+### Key Testing Patterns
+
+**✅ DO: Test Real Production Scenarios**
+- Require context for migration use cases
+- Use `postFrameCallback` for InheritedWidget access
+- Test both success and error scenarios
+- Verify context lifecycle management
+
+**❌ AVOID: Tests with Fallbacks**
+```dart
+// ❌ BAD - Hides production issues
+if (hasContext) {
+  // Use context
+} else {
+  // Fallback - makes tests pass when production fails
+}
+```
+
+**✅ GOOD: Strict Context Requirements**
+```dart
+// ✅ GOOD - Exposes real production issues
+if (!hasContext) {
+  throw StateError('REQUIRES context for migration');
+}
+```
+
+### Service Pattern for Testing
+
+```dart
+mixin MyService {
+  static ReactiveNotifier<MyViewModel>? _instance;
+  
+  static ReactiveNotifier<MyViewModel> get instance {
+    _instance ??= ReactiveNotifier<MyViewModel>(MyViewModel.new);
+    return _instance!;
+  }
+  
+  // Essential for testing - creates fresh instance
+  static ReactiveNotifier<MyViewModel> createNew() {
+    _instance = ReactiveNotifier<MyViewModel>(MyViewModel.new);
+    return _instance!;
+  }
+}
+```
+
+### Complete Testing Guide
+
+For comprehensive testing patterns, migration scenarios, and anti-patterns to avoid, see our **[Complete Testing Guide](TESTING_GUIDE.md)**.
+
 ## Advanced Guides
 
 For detailed information about advanced features and patterns, check out our comprehensive guides:

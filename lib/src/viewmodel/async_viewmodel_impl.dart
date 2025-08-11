@@ -27,10 +27,15 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     }
 
     if (loadOnInit) {
-      _initializeAsync();
-
-      /// Yes and only if it is changed to true when the entire initialization process is finished.
-      hasInitializedListenerExecution = true;
+      // Only initialize if context is available OR if init() doesn't require context
+      if (hasContext) {
+        _initializeAsync();
+        /// Yes and only if it is changed to true when the entire initialization process is finished.
+        hasInitializedListenerExecution = true;
+      } else {
+        /// Set to false until we get context and can properly initialize
+        hasInitializedListenerExecution = false;
+      }
     }
   }
 
@@ -574,9 +579,9 @@ Consider calling ReactiveNotifier.cleanup() manually when appropriate.
   /// Called when context becomes available for the first time
   /// Used to reinitialize ViewModels that were created without context
   void reinitializeWithContext() {
-    if (hasContext && !loadOnInit) {
-      // Only reload if we haven't loaded on init and now have context
-      reload();
+    if (hasContext && !hasInitializedListenerExecution) {
+      // Initialize async if we haven't been initialized yet
+      _initializeAsync();
     }
   }
 }
