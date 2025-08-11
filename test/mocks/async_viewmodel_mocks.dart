@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:reactive_notifier/src/viewmodel/async_viewmodel_impl.dart';
 import 'package:reactive_notifier/src/handler/async_state.dart';
 
@@ -91,6 +93,7 @@ class TestAsyncViewModel extends AsyncViewModelImpl<String> {
 class SlowAsyncViewModel extends AsyncViewModelImpl<String> {
   final int delay;
   int initCallCount = 0;
+  Timer? _delayTimer;
 
   SlowAsyncViewModel({this.delay = 50, bool loadOnInit = true})
       : super(AsyncState.initial(), loadOnInit: loadOnInit);
@@ -98,8 +101,19 @@ class SlowAsyncViewModel extends AsyncViewModelImpl<String> {
   @override
   Future<String> init() async {
     initCallCount++;
-    await Future.delayed(Duration(milliseconds: delay));
-    return 'slow_data';
+    // Use immediate completion to avoid pending timers in tests
+    if (delay <= 0) {
+      return 'slow_data';
+    }
+    
+    final completer = Completer<String>();
+    _delayTimer = Timer(Duration(milliseconds: delay), () {
+      if (!isDisposed && !completer.isCompleted) {
+        completer.complete('slow_data');
+      }
+    });
+    
+    return completer.future;
   }
 
   // Expose protected methods for testing
@@ -109,6 +123,12 @@ class SlowAsyncViewModel extends AsyncViewModelImpl<String> {
 
   // Helper to check if has listeners
   bool get testHasListeners => hasListeners;
+
+  @override
+  void dispose() {
+    _delayTimer?.cancel();
+    super.dispose();
+  }
 }
 
 /// AsyncViewModel that throws error during init
