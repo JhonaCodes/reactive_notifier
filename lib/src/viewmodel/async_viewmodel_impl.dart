@@ -16,6 +16,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   AsyncState<T> _state;
   late bool loadOnInit;
   bool _disposed = false;
+  bool _initialized = false;
+  bool _initializedWithoutContext = false;
 
   /// Public getter to check if AsyncViewModel is disposed
   /// Used by ReactiveNotifier to avoid circular dispose calls
@@ -33,18 +35,31 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
         /// Yes and only if it is changed to true when the entire initialization process is finished.
         hasInitializedListenerExecution = true;
       } else {
+        // Mark that we were initialized without context for later reinitialize
+        _initializedWithoutContext = true;
         /// Set to false until we get context and can properly initialize
         hasInitializedListenerExecution = false;
+        
+        // Still try to initialize for backward compatibility with tests
+        // and cases where init() doesn't require context
+        _initializeAsync();
       }
     }
   }
 
   /// Internal initialization method that properly handles async initialization
   Future<void> _initializeAsync() async {
+    if (_initialized || _disposed) return;
+
     /// We make sure it is always false before any full initialization.
     hasInitializedListenerExecution = false;
 
     try {
+      // Track if we're initializing without context
+      if (!hasContext) {
+        _initializedWithoutContext = true;
+      }
+
       await reload();
 
       // Assert _state is properly initialized
@@ -58,6 +73,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
         }
       }());
 
+      _initialized = true;
       /// Yes and only if it is changed to true when the entire initialization process is finished.
       hasInitializedListenerExecution = true;
     } catch (error, stackTrace) {
@@ -520,6 +536,8 @@ HasInitialized: $hasInitializedListenerExecution
     // 4. Reset initialization flags
     hasInitializedListenerExecution = false;
     loadOnInit = true;
+    _initialized = false;
+    _initializedWithoutContext = false;
 
     // 5. Mark as disposed
     _disposed = true;
@@ -579,8 +597,22 @@ Consider calling ReactiveNotifier.cleanup() manually when appropriate.
   /// Called when context becomes available for the first time
   /// Used to reinitialize ViewModels that were created without context
   void reinitializeWithContext() {
-    if (hasContext && !hasInitializedListenerExecution) {
-      // Initialize async if we haven't been initialized yet
+    if (_initializedWithoutContext && hasContext && !_disposed) {
+      assert(() {
+        log('''
+🔄 AsyncViewModelImpl<${T.toString()}> re-initializing with context
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Context now available: ✓
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+        return true;
+      }());
+      
+      // Reset flags and perform full initialization
+      _initializedWithoutContext = false;
+      _initialized = false;
+      
+      // Now perform async initialization with context
       _initializeAsync();
     }
   }
