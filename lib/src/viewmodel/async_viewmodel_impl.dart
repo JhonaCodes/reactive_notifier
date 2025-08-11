@@ -23,7 +23,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// Used by ReactiveNotifier to avoid circular dispose calls
   bool get isDisposed => _disposed;
 
-  AsyncViewModelImpl(this._state, {this.loadOnInit = false}) : super() {
+  AsyncViewModelImpl(this._state, {this.loadOnInit = true}) : super() {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
