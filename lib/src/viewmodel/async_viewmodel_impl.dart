@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 import 'package:reactive_notifier/src/helper/helper_notifier.dart';
+import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
 ///
@@ -11,7 +12,7 @@ import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
 abstract class AsyncViewModelImpl<T> extends ChangeNotifier
-    with HelperNotifier {
+    with HelperNotifier, ViewModelContextProvider {
   AsyncState<T> _state;
   late bool loadOnInit;
   bool _disposed = false;
@@ -20,7 +21,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// Used by ReactiveNotifier to avoid circular dispose calls
   bool get isDisposed => _disposed;
 
-  AsyncViewModelImpl(this._state, {this.loadOnInit = true}) : super() {
+  AsyncViewModelImpl(this._state, {this.loadOnInit = false}) : super() {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }

@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
+import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
 
 /// [ReactiveViewModelBuilder]
 /// ReactiveViewModelBuilder is a specialized widget for handling ViewModel states
@@ -65,6 +66,15 @@ class _ReactiveBuilderStateViewModel<VM, T>
   @override
   void initState() {
     super.initState();
+    
+    // Register context BEFORE accessing the viewmodel to ensure it's available during init()
+    context.registerForViewModels('ReactiveViewModelBuilder<$VM,$T>');
+    
+    // Re-initialize ViewModels that were created without context
+    if (widget.viewmodel is ViewModel) {
+      (widget.viewmodel as ViewModel).reinitializeWithContext();
+    }
+    
     // Initialize with data from either source
     value = widget.viewmodel.data;
 
@@ -86,6 +96,9 @@ class _ReactiveBuilderStateViewModel<VM, T>
   void dispose() {
     // Cleanup subscriptions and timer
     widget.viewmodel.removeListener(_valueChanged);
+    
+    // Automatically unregister context
+    context.unregisterFromViewModels('ReactiveViewModelBuilder<$VM,$T>');
 
     // Handle auto-dispose if applicable
     if (widget.viewmodel is ReactiveNotifierViewModel) {

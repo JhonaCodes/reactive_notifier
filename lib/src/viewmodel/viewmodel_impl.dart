@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
+import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
 
 /// Used in ViewModel classes where all business logic should reside.
 ///
@@ -13,11 +14,12 @@ import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 ///
 /// Implementations of this class are expected to encapsulate the presentation
 /// logic and state for a particular view or feature.
-abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier {
+abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier, ViewModelContextProvider {
   // Internal state
   T _data;
   bool _initialized = false;
   bool _disposed = false;
+  bool _initializedWithoutContext = false;
 
   /// Public getter to check if ViewModel is disposed
   /// Used by ReactiveNotifier to avoid circular dispose calls
@@ -107,6 +109,30 @@ Initial state hash: ${_data.hashCode}
   /// Must be implemented by subclasses
   T _createEmptyState();
 
+  /// Re-initialize if the ViewModel was initialized without context
+  /// Called by builders when context becomes available
+  void reinitializeWithContext() {
+    if (_initializedWithoutContext && hasContext && !_disposed) {
+      assert(() {
+        log('''
+🔄 ViewModel<${T.toString()}> re-initializing with context
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ID: $_instanceId
+Context now available: ✓
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+        return true;
+      }());
+      
+      // Reset flags and re-initialize
+      _initializedWithoutContext = false;
+      _initialized = false;
+      hasInitializedListenerExecution = false;
+      
+      _safeInitialization();
+    }
+  }
+
   /// Public getter for the data
   T get data {
     _checkDisposed();
@@ -133,6 +159,11 @@ Initial state hash: ${_data.hashCode}
     if (_initialized || _disposed) return;
 
     try {
+      // Track if we're initializing without context
+      if (!hasContext) {
+        _initializedWithoutContext = true;
+      }
+      
       init();
 
       // Ensure _data was assigned in init()

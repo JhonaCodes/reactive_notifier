@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/reactive_notifier.dart' show ReactiveNotifier;
 import 'package:reactive_notifier/src/notifier/notifier_impl.dart';
+import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
 
 import 'no_rebuild_wrapper.dart';
 
@@ -53,6 +54,10 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
   @override
   void initState() {
     super.initState();
+    
+    // Register context BEFORE accessing the notifier to ensure it's available during init()
+    context.registerForViewModels('ReactiveBuilder<$T>');
+    
     value = widget.notifier.notifier;
     widget.notifier.addListener(_valueChanged);
   }
@@ -70,6 +75,9 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
   @override
   void dispose() {
     widget.notifier.removeListener(_valueChanged);
+    
+    // Automatically unregister context
+    context.unregisterFromViewModels('ReactiveBuilder<$T>');
 
     if (widget.notifier is ReactiveNotifier) {
       final reactiveNotifier = widget.notifier as ReactiveNotifier;

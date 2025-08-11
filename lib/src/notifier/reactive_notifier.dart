@@ -6,6 +6,7 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 
 import 'notifier_impl.dart';
 import '../context/reactive_context_enhanced.dart';
+import '../context/viewmodel_context_notifier.dart';
 
 /// A reactive state management solution that supports:
 /// - Singleton instances with key-based identity
@@ -517,8 +518,16 @@ Available types: ${related!.map((r) => '${r.notifier.runtimeType}(${r.keyNotifie
     return result.notifier as R;
   }
 
+  /// Global cleanup flag to prevent concurrent modifications during cleanup
+  static bool _isGlobalCleanupInProgress = false;
+
   /// Utility methods
   static void cleanup() {
+    if (_isGlobalCleanupInProgress) {
+      return; // Already cleaning up, avoid recursive calls
+    }
+    
+    _isGlobalCleanupInProgress = true;
     assert(() {
       log('''
 🧹 Starting global ReactiveNotifier cleanup
@@ -535,7 +544,9 @@ Updating notifiers: ${_updatingNotifiers.length}
     int asyncViewModelsDisposed = 0;
     int simpleNotifiersCleared = 0;
 
-    for (final instance in _instances.values) {
+    // Create a copy of the instances to avoid concurrent modification
+    final instancesList = _instances.values.toList();
+    for (final instance in instancesList) {
       if (instance is ReactiveNotifier) {
         final vm = instance.notifier;
         try {
@@ -576,6 +587,16 @@ Continuing with cleanup...
     } catch (e) {
       // Ignore cleanup errors - may not be available in all contexts
     }
+
+    // 4. Clear ViewModelContextNotifier
+    try {
+      ViewModelContextNotifier.cleanup();
+    } catch (e) {
+      // Ignore cleanup errors
+    }
+
+    // Reset cleanup flag
+    _isGlobalCleanupInProgress = false;
 
     assert(() {
       log('''
@@ -624,6 +645,21 @@ Global registries cleared:
   /// [forceCleanup] - If true, cleanup will be performed regardless of listeners or parent references
   /// This is used when ViewModels call dispose() and need to force registry cleanup
   bool cleanCurrentNotifier({bool forceCleanup = false}) {
+    // Skip cleanup if global cleanup is in progress to avoid concurrent modification
+    if (_isGlobalCleanupInProgress) {
+      assert(() {
+        log('''
+🔄 Skipping cleanCurrentNotifier during global cleanup
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type: $T
+Reason: Global cleanup is already handling this instance
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+        return true;
+      }());
+      return true; // Pretend it was cleaned successfully
+    }
+
     // Check if it has listeners (unless force cleanup)
     if (hasListeners && !forceCleanup) {
       assert(() {
@@ -781,6 +817,11 @@ ${_getLocationInfo()}
   ///
   /// Returns `true` if an instance was found and removed, `false` otherwise.
   static bool cleanupInstance(Key key) {
+    // Skip cleanup if global cleanup is in progress
+    if (_isGlobalCleanupInProgress) {
+      return true; // Pretend it was cleaned successfully
+    }
+
     if (!_instances.containsKey(key)) {
       assert(() {
         final trace = StackTrace.current.toString().split('\n')[1];
@@ -845,6 +886,11 @@ Type: ${instance?.notifier.runtimeType}
   ///
   /// Returns the number of instances that were removed.
   static int cleanupByType<T>() {
+    // Skip cleanup if global cleanup is in progress
+    if (_isGlobalCleanupInProgress) {
+      return 0; // No instances cleaned during global cleanup
+    }
+
     final instancesBeforeCleanup = _instances.length;
     final instancesOfType = _instances.entries
         .where((entry) => entry.value is ReactiveNotifier<T>)

@@ -166,7 +166,7 @@ class AppSettings {
   }
 }
 
-// Service classes following CLAUDE.md patterns
+// Service classes following AGENTS.md patterns
 mixin ShoppingCartService {
   static final ReactiveNotifier<ShoppingCart> cart =
       ReactiveNotifier<ShoppingCart>(() => ShoppingCart());

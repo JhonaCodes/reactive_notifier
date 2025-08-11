@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
+import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
 
 import 'no_rebuild_wrapper.dart';
 
@@ -62,6 +63,20 @@ class _ReactiveAsyncBuilderState<VM, T>
   @override
   void initState() {
     super.initState();
+    
+    // Register context BEFORE accessing the notifier to ensure it's available during init()
+    context.registerForViewModels('ReactiveAsyncBuilder<$VM,$T>');
+    
+    // Force initialization if the ViewModel hasn't been initialized yet
+    // This ensures that ViewModels get context access during their init() method
+    if (widget.notifier is AsyncViewModelImpl && !widget.notifier.hasInitializedListenerExecution) {
+      // Manually trigger initialization now that context is available
+      (widget.notifier as AsyncViewModelImpl).reload().catchError((error) {
+        // Handle initialization errors gracefully
+        print('AsyncViewModel initialization error: $error');
+      });
+    }
+    
     widget.notifier.addListener(_valueChanged);
   }
 
@@ -77,6 +92,9 @@ class _ReactiveAsyncBuilderState<VM, T>
   @override
   void dispose() {
     widget.notifier.removeListener(_valueChanged);
+    
+    // Automatically unregister context
+    context.unregisterFromViewModels('ReactiveAsyncBuilder<$VM,$T>');
 
     if (widget.notifier is ReactiveNotifier) {
       final reactiveNotifier = widget.notifier as ReactiveNotifier;
