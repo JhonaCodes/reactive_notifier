@@ -64,9 +64,17 @@ class TenderItemsVM extends AsyncViewModelImpl<TenderItem> {
 
 /// Test service
 mixin TenderItemsService {
-  static final ReactiveNotifier<TenderItemsVM> instance = ReactiveNotifier<TenderItemsVM>(
-    TenderItemsVM.new,
-  );
+  static ReactiveNotifier<TenderItemsVM>? _instance;
+  
+  static ReactiveNotifier<TenderItemsVM> get instance {
+    _instance ??= ReactiveNotifier<TenderItemsVM>(TenderItemsVM.new);
+    return _instance!;
+  }
+  
+  static ReactiveNotifier<TenderItemsVM> createNew() {
+    _instance = ReactiveNotifier<TenderItemsVM>(TenderItemsVM.new);
+    return _instance!;
+  }
 }
 
 /// Test with regular ViewModel too
@@ -75,17 +83,29 @@ class SimpleCounterVM extends ViewModel<int> {
 
   @override
   void init() {
-    // Test context access in regular ViewModel
+    // Initialize with default value first
+    updateSilently(0);
+    
+    // Check if context is available and update accordingly
+    _updateFromContext();
+  }
+
+  void _updateFromContext() {
     final currentContext = context;
     
     if (currentContext != null) {
-      // Access MediaQuery to get screen width
-      final mediaQuery = MediaQuery.of(currentContext);
-      final screenWidth = mediaQuery.size.width;
-      // Use screen width to determine initial value
-      updateSilently(screenWidth > 600 ? 100 : 10);
-    } else {
-      updateSilently(0);
+      // Use post-frame callback to ensure MediaQuery is available
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!isDisposed && hasContext) {
+          try {
+            final mediaQuery = MediaQuery.of(currentContext);
+            final screenWidth = mediaQuery.size.width;
+            updateState(screenWidth > 600 ? 100 : 10);
+          } catch (e) {
+            // If MediaQuery access fails, just keep default value
+          }
+        }
+      });
     }
   }
 
@@ -95,9 +115,17 @@ class SimpleCounterVM extends ViewModel<int> {
 }
 
 mixin CounterService {
-  static final ReactiveNotifier<SimpleCounterVM> instance = ReactiveNotifier<SimpleCounterVM>(
-    SimpleCounterVM.new,
-  );
+  static ReactiveNotifier<SimpleCounterVM>? _instance;
+  
+  static ReactiveNotifier<SimpleCounterVM> get instance {
+    _instance ??= ReactiveNotifier<SimpleCounterVM>(SimpleCounterVM.new);
+    return _instance!;
+  }
+  
+  static ReactiveNotifier<SimpleCounterVM> createNew() {
+    _instance = ReactiveNotifier<SimpleCounterVM>(SimpleCounterVM.new);
+    return _instance!;
+  }
 }
 
 void main() {
@@ -105,6 +133,10 @@ void main() {
     setUp(() {
       // Clean up before each test
       ReactiveNotifier.cleanup();
+      
+      // Create completely new ReactiveNotifier instances
+      CounterService.createNew();
+      TenderItemsService.createNew();
     });
 
     testWidgets('AsyncViewModel can access context during init', (tester) async {
