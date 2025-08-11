@@ -67,14 +67,9 @@ class _ReactiveAsyncBuilderState<VM, T>
     // Register context BEFORE accessing the notifier to ensure it's available during init()
     context.registerForViewModels('ReactiveAsyncBuilder<$VM,$T>');
     
-    // Force initialization if the ViewModel hasn't been initialized yet
-    // This ensures that ViewModels get context access during their init() method
-    if (widget.notifier is AsyncViewModelImpl && !widget.notifier.hasInitializedListenerExecution) {
-      // Manually trigger initialization now that context is available
-      (widget.notifier as AsyncViewModelImpl).reload().catchError((error) {
-        // Handle initialization errors gracefully
-        print('AsyncViewModel initialization error: $error');
-      });
+    // Call reinitializeWithContext for consistency with ReactiveViewModelBuilder
+    if (widget.notifier is AsyncViewModelImpl) {
+      (widget.notifier as AsyncViewModelImpl).reinitializeWithContext();
     }
     
     widget.notifier.addListener(_valueChanged);

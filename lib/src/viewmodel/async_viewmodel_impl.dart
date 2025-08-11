@@ -570,4 +570,13 @@ Consider calling ReactiveNotifier.cleanup() manually when appropriate.
       }());
     }
   }
+
+  /// Called when context becomes available for the first time
+  /// Used to reinitialize ViewModels that were created without context
+  void reinitializeWithContext() {
+    if (hasContext && !loadOnInit) {
+      // Only reload if we haven't loaded on init and now have context
+      reload();
+    }
+  }
 }
