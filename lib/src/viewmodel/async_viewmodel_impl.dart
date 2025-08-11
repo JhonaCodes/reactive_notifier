@@ -12,7 +12,7 @@ import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
 abstract class AsyncViewModelImpl<T> extends ChangeNotifier
-    with HelperNotifier, ViewModelContextProvider {
+    with HelperNotifier, ViewModelContextService {
   AsyncState<T> _state;
   late bool loadOnInit;
   bool _disposed = false;

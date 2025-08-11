@@ -455,3 +455,170 @@ class _ExpensiveWidget extends StatelessWidget {
     );
   }
 }
+
+/// NEW in v2.12.0: ViewModel with BuildContext access for migration support
+class MigrationState {
+  final String userDisplayName;
+  final String themeMode;
+  final double screenWidth;
+  final bool hasContextData;
+  
+  const MigrationState({
+    required this.userDisplayName,
+    required this.themeMode, 
+    required this.screenWidth,
+    required this.hasContextData,
+  });
+  
+  MigrationState copyWith({
+    String? userDisplayName,
+    String? themeMode,
+    double? screenWidth,
+    bool? hasContextData,
+  }) {
+    return MigrationState(
+      userDisplayName: userDisplayName ?? this.userDisplayName,
+      themeMode: themeMode ?? this.themeMode,
+      screenWidth: screenWidth ?? this.screenWidth,
+      hasContextData: hasContextData ?? this.hasContextData,
+    );
+  }
+  
+  static MigrationState initial() => const MigrationState(
+    userDisplayName: 'Guest',
+    themeMode: 'Unknown',
+    screenWidth: 0,
+    hasContextData: false,
+  );
+}
+
+/// Example ViewModel demonstrating BuildContext access
+class MigrationViewModel extends ViewModel<MigrationState> {
+  MigrationViewModel() : super(MigrationState.initial());
+  
+  @override
+  void init() {
+    // Initialize with default state first
+    updateSilently(MigrationState.initial());
+    
+    // Update with context data if available
+    _updateFromContext();
+  }
+  
+  void _updateFromContext() {
+    if (hasContext) {
+      // Safe context access with postFrameCallback
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!isDisposed && hasContext) {
+          try {
+            // Access Flutter's context-dependent widgets
+            final mediaQuery = MediaQuery.of(requireContext('migration demo'));
+            final theme = Theme.of(context!);
+            
+            updateState(MigrationState(
+              userDisplayName: 'Context User',
+              themeMode: theme.brightness == Brightness.dark ? 'Dark' : 'Light',
+              screenWidth: mediaQuery.size.width,
+              hasContextData: true,
+            ));
+          } catch (e) {
+            // Fallback if context access fails
+            updateState(MigrationState.initial().copyWith(hasContextData: false));
+          }
+        }
+      });
+    }
+  }
+  
+  @override
+  String _createEmptyState() => 'empty';
+}
+
+/// Service for migration demo
+mixin MigrationService {
+  static final ReactiveNotifier<MigrationViewModel> instance = 
+      ReactiveNotifier<MigrationViewModel>(() => MigrationViewModel());
+}
+
+/// Demo screen for BuildContext access feature
+class ContextAccessDemo extends StatelessWidget {
+  const ContextAccessDemo({super.key});
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('BuildContext Access Demo (v2.12.0)'),
+        backgroundColor: Colors.purple,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ReactiveViewModelBuilder<MigrationViewModel, MigrationState>(
+          viewmodel: MigrationService.instance.notifier,
+          build: (state, viewModel, keep) {
+            return Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'NEW: Automatic BuildContext Access',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: Colors.purple,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'ViewModels can now access BuildContext automatically!',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Display context data
+                    Text('Has Context: ${viewModel.hasContext}'),
+                    Text('User: ${state.userDisplayName}'),
+                    Text('Theme Mode: ${state.themeMode}'),
+                    Text('Screen Width: ${state.screenWidth.toStringAsFixed(0)}'),
+                    Text('Context Data Available: ${state.hasContextData}'),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Show usage example
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Usage in ViewModel:',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            '• context - Nullable BuildContext getter\n'
+                            '• hasContext - Check availability\n' 
+                            '• requireContext() - Required access with errors\n'
+                            '• Perfect for Riverpod migration!',
+                            style: TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}

@@ -1,3 +1,77 @@
+# 2.12.0
+## 🎯 BuildContext Access for ViewModels - Seamless Migration Support
+
+### ✨ New Features
+- **Automatic BuildContext Access**: ViewModels can now access Flutter's BuildContext during initialization
+- **ViewModelContextProvider Mixin**: Provides `context`, `hasContext`, and `requireContext()` methods
+- **Seamless Migration Support**: Enables gradual migration from Riverpod using `ProviderScope.containerOf(context)`
+- **Automatic Context Registration**: Builders automatically provide context to ViewModels - no setup required
+- **Context Lifecycle Management**: Context is automatically managed and cleaned up with builders
+
+### 🔧 API Additions
+- **`context`**: Nullable BuildContext getter for safe access
+- **`hasContext`**: Boolean property to check context availability
+- **`requireContext([operation])`**: Context getter with descriptive errors when unavailable
+- **Context Integration**: Works seamlessly with all builders (ReactiveBuilder, ReactiveViewModelBuilder, ReactiveAsyncBuilder)
+
+### 🚀 Migration Capabilities
+```dart
+// Enable Riverpod migration in ViewModels
+class MyViewModel extends ViewModel<MyState> {
+  @override 
+  void init() {
+    if (hasContext) {
+      // Access Riverpod container during migration
+      final container = ProviderScope.containerOf(context!);
+      final data = container.read(myProvider);
+      updateSilently(MyState.fromRiverpod(data));
+    } else {
+      updateSilently(MyState.empty());
+    }
+  }
+}
+```
+
+### 📱 Theme and MediaQuery Access
+```dart
+// Access Flutter's context-dependent widgets
+class ResponsiveViewModel extends ViewModel<ResponsiveState> {
+  @override
+  void init() {
+    updateSilently(ResponsiveState.initial());
+  }
+  
+  @override 
+  Future<void> onResume(ResponsiveState data) async {
+    if (hasContext) {
+      final mediaQuery = MediaQuery.of(requireContext('responsive design'));
+      final theme = Theme.of(context!);
+      updateState(ResponsiveState.fromContext(mediaQuery, theme));
+    }
+  }
+}
+```
+
+### 🛡️ Safety Features
+- **PostFrameCallback Integration**: Safe MediaQuery access without initState timing issues
+- **Automatic Context Cleanup**: Context is cleared when builders are disposed
+- **Multiple Builder Support**: Context remains available while any builder is active
+- **Dispose Safety**: Context access blocked after ViewModel disposal
+
+### ⚠️ Important Notes
+- **Context timing**: Available after first builder mounts, cleared when last builder disposes
+- **Migration support**: Primary use case is gradual migration from Provider/Riverpod
+- **No breaking changes**: Fully backward compatible - existing code unchanged
+- **Automatic operation**: Zero configuration required - works out of the box
+
+### 🔗 Builder Integration
+All builders now provide context automatically:
+- ✅ **ReactiveBuilder<T>**: Context provided to simple state values
+- ✅ **ReactiveViewModelBuilder<VM,T>**: Context provided to custom ViewModels  
+- ✅ **ReactiveAsyncBuilder<VM,T>**: Context provided to AsyncViewModels
+
+---
+
 # 2.11.1
 - Update git ignore and some tweaks.
 

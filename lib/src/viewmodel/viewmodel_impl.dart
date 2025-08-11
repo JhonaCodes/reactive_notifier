@@ -14,7 +14,7 @@ import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
 ///
 /// Implementations of this class are expected to encapsulate the presentation
 /// logic and state for a particular view or feature.
-abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier, ViewModelContextProvider {
+abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier, ViewModelContextService {
   // Internal state
   T _data;
   bool _initialized = false;

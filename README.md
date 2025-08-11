@@ -1,6 +1,6 @@
 # ReactiveNotifier
 
-A flexible, elegant, and secure tool for state management in Flutter. Designed with fine-grained state control in mind, it easily integrates with architectural patterns like MVVM, guarantees full independence from BuildContext, and is suitable for projects of any scale.
+A flexible, elegant, and secure tool for state management in Flutter. Designed with fine-grained state control in mind, it easily integrates with architectural patterns like MVVM, offers automatic BuildContext access for migrations, and is suitable for projects of any scale.
 
 ![reactive_notifier](https://github.com/user-attachments/assets/ca97c7e6-a254-4b19-b58d-fd07206ff6ee)
 
@@ -18,7 +18,7 @@ A flexible, elegant, and secure tool for state management in Flutter. Designed w
 
 - 🚀 Simple and intuitive API
 - 🏗️ Perfect for MVVM architecture
-- 🔄 Independent from BuildContext
+- 🔄 Independent from BuildContext (with optional context access)
 - 🎯 Type-safe state management
 - 📡 Built-in Async and Stream support
 - 🔗 Smart related states system
@@ -33,6 +33,8 @@ A flexible, elegant, and secure tool for state management in Flutter. Designed w
 - 🔄 **Widget preservation system with `.keep()` extension methods**
 - 🎯 **Generic API with `context<T>()` and `context.getByKey<T>('key')`**
 - ⚡ **Type-specific rebuilds to prevent cross-rebuilds**
+- 🎯 **NEW: Automatic BuildContext access in ViewModels for seamless migration**
+- 🔄 **NEW: Safe context access with `hasContext` and `requireContext()`**
 
 ![performance_test](https://github.com/user-attachments/assets/0dc568d2-7e0a-46e5-8ad6-1fec92b772be)
 
@@ -42,7 +44,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  reactive_notifier: ^2.11.1
+  reactive_notifier: ^2.12.0
 ```
 
 ## Core Concepts
@@ -166,6 +168,122 @@ class GenericWidget extends StatelessWidget {
   }
 }
 ```
+
+### NEW: BuildContext Access in ViewModels (v2.12.0)
+
+ReactiveNotifier now provides automatic BuildContext access within ViewModels, enabling seamless migration from other state management solutions like Riverpod. This feature is **automatic and requires no setup** - context is provided whenever a builder is mounted.
+
+#### Seamless Riverpod Migration
+
+```dart
+// Enable gradual migration from Riverpod to ReactiveNotifier
+class MigrationViewModel extends ViewModel<MigrationState> {
+  MigrationViewModel() : super(MigrationState.initial());
+  
+  @override
+  void init() {
+    if (hasContext) {
+      // Access Riverpod container during migration period
+      final container = ProviderScope.containerOf(context!);
+      final userData = container.read(userProvider);
+      final settingsData = container.read(settingsProvider);
+      
+      updateSilently(MigrationState.fromRiverpod(userData, settingsData));
+    } else {
+      // Fallback when no context available
+      updateSilently(MigrationState.empty());
+    }
+  }
+}
+```
+
+#### Responsive Design with MediaQuery
+
+```dart
+class ResponsiveViewModel extends ViewModel<ResponsiveState> {
+  ResponsiveViewModel() : super(ResponsiveState.initial());
+  
+  @override
+  void init() {
+    updateSilently(ResponsiveState.initial());
+  }
+  
+  @override
+  Future<void> onResume(ResponsiveState data) async {
+    // Safe MediaQuery access in onResume (after initState)
+    if (hasContext) {
+      final mediaQuery = MediaQuery.of(requireContext('responsive design'));
+      final screenWidth = mediaQuery.size.width;
+      
+      updateState(ResponsiveState(
+        isTablet: screenWidth > 600,
+        isLandscape: mediaQuery.orientation == Orientation.landscape,
+      ));
+    }
+  }
+}
+```
+
+#### Theme-Aware ViewModels
+
+```dart
+class ThemedViewModel extends AsyncViewModelImpl<ThemedData> {
+  ThemedViewModel() : super(AsyncState.initial(), loadOnInit: true);
+  
+  @override
+  Future<ThemedData> init() async {
+    if (hasContext) {
+      final theme = Theme.of(requireContext('theme access'));
+      final brightness = theme.brightness;
+      
+      // Fetch theme-appropriate data
+      return await repository.getThemedData(brightness);
+    }
+    
+    return ThemedData.defaultLight();
+  }
+}
+```
+
+#### Context API Reference
+
+All ViewModels automatically inherit these context access methods:
+
+- **`context`**: Nullable BuildContext getter for safe access
+- **`hasContext`**: Boolean property to check context availability  
+- **`requireContext([operation])`**: Context getter with descriptive errors
+
+```dart
+class ExampleViewModel extends ViewModel<ExampleState> {
+  @override
+  void init() {
+    // Safe nullable access
+    final ctx = context; // BuildContext?
+    
+    // Check availability
+    if (hasContext) {
+      // Context is available
+      final navigator = Navigator.of(context!);
+    }
+    
+    // Required access with helpful error messages
+    try {
+      final scaffold = Scaffold.of(requireContext('showing snackbar'));
+    } catch (e) {
+      // Descriptive error when context unavailable
+      print(e); // "BuildContext Required But Not Available for showing snackbar"
+    }
+  }
+}
+```
+
+#### Important Context Usage Notes
+
+- **Automatic**: Context provided automatically by all builders (ReactiveBuilder, ReactiveViewModelBuilder, ReactiveAsyncBuilder)
+- **Timing**: Available after first builder mounts, cleared when last builder disposes
+- **Migration**: Primary use case is gradual migration from Provider/Riverpod
+- **MediaQuery Safety**: Use `onResume()` or `postFrameCallback` for MediaQuery access to avoid initState timing issues
+- **Multiple Builders**: Context remains available while any builder is active
 
 ### Using ViewModel with ReactiveViewModelBuilder
 

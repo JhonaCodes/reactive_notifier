@@ -1,10 +1,11 @@
 # ReactiveNotifier - AI/Development Context Guide
 
 ## Quick Context
-- **Version**: 2.11.1
+- **Version**: 2.12.0
 - **Pattern**: Singleton state management with "create once, reuse always" philosophy
 - **Architecture**: MVVM with reactive ViewModels and independent lifecycle management
 - **Core Concept**: ViewModel lifecycle separated from UI lifecycle
+- **NEW**: Automatic BuildContext access in ViewModels for seamless migration support
 
 ## Core Components
 
@@ -129,6 +130,134 @@ class NotificationViewModel extends ViewModel<NotificationModel> {
   }
 }
 ```
+
+## NEW: BuildContext Access in ViewModels (v2.12.0)
+
+### ViewModelContextProvider Mixin
+
+All ViewModels automatically inherit BuildContext access through the `ViewModelContextProvider` mixin:
+
+```dart
+// Automatically available in all ViewModels
+abstract class ViewModel<T> extends ChangeNotifier 
+    with HelperNotifier, ViewModelContextProvider {
+  // BuildContext access methods are automatically available
+}
+
+abstract class AsyncViewModelImpl<T> extends ChangeNotifier
+    with HelperNotifier, ViewModelContextProvider {
+  // BuildContext access methods are automatically available  
+}
+```
+
+### Context Access API
+
+**Available methods in all ViewModels:**
+
+- **`context`**: Nullable BuildContext getter (`BuildContext?`)
+- **`hasContext`**: Boolean property to check availability (`bool`)
+- **`requireContext([operation])`**: Required context with descriptive errors (`BuildContext`)
+
+### Migration Use Cases
+
+#### Riverpod Migration Pattern
+```dart
+class MigrationViewModel extends ViewModel<MigrationState> {
+  MigrationViewModel() : super(MigrationState.initial());
+  
+  @override
+  void init() {
+    if (hasContext) {
+      // Gradual migration from Riverpod
+      final container = ProviderScope.containerOf(context!);
+      final userData = container.read(userProvider);
+      updateSilently(MigrationState.fromRiverpod(userData));
+    } else {
+      updateSilently(MigrationState.empty());
+    }
+  }
+}
+```
+
+#### Theme/MediaQuery Access Pattern
+```dart
+class ResponsiveViewModel extends ViewModel<ResponsiveState> {
+  ResponsiveViewModel() : super(ResponsiveState.initial());
+  
+  @override
+  void init() {
+    updateSilently(ResponsiveState.initial());
+    _updateFromContext();
+  }
+  
+  void _updateFromContext() {
+    if (hasContext) {
+      // Use postFrameCallback for safe MediaQuery access
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!isDisposed && hasContext) {
+          try {
+            final mediaQuery = MediaQuery.of(requireContext('responsive design'));
+            final screenWidth = mediaQuery.size.width;
+            updateState(ResponsiveState(
+              isTablet: screenWidth > 600,
+              breakpoint: _getBreakpoint(screenWidth),
+            ));
+          } catch (e) {
+            // Fallback if MediaQuery access fails
+          }
+        }
+      });
+    }
+  }
+}
+```
+
+### Context Lifecycle
+
+1. **Registration**: Automatic when builders mount (`ReactiveBuilder`, `ReactiveViewModelBuilder`, `ReactiveAsyncBuilder`)
+2. **Availability**: Context available after first builder mounts
+3. **Multiple Builders**: Context remains available while any builder is active
+4. **Cleanup**: Context cleared when last builder disposes
+5. **Reinitialize**: ViewModels created without context are reinitialize when context becomes available
+
+### Context Safety Patterns
+
+```dart
+class SafeContextViewModel extends ViewModel<SafeState> {
+  @override
+  void init() {
+    // Always check availability first
+    if (hasContext) {
+      _handleWithContext();
+    } else {
+      _handleWithoutContext();
+    }
+  }
+  
+  void _handleWithContext() {
+    try {
+      final theme = Theme.of(requireContext('theme access'));
+      // Use context-dependent logic
+    } catch (e) {
+      // Handle context access errors gracefully
+      _handleWithoutContext();
+    }
+  }
+  
+  void _handleWithoutContext() {
+    // Fallback logic when context unavailable
+    updateSilently(SafeState.fallback());
+  }
+}
+```
+
+### Important Context Notes
+
+- **Automatic**: Zero configuration required - works out of the box
+- **Migration Focus**: Primary use case is gradual migration from Provider/Riverpod
+- **Timing Sensitive**: Use `onResume()` or `postFrameCallback` for MediaQuery to avoid initState timing issues
+- **Error Handling**: `requireContext()` provides descriptive errors for debugging
+- **Backward Compatibility**: Fully backward compatible - existing code unchanged
 
 ## Decision Tree
 
