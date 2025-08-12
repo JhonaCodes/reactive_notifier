@@ -29,21 +29,11 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     }
 
     if (loadOnInit) {
-      // Only initialize if context is available OR if init() doesn't require context
-      if (hasContext) {
-        _initializeAsync();
-        /// Yes and only if it is changed to true when the entire initialization process is finished.
-        hasInitializedListenerExecution = true;
-      } else {
-        // Mark that we were initialized without context for later reinitialize
-        _initializedWithoutContext = true;
-        /// Set to false until we get context and can properly initialize
-        hasInitializedListenerExecution = false;
-        
-        // Still try to initialize for backward compatibility with tests
-        // and cases where init() doesn't require context
-        _initializeAsync();
-      }
+      // ALWAYS initialize like in main branch - context is optional feature
+      _initializeAsync();
+      
+      /// Yes and only if it is changed to true when the entire initialization process is finished.
+      hasInitializedListenerExecution = true;
     }
   }
 
@@ -55,11 +45,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     hasInitializedListenerExecution = false;
 
     try {
-      // Track if we're initializing without context
-      if (!hasContext) {
-        _initializedWithoutContext = true;
-      }
-
       await reload();
 
       // Assert _state is properly initialized
@@ -76,8 +61,15 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
       _initialized = true;
       /// Yes and only if it is changed to true when the entire initialization process is finished.
       hasInitializedListenerExecution = true;
+      
+      // Mark if we initialized without context for potential reinitialize later
+      if (!hasContext) {
+        _initializedWithoutContext = true;
+      }
     } catch (error, stackTrace) {
-      errorState(error, stackTrace);
+      if (!_disposed) {
+        errorState(error, stackTrace);
+      }
     }
   }
 
