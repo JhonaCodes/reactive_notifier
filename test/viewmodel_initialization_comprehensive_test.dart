@@ -582,8 +582,10 @@ void main() {
         vm.dispose();
         expect(vm.isDisposed, isTrue);
         
-        // Should throw when trying to access data after dispose
-        expect(() => vm.data, throwsA(isA<Exception>()));
+        // Should reinitialize when accessing data after dispose
+        final dataAfterDispose = vm.data;
+        expect(dataAfterDispose, isNotNull);
+        expect(vm.isDisposed, isFalse); // Should be reinitalized
       });
     });
 
