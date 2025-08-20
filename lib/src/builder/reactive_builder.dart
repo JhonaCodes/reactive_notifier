@@ -56,9 +56,14 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
     super.initState();
     
     // Register context BEFORE accessing the notifier to ensure it's available during init()
-    context.registerForViewModels('ReactiveBuilder<$T>');
+    // Pass the actual notifier value if it's a ViewModel
+    // Use unique identifier for each builder instance
+    final notifierValue = widget.notifier.notifier;
+    final uniqueBuilderType = 'ReactiveBuilder<$T>_${hashCode}';
+    context.registerForViewModels(uniqueBuilderType, 
+        notifierValue is ChangeNotifier ? notifierValue : null);
     
-    value = widget.notifier.notifier;
+    value = notifierValue;
     widget.notifier.addListener(_valueChanged);
   }
 
@@ -76,8 +81,12 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
   void dispose() {
     widget.notifier.removeListener(_valueChanged);
     
-    // Automatically unregister context
-    context.unregisterFromViewModels('ReactiveBuilder<$T>');
+    // Automatically unregister context using the same unique identifier
+    // Pass the actual notifier value if it's a ViewModel
+    final notifierValue = widget.notifier.notifier;
+    final uniqueBuilderType = 'ReactiveBuilder<$T>_${hashCode}';
+    context.unregisterFromViewModels(uniqueBuilderType,
+        notifierValue is ChangeNotifier ? notifierValue : null);
 
     if (widget.notifier is ReactiveNotifier) {
       final reactiveNotifier = widget.notifier as ReactiveNotifier;

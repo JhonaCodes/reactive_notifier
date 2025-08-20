@@ -65,7 +65,9 @@ class _ReactiveAsyncBuilderState<VM, T>
     super.initState();
     
     // Register context BEFORE accessing the notifier to ensure it's available during init()
-    context.registerForViewModels('ReactiveAsyncBuilder<$VM,$T>');
+    // Use unique identifier for each builder instance to handle multiple builders for same ViewModel
+    final uniqueBuilderType = 'ReactiveAsyncBuilder<$VM,$T>_${hashCode}';
+    context.registerForViewModels(uniqueBuilderType, widget.notifier);
     
     // Call reinitializeWithContext for consistency with ReactiveViewModelBuilder
     if (widget.notifier is AsyncViewModelImpl) {
@@ -88,8 +90,9 @@ class _ReactiveAsyncBuilderState<VM, T>
   void dispose() {
     widget.notifier.removeListener(_valueChanged);
     
-    // Automatically unregister context
-    context.unregisterFromViewModels('ReactiveAsyncBuilder<$VM,$T>');
+    // Automatically unregister context using the same unique identifier
+    final uniqueBuilderType = 'ReactiveAsyncBuilder<$VM,$T>_${hashCode}';
+    context.unregisterFromViewModels(uniqueBuilderType, widget.notifier);
 
     if (widget.notifier is ReactiveNotifier) {
       final reactiveNotifier = widget.notifier as ReactiveNotifier;

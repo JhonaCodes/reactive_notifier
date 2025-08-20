@@ -5,14 +5,27 @@ import 'package:flutter/widgets.dart';
 /// Enables seamless migration from other state managers like Riverpod
 /// No initialization required - works automatically with ReactiveBuilder widgets
 class ViewModelContextNotifier {
-  static BuildContext? _currentContext;
-  static final Set<String> _activeBuilders = {};
+  // Map of ViewModel instance hashCode to its BuildContext
+  static final Map<int, BuildContext> _contexts = {};
+  
+  // Map of ViewModel instance hashCode to Set of builder types using it
+  static final Map<int, Set<String>> _viewModelBuilders = {};
+  
+  // For backward compatibility - keeps track of last registered context
+  static BuildContext? _lastRegisteredContext;
   
   /// Internal method called by builders when they mount
   /// Automatically registers context without user intervention
-  static void _registerContext(BuildContext context, String builderType) {
-    _currentContext = context;
-    _activeBuilders.add(builderType);
+  static void _registerContext(BuildContext context, String builderType, Object? viewModel) {
+    final vmKey = viewModel?.hashCode ?? 0;
+    
+    // Store context for this specific ViewModel
+    _contexts[vmKey] = context;
+    _lastRegisteredContext = context;
+    
+    // Track which builders are using this ViewModel
+    _viewModelBuilders[vmKey] ??= {};
+    _viewModelBuilders[vmKey]!.add(builderType);
     
     assert(() {
       log('''
@@ -20,7 +33,9 @@ class ViewModelContextNotifier {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Builder: $builderType
 Widget: ${context.widget.runtimeType}
-Active builders: ${_activeBuilders.length}
+ViewModel: ${viewModel?.runtimeType ?? 'None'} (key: $vmKey)
+Active builders for VM: ${_viewModelBuilders[vmKey]?.length ?? 0}
+Total contexts: ${_contexts.length}
 Context available: ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 5);
@@ -30,30 +45,41 @@ Context available: ✓
   
   /// Internal method called by builders when they dispose
   /// Automatically cleans up context when no builders are active
-  static void _unregisterContext(String builderType) {
-    _activeBuilders.remove(builderType);
+  static void _unregisterContext(String builderType, Object? viewModel) {
+    final vmKey = viewModel?.hashCode ?? 0;
+    
+    // Remove this builder from the ViewModel's builder set
+    _viewModelBuilders[vmKey]?.remove(builderType);
     
     assert(() {
       log('''
 🗑️ ViewModelContextNotifier: Builder unregistered
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Builder: $builderType
-Remaining builders: ${_activeBuilders.length}
+ViewModel: ${viewModel?.runtimeType ?? 'None'} (key: $vmKey)
+Remaining builders for VM: ${_viewModelBuilders[vmKey]?.length ?? 0}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 5);
       return true;
     }());
     
-    // Clear context only when no builders are active
-    if (_activeBuilders.isEmpty) {
-      _currentContext = null;
+    // Clear context only when no builders are active for this ViewModel
+    if (_viewModelBuilders[vmKey]?.isEmpty ?? true) {
+      _contexts.remove(vmKey);
+      _viewModelBuilders.remove(vmKey);
+      
+      // Clear last registered if it was this one
+      if (_contexts.isEmpty) {
+        _lastRegisteredContext = null;
+      }
       
       assert(() {
         log('''
-🔄 ViewModelContextNotifier: Context cleared
+🔄 ViewModelContextNotifier: Context cleared for ViewModel
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Reason: No active builders remaining
-Context available: ✗
+ViewModel key: $vmKey
+Reason: No active builders remaining for this ViewModel
+Total contexts remaining: ${_contexts.length}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 5);
         return true;
@@ -61,30 +87,44 @@ Context available: ✗
     }
   }
   
-  /// Get current BuildContext - used by ViewModels
-  /// Returns null if no ReactiveBuilder is currently active
-  static BuildContext? get currentContext => _currentContext;
+  /// Get BuildContext for a specific ViewModel instance
+  static BuildContext? getContextForViewModel(Object? viewModel) {
+    if (viewModel == null) return _lastRegisteredContext;
+    return _contexts[viewModel.hashCode];
+  }
   
-  /// Check if context is available
-  static bool get hasContext => _currentContext != null;
+  /// Check if context is available for a specific ViewModel
+  static bool hasContextForViewModel(Object? viewModel) {
+    if (viewModel == null) return _lastRegisteredContext != null;
+    return _contexts.containsKey(viewModel.hashCode);
+  }
+  
+  /// Get current BuildContext - for backward compatibility
+  /// Returns the last registered context or null
+  static BuildContext? get currentContext => _lastRegisteredContext;
+  
+  /// Check if any context is available - for backward compatibility
+  static bool get hasContext => _contexts.isNotEmpty;
   
   /// Get active builders count for debugging
-  static int get activeBuilders => _activeBuilders.length;
+  static int get activeBuilders => _viewModelBuilders.values
+      .fold<int>(0, (sum, set) => sum + set.length);
   
   /// Global cleanup for testing and disposal
   static void cleanup() {
-    final hadContext = _currentContext != null;
-    final builderCount = _activeBuilders.length;
+    final contextsCount = _contexts.length;
+    final buildersCount = activeBuilders;
     
-    _currentContext = null;
-    _activeBuilders.clear();
+    _contexts.clear();
+    _viewModelBuilders.clear();
+    _lastRegisteredContext = null;
     
     assert(() {
       log('''
 🧹 ViewModelContextNotifier: Global cleanup completed
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Context cleared: ${hadContext ? '✓' : 'already null'}
-Builders cleared: $builderCount
+Contexts cleared: $contextsCount
+Builders cleared: $buildersCount
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 10);
       return true;
@@ -113,11 +153,11 @@ mixin ViewModelContextService {
   ///   return TenderItem.empty();
   /// }
   /// ```
-  BuildContext? get context => ViewModelContextNotifier.currentContext;
+  BuildContext? get context => ViewModelContextNotifier.getContextForViewModel(this);
   
   /// Check if context is currently available
   /// Useful for conditional context-dependent operations
-  bool get hasContext => ViewModelContextNotifier.hasContext;
+  bool get hasContext => ViewModelContextNotifier.hasContextForViewModel(this);
   
   /// Get context with descriptive error if unavailable
   /// Use when context is absolutely required for the operation
@@ -165,13 +205,13 @@ ViewModel: ${runtimeType}
 extension ViewModelContextBuilderIntegration on BuildContext {
   /// Register this context for ViewModel access
   /// Called automatically by builders on initState()
-  void registerForViewModels(String builderType) {
-    ViewModelContextNotifier._registerContext(this, builderType);
+  void registerForViewModels(String builderType, [Object? viewModel]) {
+    ViewModelContextNotifier._registerContext(this, builderType, viewModel);
   }
   
   /// Unregister this context from ViewModel access  
   /// Called automatically by builders on dispose()
-  void unregisterFromViewModels(String builderType) {
-    ViewModelContextNotifier._unregisterContext(builderType);
+  void unregisterFromViewModels(String builderType, [Object? viewModel]) {
+    ViewModelContextNotifier._unregisterContext(builderType, viewModel);
   }
 }

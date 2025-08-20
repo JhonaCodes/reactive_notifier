@@ -459,48 +459,112 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     );
   }
 
-  /// Holds the currently active listener callback.
-  /// Ensures only one listener is attached at any given time.
-  VoidCallback? _currentListener;
+  /// Holds the currently active listener callbacks.
+  /// Maps listener keys to their callback functions for better tracking.
+  final Map<String, VoidCallback> _listeners = {};
+  
+  /// Tracks which ViewModels this AsyncViewModel is listening to
+  /// Format: 'ListenerVM_hashCode' -> 'ListenedToVM_hashCode'
+  final Map<String, int> _listeningTo = {};
 
   /// Starts listening for changes in the ViewModel's asynchronous state.
   ///
   /// This method:
-  /// - Cancels any previously registered listener to prevent duplication.
-  /// - Registers a new listener that invokes the given [value] callback whenever [_state] changes.
+  /// - Creates a unique listener for this specific callback
+  /// - Tracks the relationship between listener and listened-to ViewModel
+  /// - Returns the current AsyncState allowing the caller to sync with the initial state.
   ///
   /// The [value] callback receives the current [AsyncState<T>] whenever the state updates.
   ///
-  /// Returns a [Future] that completes once the listener is registered.
+  /// Returns a [Future] that completes with the current state.
   Future<AsyncState<T>> listenVM(void Function(AsyncState<T> data) value,
       {bool callOnInit = false}) async {
-    log("Listen notifier is active");
+    // Create unique key for this listener
+    final listenerKey = 'async_vm_${hashCode}_${DateTime.now().microsecondsSinceEpoch}';
+    
+    assert(() {
+      log('''
+🔗 AsyncViewModelImpl<${T.toString()}> adding listener
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Listener key: $listenerKey
+Current listeners: ${_listeners.length}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 5);
+      return true;
+    }());
 
-    if (_currentListener != null) {
-      removeListener(_currentListener!);
-    }
+    // Create callback
+    final callback = () => value(_state);
+    
+    // Store listener
+    _listeners[listenerKey] = callback;
+    
+    // Track relationship (this AsyncViewModel is listening to current AsyncViewModel)
+    _listeningTo[listenerKey] = hashCode;
 
-    _currentListener = () => value(_state);
-
+    // Call on init if requested
     if (callOnInit) {
-      _currentListener?.call();
+      callback();
     }
 
-    addListener(_currentListener!);
+    // Register with ChangeNotifier
+    addListener(callback);
 
     return _state;
   }
 
-  /// Stops listening for changes in the ViewModel.
+  /// Stops listening for changes in the AsyncViewModel.
   ///
-  /// If a listener is currently registered, it is removed and
-  /// [_currentListener] is set to null to avoid memory leaks.
+  /// Removes all active listeners and clears tracking information.
+  /// This helps prevent memory leaks from circular references.
   void stopListeningVM() {
-    if (_currentListener != null) {
-      removeListener(_currentListener!);
-      _currentListener = null;
+    final listenerCount = _listeners.length;
+    
+    assert(() {
+      log('''
+🔌 AsyncViewModelImpl<${T.toString()}> stopping listeners
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Removing listeners: $listenerCount
+Listening relationships: ${_listeningTo.length}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 5);
+      return true;
+    }());
+    
+    // Remove all listeners from ChangeNotifier
+    for (final callback in _listeners.values) {
+      removeListener(callback);
+    }
+    
+    // Clear tracking maps
+    _listeners.clear();
+    _listeningTo.clear();
+  }
+  
+  /// Stops a specific listener by key
+  /// Useful for more granular listener management
+  void stopSpecificListener(String listenerKey) {
+    final callback = _listeners[listenerKey];
+    if (callback != null) {
+      removeListener(callback);
+      _listeners.remove(listenerKey);
+      _listeningTo.remove(listenerKey);
+      
+      assert(() {
+        log('''
+🔌 AsyncViewModelImpl<${T.toString()}> stopped specific listener
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Listener key: $listenerKey
+Remaining listeners: ${_listeners.length}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 5);
+        return true;
+      }());
     }
   }
+  
+  /// Get current listener count for debugging
+  int get activeListenerCount => _listeners.length;
 
   @override
   void dispose() {
@@ -511,6 +575,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
 Current state: ${_state.runtimeType}
 LoadOnInit was: $loadOnInit
 HasInitialized: $hasInitializedListenerExecution
+Active listeners: ${_listeners.length}
+Listening to: ${_listeningTo.length} ViewModels
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 10);
       return true;

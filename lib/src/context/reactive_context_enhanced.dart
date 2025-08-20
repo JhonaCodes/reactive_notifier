@@ -163,17 +163,17 @@ mixin ReactiveContextEnhancedMixin<T> {
   }
 }
 
-/// Enhanced optimizer widget for explicit InheritedWidget strategy
+/// ReactiveContextBuilder for explicit InheritedWidget strategy
 ///
 /// Forces InheritedWidget strategy for specified notifiers
 /// providing maximum performance for known reactive dependencies
 ///
 /// This is a public API widget that developers can use
-class ReactiveContextOptimizer extends StatelessWidget {
+class ReactiveContextBuilder extends StatelessWidget {
   final Widget child;
   final List<ReactiveNotifier> forceInheritedFor;
 
-  const ReactiveContextOptimizer({
+  const ReactiveContextBuilder({
     super.key,
     required this.child,
     required this.forceInheritedFor,

@@ -83,7 +83,7 @@ All builders now provide context automatically:
 - **Advanced Widget Preservation**: Enhanced `.keep()` system with automatic key management
 - **Type-Specific Rebuilds**: Eliminates cross-rebuilds problem - only relevant widgets rebuild
 - **Generic API Access**: Multiple ways to access state (`context<T>()`, `getByKey<T>()`)
-- **Performance Optimization**: `ReactiveContextOptimizer` widget for maximum performance
+- **Performance Optimization**: `ReactiveContextBuilder` widget for maximum performance
 - **Auto-Registration**: Transparent notifier registration and lifecycle management
 
 ### 🛠️ ReactiveContext Components
@@ -96,7 +96,7 @@ All builders now provide context automatically:
 ### 🔧 API Encapsulation
 - **Protected Internal APIs**: Internal classes properly hidden with `@protected`
 - **Clean Public API**: Only developer-facing APIs exported from main library
-- **Selective Exports**: `ReactiveContextOptimizer` specifically exported for performance optimization
+- **Selective Exports**: `ReactiveContextBuilder` specifically exported for performance optimization
 
 ### 📚 Documentation
 - **Complete ReactiveContext Guide**: Comprehensive documentation with examples
@@ -122,7 +122,7 @@ ExpensiveWidget().keep('key')
 context.keep(widget, 'key')
 
 // Performance optimization
-ReactiveContextOptimizer(
+ReactiveContextBuilder(
   forceInheritedFor: [LanguageService.instance, ThemeService.instance],
   child: MyApp(),
 )

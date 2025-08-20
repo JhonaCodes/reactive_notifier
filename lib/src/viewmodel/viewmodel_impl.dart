@@ -337,6 +337,8 @@ New state hash: ${_data.hashCode}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ID: $_instanceId
 Current updates: $_updateCount
+Active listeners: ${_listeners.length}
+Listening to: ${_listeningTo.length} ViewModels
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 10);
       return true;
@@ -519,48 +521,111 @@ New empty state hash: ${_data.hashCode}
     }
   }
 
-  /// Holds the currently active listener callback.
-  /// Ensures that only one listener is attached at any given time.
-  VoidCallback? _currentListener;
+  /// Holds the currently active listener callbacks.
+  /// Maps listener keys to their callback functions for better tracking.
+  final Map<String, VoidCallback> _listeners = {};
+  
+  /// Tracks which ViewModels this ViewModel is listening to
+  /// Format: 'ListenerVM_hashCode' -> 'ListenedToVM_hashCode'
+  final Map<String, int> _listeningTo = {};
 
   /// Starts listening for changes in the ViewModel.
   ///
   /// This method:
-  /// - Removes any previously registered listener.
-  /// - Registers a new listener that invokes the provided [value] callback with the current [_data].
+  /// - Creates a unique listener for this specific callback
+  /// - Tracks the relationship between listener and listened-to ViewModel
   /// - Immediately returns the current value of [_data], allowing the caller to sync with the initial state.
   ///
   /// [value] is the callback function that receives the updated data whenever a change occurs.
   ///
   /// Returns the current value of [_data].
   T listenVM(void Function(T data) value, {bool callOnInit = false}) {
-    log("Listen notifier is active");
+    // Create unique key for this listener
+    final listenerKey = 'vm_${hashCode}_${DateTime.now().microsecondsSinceEpoch}';
+    
+    assert(() {
+      log('''
+🔗 ViewModel<${T.toString()}> adding listener
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Listener key: $listenerKey
+Current listeners: ${_listeners.length}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 5);
+      return true;
+    }());
 
-    if (_currentListener != null) {
-      removeListener(_currentListener!);
-    }
+    // Create callback
+    final callback = () => value(_data);
+    
+    // Store listener
+    _listeners[listenerKey] = callback;
+    
+    // Track relationship (this ViewModel is listening to current ViewModel)
+    _listeningTo[listenerKey] = hashCode;
 
-    _currentListener = () => value(_data);
-
+    // Call on init if requested
     if (callOnInit) {
-      _currentListener?.call();
+      callback();
     }
 
-    addListener(_currentListener!);
+    // Register with ChangeNotifier
+    addListener(callback);
 
     return _data;
   }
 
   /// Stops listening for changes in the ViewModel.
   ///
-  /// If a listener is currently registered, it will be removed and
-  /// [_currentListener] will be set to null to free up resources.
+  /// Removes all active listeners and clears tracking information.
+  /// This helps prevent memory leaks from circular references.
   void stopListeningVM() {
-    if (_currentListener != null) {
-      removeListener(_currentListener!);
-      _currentListener = null;
+    final listenerCount = _listeners.length;
+    
+    assert(() {
+      log('''
+🔌 ViewModel<${T.toString()}> stopping listeners
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Removing listeners: $listenerCount
+Listening relationships: ${_listeningTo.length}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 5);
+      return true;
+    }());
+    
+    // Remove all listeners from ChangeNotifier
+    for (final callback in _listeners.values) {
+      removeListener(callback);
+    }
+    
+    // Clear tracking maps
+    _listeners.clear();
+    _listeningTo.clear();
+  }
+  
+  /// Stops a specific listener by key
+  /// Useful for more granular listener management
+  void stopSpecificListener(String listenerKey) {
+    final callback = _listeners[listenerKey];
+    if (callback != null) {
+      removeListener(callback);
+      _listeners.remove(listenerKey);
+      _listeningTo.remove(listenerKey);
+      
+      assert(() {
+        log('''
+🔌 ViewModel<${T.toString()}> stopped specific listener
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Listener key: $listenerKey
+Remaining listeners: ${_listeners.length}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 5);
+        return true;
+      }());
     }
   }
+  
+  /// Get current listener count for debugging
+  int get activeListenerCount => _listeners.length;
 
   /// Called after the ViewModel's primary initialization logic (e.g., in `init(), setupListeners, etc`)
   /// has completed successfully.

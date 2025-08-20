@@ -466,9 +466,9 @@ void main() {
       TestThemeService.reset();
     });
 
-    testWidgets('should handle ReactiveContextOptimizer', (tester) async {
+    testWidgets('should handle ReactiveContextBuilder', (tester) async {
       await tester.pumpWidget(
-        ReactiveContextOptimizer(
+        ReactiveContextBuilder(
           forceInheritedFor: [TestLanguageService.instance],
           child: const MaterialApp(
             home: Scaffold(

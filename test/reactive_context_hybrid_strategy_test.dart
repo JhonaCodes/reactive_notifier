@@ -226,7 +226,7 @@ void main() {
     testWidgets('should handle InheritedWidget strategy correctly',
         (tester) async {
       await tester.pumpWidget(
-        ReactiveContextOptimizer(
+        ReactiveContextBuilder(
           forceInheritedFor: [ServiceA.instance, ServiceB.instance],
           child: const MaterialApp(
             home: Scaffold(
@@ -441,7 +441,7 @@ void main() {
 
       // Switch to optimizer mode
       await tester.pumpWidget(
-        ReactiveContextOptimizer(
+        ReactiveContextBuilder(
           forceInheritedFor: [ServiceA.instance],
           child: const MaterialApp(
             home: Scaffold(

@@ -68,7 +68,9 @@ class _ReactiveBuilderStateViewModel<VM, T>
     super.initState();
     
     // Register context BEFORE accessing the viewmodel to ensure it's available during init()
-    context.registerForViewModels('ReactiveViewModelBuilder<$VM,$T>');
+    // Use unique identifier for each builder instance to handle multiple builders for same ViewModel
+    final uniqueBuilderType = 'ReactiveViewModelBuilder<$VM,$T>_${hashCode}';
+    context.registerForViewModels(uniqueBuilderType, widget.viewmodel);
     
     // Re-initialize ViewModels that were created without context
     if (widget.viewmodel is ViewModel) {
@@ -97,8 +99,9 @@ class _ReactiveBuilderStateViewModel<VM, T>
     // Cleanup subscriptions and timer
     widget.viewmodel.removeListener(_valueChanged);
     
-    // Automatically unregister context
-    context.unregisterFromViewModels('ReactiveViewModelBuilder<$VM,$T>');
+    // Automatically unregister context using the same unique identifier
+    final uniqueBuilderType = 'ReactiveViewModelBuilder<$VM,$T>_${hashCode}';
+    context.unregisterFromViewModels(uniqueBuilderType, widget.viewmodel);
 
     // Handle auto-dispose if applicable
     if (widget.viewmodel is ReactiveNotifierViewModel) {

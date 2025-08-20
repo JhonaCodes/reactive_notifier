@@ -27,9 +27,9 @@ export 'package:reactive_notifier/src/viewmodel/async_viewmodel_impl.dart';
 export 'package:reactive_notifier/src/context/reactive_context_extensions.dart';
 export 'package:reactive_notifier/src/context/reactive_context_preservation.dart';
 
-/// Export ReactiveContext optimizer widget
+/// Export ReactiveContext builder widget
 export 'package:reactive_notifier/src/context/reactive_context_enhanced.dart'
-    show ReactiveContextOptimizer;
+    show ReactiveContextBuilder;
 
 /// Export ViewModel Context Access (no need to import - works automatically)
 /// ViewModelContextProvider mixin is already included in ViewModel and AsyncViewModelImpl
