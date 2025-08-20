@@ -48,6 +48,7 @@
 - 🔗 **Smart related states system** - Automatic dependency management
 - 🛠️ **Repository/Service layer integration** - Clean separation of concerns
 - ⚡ **High performance** with minimal rebuilds and widget preservation
+- 🛠️ **Built-in DevTools extension** - Integrated debugging with real-time state monitoring
 - 🐛 **Powerful debugging tools** - Comprehensive logging and monitoring
 - 📊 **Detailed error reporting** - Descriptive error messages and stack traces
 - 🧹 **Full lifecycle control** - Memory management and state cleaning
@@ -74,6 +75,23 @@ Then run:
 ```bash
 flutter pub get
 ```
+
+### 🛠️ **DevTools Extension (Automatic)**
+
+ReactiveNotifier includes a **built-in DevTools extension** that activates automatically when you import the package. No additional setup required!
+
+**Features:**
+- 📊 **Real-time state monitoring** - See all ReactiveNotifier instances live
+- 🔍 **Interactive state inspector** - View and edit state directly from DevTools  
+- 📈 **Performance analytics** - Monitor memory usage and rebuild performance
+- 🐛 **Memory leak detection** - Automatic detection of potential issues
+- 📝 **State change history** - Complete timeline of all state changes
+
+**How to access:**
+1. Run your app: `flutter run --debug`
+2. Open Flutter DevTools (from VS Code, Android Studio, or browser)
+3. Look for the **"ReactiveNotifier"** tab
+4. Start debugging! 🎉
 
 ---
 

@@ -94,7 +94,7 @@ class NetworkStatus {
 
 // Async ViewModels
 class ProductsViewModel extends AsyncViewModelImpl<List<Product>> {
-  ProductsViewModel() : super(AsyncState.initial(), loadOnInit: false);
+  ProductsViewModel() : super(AsyncState.initial());
 
   @override
   Future<List<Product>> init() async {
@@ -660,6 +660,10 @@ void main() {
         fileName: 'product_list_complete_flow',
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
+          // Reset to initial state
+          ProductService.products
+              .updateSilently(ProductsViewModel());
+
           return GoldenTestGroup(
             scenarioConstraints:
                 ReactiveNotifierAlchemistConfig.mobileConstraints,
@@ -669,14 +673,7 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     appBar: AppBar(title: const Text('Products - Initial')),
-                    body: Builder(
-                      builder: (context) {
-                        // Reset to initial state
-                        ProductService.products
-                            .updateSilently(ProductsViewModel());
-                        return const ProductListWidget();
-                      },
-                    ),
+                    body: const ProductListWidget(),
                   ),
                 ),
               ),

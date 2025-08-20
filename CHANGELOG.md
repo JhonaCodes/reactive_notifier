@@ -1,5 +1,5 @@
 # 2.12.0
-## 🎯 BuildContext Access for ViewModels - Seamless Migration Support
+## 🎯 BuildContext Access for ViewModels - Seamless Migration Support + Auto DevTools Integration
 
 ### ✨ New Features
 - **Automatic BuildContext Access**: ViewModels can now access Flutter's BuildContext during initialization
@@ -7,6 +7,7 @@
 - **Seamless Migration Support**: Enables gradual migration from Riverpod using `ProviderScope.containerOf(context)`
 - **Automatic Context Registration**: Builders automatically provide context to ViewModels - no setup required
 - **Context Lifecycle Management**: Context is automatically managed and cleaned up with builders
+- **🛠️ Built-in DevTools Extension**: Auto-integrated debugging extension with zero configuration required
 
 ### 🔧 API Additions
 - **`context`**: Nullable BuildContext getter for safe access
@@ -58,9 +59,18 @@ class ResponsiveViewModel extends ViewModel<ResponsiveState> {
 - **Multiple Builder Support**: Context remains available while any builder is active
 - **Dispose Safety**: Context access blocked after ViewModel disposal
 
+### 🛠️ DevTools Extension Features
+- **📊 Real-time State Monitoring**: Live visualization of all ReactiveNotifier instances
+- **🔍 Interactive State Inspector**: View, edit, and debug state changes in real-time
+- **📈 Performance Analytics**: Memory usage tracking and rebuild performance analysis
+- **🐛 Memory Leak Detection**: Automatic detection and reporting of potential memory leaks
+- **📝 State Change History**: Complete timeline of state changes with rollback capabilities
+- **⚡ Zero Configuration**: Automatically activates when importing reactive_notifier
+
 ### ⚠️ Important Notes
 - **Context timing**: Available after first builder mounts, cleared when last builder disposes
 - **Migration support**: Primary use case is gradual migration from Provider/Riverpod
+- **DevTools access**: Extension appears as "ReactiveNotifier" tab in Flutter DevTools (debug mode only)
 - **No breaking changes**: Fully backward compatible - existing code unchanged
 - **Automatic operation**: Zero configuration required - works out of the box
 

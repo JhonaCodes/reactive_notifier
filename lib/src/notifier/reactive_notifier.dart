@@ -1,12 +1,15 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
 import 'notifier_impl.dart';
 import '../context/reactive_context_enhanced.dart';
 import '../context/viewmodel_context_notifier.dart';
+import '../debug/reactive_notifier_debug_service.dart';
 
 /// A reactive state management solution that supports:
 /// - Singleton instances with key-based identity
@@ -93,7 +96,13 @@ Location: $trace
     }
 
     try {
-      _instances[key] = ReactiveNotifier._(create, related, key, autoDispose);
+      final instance = ReactiveNotifier._(create, related, key, autoDispose);
+      _instances[key] = instance;
+      
+      // Record instance creation for debug service (only in non-test environments)
+      if (kDebugMode && !_isTestEnvironment) {
+        ReactiveNotifierDebugService.instance.recordInstanceCreation(instance);
+      }
     } catch (e) {
       if (e is StateError) {
         rethrow;
@@ -130,6 +139,19 @@ Location: $trace
 
       log('📝 Updating state for $T: $notifier -> ${newState.runtimeType}',
           level: 10);
+
+      // Record state change for debug service
+      dynamic oldState = notifier;
+      if (kDebugMode) {
+        ReactiveNotifierDebugService.instance.recordStateChange(
+          instanceId: '${T.toString()}_${keyNotifier.toString()}',
+          type: T.toString(),
+          oldState: oldState,
+          newState: newState,
+          source: 'updateState',
+          isSilent: false,
+        );
+      }
 
       _updatingNotifiers.add(this);
 
@@ -168,6 +190,19 @@ Location: $trace
       log('📝 Updating state silently for $T: $notifier -> ${newState.runtimeType}',
           level: 10);
 
+      // Record state change for debug service
+      dynamic oldState = notifier;
+      if (kDebugMode) {
+        ReactiveNotifierDebugService.instance.recordStateChange(
+          instanceId: '${T.toString()}_${keyNotifier.toString()}',
+          type: T.toString(),
+          oldState: oldState,
+          newState: newState,
+          source: 'updateSilently',
+          isSilent: true,
+        );
+      }
+
       _updatingNotifiers.add(this);
 
       try {
@@ -203,6 +238,20 @@ Location: $trace
 
     log('🔄 Transforming state silently for $T', level: 10);
 
+    // Record state change for debug service
+    dynamic oldState = notifier;
+    T newState = data(notifier);
+    if (kDebugMode) {
+      ReactiveNotifierDebugService.instance.recordStateChange(
+        instanceId: '${T.toString()}_${keyNotifier.toString()}',
+        type: T.toString(),
+        oldState: oldState,
+        newState: newState,
+        source: 'transformStateSilently',
+        isSilent: true,
+      );
+    }
+
     _updatingNotifiers.add(this);
 
     try {
@@ -236,6 +285,20 @@ Location: $trace
     _checkNotificationOverflow();
 
     log('🔄 Transforming state for $T', level: 10);
+
+    // Record state change for debug service
+    dynamic oldState = notifier;
+    T newState = data(notifier);
+    if (kDebugMode) {
+      ReactiveNotifierDebugService.instance.recordStateChange(
+        instanceId: '${T.toString()}_${keyNotifier.toString()}',
+        type: T.toString(),
+        oldState: oldState,
+        newState: newState,
+        source: 'transformState',
+        isSilent: false,
+      );
+    }
 
     _updatingNotifiers.add(this);
 
@@ -1058,5 +1121,41 @@ Note: Instance remains in global registry unless manually cleaned
 
     // 3. Call ChangeNotifier dispose
     super.dispose();
+  }
+  
+  /// Check if we're running in a test environment
+  static bool get _isTestEnvironment {
+    try {
+      // Check for flutter_test environment variable
+      if (const bool.fromEnvironment('FLUTTER_TEST', defaultValue: false)) {
+        return true;
+      }
+      
+      // Check for test-related zones
+      final zone = Zone.current;
+      final zoneValues = zone.toString();
+      if (zoneValues.contains('flutter_test') || 
+          zoneValues.contains('test_api') ||
+          zoneValues.contains('TestWidgetsFlutterBinding') ||
+          zoneValues.contains('FakeAsync')) {
+        return true;
+      }
+      
+      // Check for test binding
+      try {
+        final binding = WidgetsBinding.instance;
+        final bindingType = binding.runtimeType.toString();
+        if (bindingType.contains('Test') || 
+            bindingType.contains('AutomatedTest')) {
+          return true;
+        }
+      } catch (_) {
+        // Ignore errors when WidgetsBinding is not available
+      }
+      
+      return false;
+    } catch (_) {
+      return false;
+    }
   }
 }

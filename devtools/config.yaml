@@ -1,0 +1,8 @@
+name: reactive_notifier
+version: 1.0.0
+materialIconCodePoint: 0xe8f5
+requiresConnection: true
+
+issueTracker: https://github.com/JhonaCodes/reactive_notifier/issues
+
+# Auto-activate when reactive_notifier package is detected
