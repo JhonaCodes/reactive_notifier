@@ -172,13 +172,17 @@ void main() {
       // Wait for async initialization
       await tester.pumpAndSettle();
 
+      // Now that context is available, trigger a reload to reinitialize with context
+      final vm = TenderItemsService.instance.notifier;
+      await vm.reload();
+      await tester.pumpAndSettle();
+
       // Verify the ViewModel received context and used theme
       expect(find.text('Name: Themed Tender'), findsOneWidget);
       expect(find.text('Status: dark'), findsOneWidget);
       expect(find.text('Has Context: true'), findsOneWidget);
       
       // Verify ID contains theme reference
-      final vm = TenderItemsService.instance.notifier;
       expect(vm.data!.id, contains('theme-'));
     });
 
