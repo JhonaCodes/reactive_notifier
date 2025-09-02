@@ -307,6 +307,52 @@ class TodoListWidget extends StatelessWidget {
 }
 ```
 
+### Manual Listener Management
+
+For complex scenarios where you need to register external listeners manually, both `ViewModel` and `AsyncViewModelImpl` provide `setupListeners` and `removeListeners` methods:
+
+```dart
+class NotificationViewModel extends ViewModel<List<String>> {
+  NotificationViewModel() : super([]);
+  
+  // Store listeners as class properties for proper cleanup
+  void _externalServiceListener() {
+    addNotification('External service updated');
+  }
+  
+  @override
+  Future<void> setupListeners({List<String> currentListeners = const []}) async {
+    // Register external listeners
+    ExternalService.updates.addListener(_externalServiceListener);
+    WebSocketService.messages.listen(_handleWebSocketMessage);
+    
+    // Always call super to maintain internal state
+    await super.setupListeners(currentListeners: currentListeners);
+  }
+  
+  @override
+  Future<void> removeListeners({List<String> currentListeners = const []}) async {
+    // Clean up external listeners to prevent memory leaks
+    ExternalService.updates.removeListener(_externalServiceListener);
+    WebSocketService.messages.cancel();
+    
+    // Always call super to maintain internal state
+    await super.removeListeners(currentListeners: currentListeners);
+  }
+  
+  void addNotification(String message) {
+    transformState((current) => [...current, message]);
+  }
+}
+```
+
+**Key Points:**
+- `setupListeners` is called automatically after `init()`
+- `removeListeners` is called automatically on `dispose()`
+- Always call `super.setupListeners()` and `super.removeListeners()`
+- Store listener references as class properties for proper cleanup
+- Use named parameters: `{List<String> currentListeners = const []}`
+
 ---
 
 ## Cross-Service Communication
@@ -552,60 +598,134 @@ ReactiveAsyncBuilder<TodoListViewModel, List<Todo>>(
 
 ## Testing with ReactiveNotifier
 
-### Essential Testing Setup
+### Complete Testing Example
+
+ReactiveNotifier is designed to be easy to test. Here's a comprehensive working example:
 
 ```dart
-void main() {
-  setUp(() {
-    ReactiveNotifier.cleanup();
-  });
+import 'package:flutter_test/flutter_test.dart';
+import 'package:reactive_notifier/reactive_notifier.dart';
+
+// Simple model for testing
+class CounterModel {
+  final int count;
+  final String message;
+
+  CounterModel(this.count, this.message);
+
+  CounterModel copyWith({int? count, String? message}) {
+    return CounterModel(count ?? this.count, message ?? this.message);
+  }
+}
+
+// ViewModel with state change hooks
+class CounterViewModel extends ViewModel<CounterModel> {
+  final List<String> stateChanges = [];
   
-  tearDown(() {
-    ReactiveNotifier.cleanup();
+  CounterViewModel() : super(CounterModel(0, 'Initial'));
+  
+  @override
+  void onStateChanged(CounterModel previous, CounterModel next) {
+    stateChanges.add('${previous.count} → ${next.count}: ${next.message}');
+  }
+  
+  void increment() {
+    final newCount = data.count + 1;
+    updateState(CounterModel(newCount, 'Incremented to $newCount'));
+  }
+}
+
+// Services for cross-communication testing
+mixin UserService {
+  static final ReactiveNotifier<UserViewModel> user = 
+    ReactiveNotifier<UserViewModel>(() => UserViewModel());
+}
+
+mixin NotificationService {
+  static final ReactiveNotifier<NotificationViewModel> notifications = 
+    ReactiveNotifier<NotificationViewModel>(() => NotificationViewModel());
+}
+
+void main() {
+  group('ReactiveNotifier Testing', () {
+    setUp(() {
+      // Clean up between test groups only
+      ReactiveNotifier.cleanup();
+    });
+    
+    group('Simple State Testing', () {
+      test('should update and listen to state changes', () {
+        final counter = ReactiveNotifier<int>(() => 0);
+        final changes = <int>[];
+        
+        // Listen to changes
+        counter.listen((value) => changes.add(value));
+        
+        // Update state
+        counter.updateState(5);
+        counter.transformState((current) => current + 10);
+        
+        expect(counter.notifier, equals(15));
+        expect(changes, [5, 15]);
+      });
+    });
+    
+    group('ViewModel Testing', () {
+      test('should update state and trigger hooks', () {
+        final viewModel = CounterViewModel();
+        
+        expect(viewModel.data.count, equals(0));
+        
+        // Test increment
+        viewModel.increment();
+        viewModel.increment();
+        
+        expect(viewModel.data.count, equals(2));
+        
+        // Check state change hooks were called
+        expect(viewModel.stateChanges, [
+          '0 → 1: Incremented to 1',
+          '1 → 2: Incremented to 2'
+        ]);
+      });
+      
+      test('should handle silent updates', () {
+        final viewModel = CounterViewModel();
+        
+        // Silent updates still trigger hooks
+        viewModel.updateSilently(CounterModel(5, 'Silent update'));
+        
+        expect(viewModel.data.count, equals(5));
+        expect(viewModel.stateChanges.last, equals('0 → 5: Silent update'));
+      });
+    });
+    
+    group('Cross-Service Communication', () {
+      test('should communicate between ViewModels', () async {
+        final userVM = UserService.user.notifier;
+        final notificationVM = NotificationService.notifications.notifier;
+        
+        // Update user and check notification was triggered
+        userVM.updatePoints(100);
+        
+        // Allow async communication to complete
+        await Future.delayed(Duration(milliseconds: 1));
+        
+        expect(notificationVM.data, isNotEmpty);
+        expect(notificationVM.data.first, contains('100 points'));
+      });
+    });
   });
 }
 ```
 
-### Testing ViewModels
+### Key Testing Principles
 
-```dart
-test('should update user name', () {
-  final viewModel = UserService.userState.notifier;
-  
-  viewModel.updateUserName('John Doe');
-  
-  expect(viewModel.data.name, equals('John Doe'));
-});
-
-test('should trigger state change hook', () {
-  final viewModel = TestUserViewModel();
-  final stateChanges = <String>[];
-  
-  // Override hook for testing
-  viewModel.onStateChanged = (previous, next) {
-    stateChanges.add('${previous.name} -> ${next.name}');
-  };
-  
-  viewModel.updateUserName('Jane');
-  
-  expect(stateChanges, contains(' -> Jane'));
-});
-```
-
-### Testing Cross-Service Communication
-
-```dart
-test('should update notifications when user changes', () async {
-  final userVM = UserService.currentUser.notifier;
-  final notificationVM = NotificationService.notifications.notifier;
-  
-  userVM.updateUserName('John');
-  
-  await Future.delayed(Duration(milliseconds: 1));
-  
-  expect(notificationVM.data.userName, equals('John'));
-});
-```
+1. **Use `ReactiveNotifier.cleanup()`** only in `setUp()` between test groups, not individual tests
+2. **Test state changes directly** by checking `.data` property
+3. **Test state change hooks** by checking accumulated changes in custom lists
+4. **Test cross-service communication** with small delays for async operations
+5. **Use `updateSilently()`** for setting up test data without triggering notifications
 
 ---
 

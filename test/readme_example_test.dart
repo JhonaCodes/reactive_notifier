@@ -104,7 +104,7 @@ class NotificationService {
 void main() {
   group('ReactiveNotifier Testing Guide', () {
     setUp(() {
-      // Essential: Clear all instances before each test
+      // Clean up only between test groups, not individual tests
       ReactiveNotifier.cleanup();
     });
     
