@@ -186,6 +186,9 @@ class _ReactiveBuilderStateViewModel<VM, T>
 
   @override
   Widget build(BuildContext context) {
+    // Note: Rebuild tracking disabled to avoid VM service errors
+    // The in-app DevTool uses its own tracking mechanism
+    
     return widget.build?.call(value, (widget.viewmodel as VM), _noRebuild) ??
         widget.builder?.call(value, _noRebuild) ??
         const SizedBox.shrink();

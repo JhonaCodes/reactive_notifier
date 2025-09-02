@@ -73,10 +73,8 @@ class MyTheme {
 
 /// Counter service with complex business logic - USE REACTIVEBUILDER
 mixin CounterService {
-  static final ReactiveNotifier<CounterState> instance =
-      ReactiveNotifier<CounterState>(
-    () => const CounterState(
-        count: 0, message: 'Initial', isEven: true, isAtLimit: false),
+  static final ReactiveNotifier<CounterState> instance = ReactiveNotifier<CounterState>(
+    () => const CounterState(count: 0, message: 'Initial', isEven: true, isAtLimit: false),
   );
 
   static void increment() {
@@ -111,8 +109,7 @@ mixin CounterService {
 
   static void reset() {
     instance.updateState(
-      const CounterState(
-          count: 0, message: 'Reset to 0', isEven: true, isAtLimit: false),
+      const CounterState(count: 0, message: 'Reset to 0', isEven: true, isAtLimit: false),
     );
   }
 }
@@ -384,13 +381,11 @@ class ControlButtonsSection extends StatelessWidget {
               spacing: 8,
               children: [
                 ElevatedButton(
-                  onPressed: () =>
-                      LanguageService.switchLanguage('English', 'en'),
+                  onPressed: () => LanguageService.switchLanguage('English', 'en'),
                   child: const Text('English'),
                 ),
                 ElevatedButton(
-                  onPressed: () =>
-                      LanguageService.switchLanguage('Español', 'es'),
+                  onPressed: () => LanguageService.switchLanguage('Español', 'es'),
                   child: const Text('Español'),
                 ),
                 const ElevatedButton(
@@ -462,14 +457,14 @@ class MigrationState {
   final String themeMode;
   final double screenWidth;
   final bool hasContextData;
-  
+
   const MigrationState({
     required this.userDisplayName,
-    required this.themeMode, 
+    required this.themeMode,
     required this.screenWidth,
     required this.hasContextData,
   });
-  
+
   MigrationState copyWith({
     String? userDisplayName,
     String? themeMode,
@@ -483,50 +478,50 @@ class MigrationState {
       hasContextData: hasContextData ?? this.hasContextData,
     );
   }
-  
+
   static MigrationState initial() => const MigrationState(
-    userDisplayName: 'Guest',
-    themeMode: 'Unknown',
-    screenWidth: 0,
-    hasContextData: false,
-  );
+        userDisplayName: 'Guest',
+        themeMode: 'Unknown',
+        screenWidth: 0,
+        hasContextData: false,
+      );
 }
 
 /// Example ViewModel demonstrating BuildContext access and State Change Hooks
 class MigrationViewModel extends ViewModel<MigrationState> {
   final List<String> stateChanges = [];
-  
+
   MigrationViewModel() : super(MigrationState.initial());
-  
+
   @override
   void init() {
     // Initialize with default state first
     updateSilently(MigrationState.initial());
-    
+
     // Update with context data if available
     _updateFromContext();
   }
-  
+
   @override
   void onStateChanged(MigrationState previous, MigrationState next) {
     // NEW v2.13.0: State change hooks
     stateChanges.add('State changed: ${previous.userDisplayName} → ${next.userDisplayName}');
-    
+
     // Log specific changes
     if (previous.themeMode != next.themeMode) {
       print('Theme changed from ${previous.themeMode} to ${next.themeMode}');
     }
-    
+
     if (previous.hasContextData != next.hasContextData) {
       print('Context data availability: ${next.hasContextData}');
     }
-    
+
     // Trigger side effects based on state changes
     if (next.hasContextData && !previous.hasContextData) {
       print('Context data now available - triggering analytics');
     }
   }
-  
+
   void _updateFromContext() {
     if (hasContext) {
       // Safe context access with postFrameCallback
@@ -536,7 +531,7 @@ class MigrationViewModel extends ViewModel<MigrationState> {
             // Access Flutter's context-dependent widgets
             final mediaQuery = MediaQuery.of(requireContext('migration demo'));
             final theme = Theme.of(context!);
-            
+
             updateState(MigrationState(
               userDisplayName: 'Context User',
               themeMode: theme.brightness == Brightness.dark ? 'Dark' : 'Light',
@@ -551,7 +546,7 @@ class MigrationViewModel extends ViewModel<MigrationState> {
       });
     }
   }
-  
+
   void simulateUserChange(String newName) {
     transformState((current) => current.copyWith(userDisplayName: newName));
   }
@@ -559,14 +554,14 @@ class MigrationViewModel extends ViewModel<MigrationState> {
 
 /// Service for migration demo
 mixin MigrationService {
-  static final ReactiveNotifier<MigrationViewModel> instance = 
+  static final ReactiveNotifier<MigrationViewModel> instance =
       ReactiveNotifier<MigrationViewModel>(() => MigrationViewModel());
 }
 
 /// Demo screen for BuildContext access feature
 class ContextAccessDemo extends StatelessWidget {
   const ContextAccessDemo({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -588,28 +583,28 @@ class ContextAccessDemo extends StatelessWidget {
                     Text(
                       'NEW: Automatic BuildContext Access',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: Colors.purple,
-                        fontWeight: FontWeight.bold,
-                      ),
+                            color: Colors.purple,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'ViewModels can now access BuildContext automatically!',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontStyle: FontStyle.italic,
-                      ),
+                            fontStyle: FontStyle.italic,
+                          ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Display context data
                     Text('Has Context: ${viewModel.hasContext}'),
                     Text('User: ${state.userDisplayName}'),
                     Text('Theme Mode: ${state.themeMode}'),
                     Text('Screen Width: ${state.screenWidth.toStringAsFixed(0)}'),
                     Text('Context Data Available: ${state.hasContextData}'),
-                    
+
                     const SizedBox(height: 16),
-                    
+
                     // Show usage example
                     Container(
                       padding: const EdgeInsets.all(8),

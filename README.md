@@ -70,14 +70,21 @@ dependencies:
 
 ### DevTools Extension (Automatic)
 
-The ReactiveNotifier DevTools extension is automatically initialized in debug mode. No additional setup required.
+ReactiveNotifier includes a **full DevTools extension** that appears as a dedicated tab in Flutter DevTools. The extension is automatically loaded when your app depends on this package.
 
-**Features:**
-- Real-time state monitoring
-- ViewModel lifecycle tracking  
-- Memory usage analysis
-- State change history
-- Performance metrics
+**🔧 How to Access:**
+1. **Flutter DevTools** - Open DevTools and look for the "ReactiveNotifier" tab
+2. **In-App DevTool** - Use `showReactiveNotifierDevTool(context)` for quick debugging
+3. **Floating FAB** - Add `ReactiveNotifierDevToolFAB()` to any screen for instant access
+
+**📊 Features:**
+- **Real-time state monitoring** - See all active ReactiveNotifier instances
+- **ViewModel lifecycle tracking** - Monitor creation, updates, and disposal
+- **Memory usage analysis** - Detect potential memory leaks
+- **State change history** - View detailed state transition logs
+- **Performance metrics** - Track update counts and timing
+- **Interactive state inspection** - Drill down into individual state objects
+- **Auto-dispose monitoring** - Track widget-aware lifecycle management
 
 ---
 

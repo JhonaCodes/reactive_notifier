@@ -141,6 +141,9 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
 
   @override
   Widget build(BuildContext context) {
+    // Note: Rebuild tracking disabled to avoid VM service errors
+    // The in-app DevTool uses its own tracking mechanism
+    
     return widget.build?.call(value, widget.notifier, _noRebuild) ??
         widget.builder?.call(value, _noRebuild) ??
         const SizedBox.shrink();

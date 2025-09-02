@@ -172,6 +172,9 @@ class _ReactiveAsyncBuilderState<VM, T>
 
   @override
   Widget build(BuildContext context) {
+    // Note: Rebuild tracking disabled to avoid VM service errors
+    // The in-app DevTool uses its own tracking mechanism
+    
     return widget.notifier.when(
       initial: () => widget.onInitial?.call() ?? const SizedBox.shrink(),
       loading: () =>

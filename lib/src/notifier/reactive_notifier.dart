@@ -9,7 +9,6 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 import 'notifier_impl.dart';
 import '../context/reactive_context_enhanced.dart';
 import '../context/viewmodel_context_notifier.dart';
-import '../debug/reactive_notifier_debug_service.dart';
 
 /// A reactive state management solution that supports:
 /// - Singleton instances with key-based identity
@@ -109,10 +108,10 @@ Location: $trace
       _instances[key] = instance;
       _instanceRegistry[key] = instance;
       
-      // Record instance creation for debug service (only in non-test environments)
-      if (kDebugMode && !_isTestEnvironment) {
-        ReactiveNotifierDebugService.instance.recordInstanceCreation(instance);
-      }
+      // Debug service recording disabled to avoid VM service errors
+      // if (kDebugMode && !_isTestEnvironment) {
+      //   ReactiveNotifierDebugService.instance.recordInstanceCreation(instance);
+      // }
     } catch (e) {
       if (e is StateError) {
         rethrow;
@@ -150,18 +149,18 @@ Location: $trace
       log('📝 Updating state for $T: $notifier -> ${newState.runtimeType}',
           level: 10);
 
-      // Record state change for debug service
-      dynamic oldState = notifier;
-      if (kDebugMode) {
-        ReactiveNotifierDebugService.instance.recordStateChange(
-          instanceId: '${T.toString()}_${keyNotifier.toString()}',
-          type: T.toString(),
-          oldState: oldState,
-          newState: newState,
-          source: 'updateState',
-          isSilent: false,
-        );
-      }
+      // Debug service recording disabled to avoid VM service errors
+      // dynamic oldState = notifier;
+      // if (kDebugMode) {
+      //   ReactiveNotifierDebugService.instance.recordStateChange(
+      //     instanceId: '${T.toString()}_${keyNotifier.toString()}',
+      //     type: T.toString(),
+      //     oldState: oldState,
+      //     newState: newState,
+      //     source: 'updateState',
+      //     isSilent: false,
+      //   );
+      // }
 
       _updatingNotifiers.add(this);
 
@@ -200,18 +199,18 @@ Location: $trace
       log('📝 Updating state silently for $T: $notifier -> ${newState.runtimeType}',
           level: 10);
 
-      // Record state change for debug service
-      dynamic oldState = notifier;
-      if (kDebugMode) {
-        ReactiveNotifierDebugService.instance.recordStateChange(
-          instanceId: '${T.toString()}_${keyNotifier.toString()}',
-          type: T.toString(),
-          oldState: oldState,
-          newState: newState,
-          source: 'updateSilently',
-          isSilent: true,
-        );
-      }
+      // Debug service recording disabled to avoid VM service errors
+      // dynamic oldState = notifier;
+      // if (kDebugMode) {
+      //   ReactiveNotifierDebugService.instance.recordStateChange(
+      //     instanceId: '${T.toString()}_${keyNotifier.toString()}',
+      //     type: T.toString(),
+      //     oldState: oldState,
+      //     newState: newState,
+      //     source: 'updateSilently',
+      //     isSilent: true,
+      //   );
+      // }
 
       _updatingNotifiers.add(this);
 
@@ -257,17 +256,17 @@ Location: $trace
       // Transform state without notifying
       super.transformStateSilently(transformer);
 
-      // Record state change for debug service after transformation
-      if (kDebugMode) {
-        ReactiveNotifierDebugService.instance.recordStateChange(
-          instanceId: '${T.toString()}_${keyNotifier.toString()}',
-          type: T.toString(),
-          oldState: oldState,
-          newState: notifier, // New state after transformation
-          source: 'transformStateSilently',
-          isSilent: true,
-        );
-      }
+      // Debug service recording disabled to avoid VM service errors
+      // if (kDebugMode) {
+      //   ReactiveNotifierDebugService.instance.recordStateChange(
+      //     instanceId: '${T.toString()}_${keyNotifier.toString()}',
+      //     type: T.toString(),
+      //     oldState: oldState,
+      //     newState: notifier, // New state after transformation
+      //     source: 'transformStateSilently',
+      //     isSilent: true,
+      //   );
+      // }
 
       // Notify parents if they exist
       if (_parents.isNotEmpty) {
@@ -306,17 +305,17 @@ Location: $trace
       // Transform state and notify
       super.transformState(transformer);
 
-      // Record state change for debug service after transformation
-      if (kDebugMode) {
-        ReactiveNotifierDebugService.instance.recordStateChange(
-          instanceId: '${T.toString()}_${keyNotifier.toString()}',
-          type: T.toString(),
-          oldState: oldState,
-          newState: notifier, // New state after transformation
-          source: 'transformState',
-          isSilent: false,
-        );
-      }
+      // Debug service recording disabled to avoid VM service errors
+      // if (kDebugMode) {
+      //   ReactiveNotifierDebugService.instance.recordStateChange(
+      //     instanceId: '${T.toString()}_${keyNotifier.toString()}',
+      //     type: T.toString(),
+      //     oldState: oldState,
+      //     newState: notifier, // New state after transformation
+      //     source: 'transformState',
+      //     isSilent: false,
+      //   );
+      // }
 
       // Notify parents if they exist
       if (_parents.isNotEmpty) {
