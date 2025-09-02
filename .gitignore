@@ -37,3 +37,4 @@ build/
 /TEST_COVERAGE_ANALYSIS.md
 /test_fixes.md
 /test/failures/
+/.flutter-plugins-dependencies
