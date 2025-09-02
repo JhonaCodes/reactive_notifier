@@ -63,6 +63,12 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
     context.registerForViewModels(uniqueBuilderType, 
         notifierValue is ChangeNotifier ? notifierValue : null);
     
+    // Add reference for widget-aware lifecycle if notifier is ReactiveNotifier
+    if (widget.notifier is ReactiveNotifier) {
+      final reactiveNotifier = widget.notifier as ReactiveNotifier;
+      reactiveNotifier.addReference('ReactiveBuilder_${hashCode}');
+    }
+    
     value = notifierValue;
     widget.notifier.addListener(_valueChanged);
   }
@@ -71,9 +77,21 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
   void didUpdateWidget(ReactiveBuilder<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.notifier != widget.notifier) {
+      // Remove reference from old notifier
+      if (oldWidget.notifier is ReactiveNotifier) {
+        final oldReactiveNotifier = oldWidget.notifier as ReactiveNotifier;
+        oldReactiveNotifier.removeReference('ReactiveBuilder_${hashCode}');
+      }
+      
       oldWidget.notifier.removeListener(_valueChanged);
       value = widget.notifier.notifier;
       widget.notifier.addListener(_valueChanged);
+      
+      // Add reference to new notifier
+      if (widget.notifier is ReactiveNotifier) {
+        final reactiveNotifier = widget.notifier as ReactiveNotifier;
+        reactiveNotifier.addReference('ReactiveBuilder_${hashCode}');
+      }
     }
   }
 
@@ -81,20 +99,24 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
   void dispose() {
     widget.notifier.removeListener(_valueChanged);
     
+    // Remove reference for widget-aware lifecycle if notifier is ReactiveNotifier
+    if (widget.notifier is ReactiveNotifier) {
+      final reactiveNotifier = widget.notifier as ReactiveNotifier;
+      reactiveNotifier.removeReference('ReactiveBuilder_${hashCode}');
+      
+      // Legacy auto-dispose check (will be replaced by reference counting auto-dispose)
+      if (reactiveNotifier.autoDispose && !reactiveNotifier.hasListeners) {
+        /// Clean current reactive and any dispose on Viewmodel
+        reactiveNotifier.cleanCurrentNotifier();
+      }
+    }
+    
     // Automatically unregister context using the same unique identifier
     // Pass the actual notifier value if it's a ViewModel
     final notifierValue = widget.notifier.notifier;
     final uniqueBuilderType = 'ReactiveBuilder<$T>_${hashCode}';
     context.unregisterFromViewModels(uniqueBuilderType,
         notifierValue is ChangeNotifier ? notifierValue : null);
-
-    if (widget.notifier is ReactiveNotifier) {
-      final reactiveNotifier = widget.notifier as ReactiveNotifier;
-      if (reactiveNotifier.autoDispose && !reactiveNotifier.hasListeners) {
-        /// Clean current reactive and any dispose on Viewmodel
-        reactiveNotifier.cleanCurrentNotifier();
-      }
-    }
 
     _noRebuildWidgets.clear();
 

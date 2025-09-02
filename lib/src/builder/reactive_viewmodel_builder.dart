@@ -72,6 +72,10 @@ class _ReactiveBuilderStateViewModel<VM, T>
     final uniqueBuilderType = 'ReactiveViewModelBuilder<$VM,$T>_${hashCode}';
     context.registerForViewModels(uniqueBuilderType, widget.viewmodel);
     
+    // Add reference for widget-aware lifecycle if viewmodel is from ReactiveNotifier
+    // We need to find the parent ReactiveNotifier that contains this ViewModel
+    _addReferenceToParentNotifier();
+    
     // Re-initialize ViewModels that were created without context
     if (widget.viewmodel is ViewModel) {
       (widget.viewmodel as ViewModel).reinitializeWithContext();
@@ -84,13 +88,55 @@ class _ReactiveBuilderStateViewModel<VM, T>
     widget.viewmodel.addListener(_valueChanged);
   }
 
+  /// Find and add reference to the parent ReactiveNotifier that contains this ViewModel
+  void _addReferenceToParentNotifier() {
+    try {
+      // Look for a ReactiveNotifier that contains this ViewModel
+      final instances = ReactiveNotifier.getInstances;
+      for (final instance in instances) {
+        if (instance.notifier == widget.viewmodel) {
+          // Found the ReactiveNotifier containing this ViewModel
+          instance.addReference('ReactiveViewModelBuilder_${hashCode}');
+          break;
+        }
+      }
+    } catch (e) {
+      // If we can't find the parent ReactiveNotifier, that's okay
+      // This ViewModel might be used directly without ReactiveNotifier wrapper
+    }
+  }
+
   @override
   void didUpdateWidget(ReactiveViewModelBuilder<VM, T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.viewmodel != widget.viewmodel) {
+      // Remove reference from old viewmodel's parent ReactiveNotifier
+      _removeReferenceFromParentNotifier(oldWidget.viewmodel);
+      
       oldWidget.viewmodel.removeListener(_valueChanged);
       value = widget.viewmodel.data;
       widget.viewmodel.addListener(_valueChanged);
+      
+      // Add reference to new viewmodel's parent ReactiveNotifier
+      _addReferenceToParentNotifier();
+    }
+  }
+
+  /// Find and remove reference from the parent ReactiveNotifier that contains this ViewModel
+  void _removeReferenceFromParentNotifier(dynamic viewmodel) {
+    try {
+      // Look for a ReactiveNotifier that contains this ViewModel
+      final instances = ReactiveNotifier.getInstances;
+      for (final instance in instances) {
+        if (instance.notifier == viewmodel) {
+          // Found the ReactiveNotifier containing this ViewModel
+          instance.removeReference('ReactiveViewModelBuilder_${hashCode}');
+          break;
+        }
+      }
+    } catch (e) {
+      // If we can't find the parent ReactiveNotifier, that's okay
+      // This ViewModel might be used directly without ReactiveNotifier wrapper
     }
   }
 
@@ -98,6 +144,9 @@ class _ReactiveBuilderStateViewModel<VM, T>
   void dispose() {
     // Cleanup subscriptions and timer
     widget.viewmodel.removeListener(_valueChanged);
+    
+    // Remove reference from parent ReactiveNotifier
+    _removeReferenceFromParentNotifier(widget.viewmodel);
     
     // Automatically unregister context using the same unique identifier
     final uniqueBuilderType = 'ReactiveViewModelBuilder<$VM,$T>_${hashCode}';

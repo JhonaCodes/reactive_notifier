@@ -274,10 +274,14 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// - Parameter transformer: A function that takes the current data `T?` from
   ///   a success state and returns the new data `T`.
   void transformDataStateSilently(T? Function(T? data) transformer) {
+    final previous = _state;
     final transformData = transformer(_state.data);
 
     if (transformData != null) {
       _state = AsyncState.success(transformData);
+
+      // Execute async state change hook (even for silent updates)
+      onAsyncStateChanged(previous, _state);
     } else {
       log('⚠️ transformDataStateSilently<${T.toString()}> returned null - transformation ignored');
     }
@@ -310,7 +314,56 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   ///
   void transformStateSilently(
       AsyncState<T> Function(AsyncState<T> state) transformer) {
+    final previous = _state;
     _state = transformer(_state);
+
+    // Execute async state change hook (even for silent updates)
+    onAsyncStateChanged(previous, _state);
+  }
+
+  /// Abstract method that returns an empty/clean AsyncState of type T
+  /// Can be overridden by subclasses for custom empty state behavior
+  /// 
+  /// Default implementation returns AsyncState.initial()
+  AsyncState<T> _createEmptyState() {
+    return AsyncState<T>.initial();
+  }
+
+  /// Hook that executes automatically after every async state change
+  /// 
+  /// This method is called immediately after the async state is updated via
+  /// updateState(), errorState(), loadingState(), transformState(), etc.
+  /// 
+  /// Override this method to:
+  /// - Add logging for async state transitions
+  /// - Perform automatic actions based on state changes
+  /// - Track loading/error patterns
+  /// - Update UI indicators or analytics
+  /// 
+  /// Example:
+  /// ```dart
+  /// @override
+  /// void onAsyncStateChanged(AsyncState<UserModel> previous, AsyncState<UserModel> next) {
+  ///   // Log state transitions
+  ///   if (previous.isLoading && next.isSuccess) {
+  ///     print('User loaded successfully: ${next.data?.name}');
+  ///   }
+  ///   
+  ///   // Handle errors automatically
+  ///   if (next.isError) {
+  ///     showErrorDialog(next.error.toString());
+  ///   }
+  ///   
+  ///   // Analytics tracking
+  ///   if (previous.isInitial && next.isLoading) {
+  ///     analytics.track('UserLoad_Started');
+  ///   }
+  /// }
+  /// ```
+  @protected
+  void onAsyncStateChanged(AsyncState<T> previous, AsyncState<T> next) {
+    // Base implementation does nothing
+    // Override in subclasses to react to async state changes
   }
 
   /// Override this method to provide the async data loading logic
@@ -339,29 +392,53 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
 
   /// Update data directly
   void updateState(T data) {
+    final previous = _state;
     _state = AsyncState.success(data);
     notifyListeners();
+
+    // Execute async state change hook
+    onAsyncStateChanged(previous, _state);
   }
 
   @protected
   void loadingState() {
+    final previous = _state;
     _state = AsyncState.loading();
     notifyListeners();
+
+    // Execute async state change hook
+    onAsyncStateChanged(previous, _state);
   }
 
   /// Set error state
 
   void errorState(Object error, [StackTrace? stackTrace]) {
+    final previous = _state;
     _state = AsyncState.error(error, stackTrace);
     notifyListeners();
+
+    // Execute async state change hook
+    onAsyncStateChanged(previous, _state);
   }
 
   void cleanState() {
-    _state = AsyncState.initial();
+    final previous = _state;
+    _state = _createEmptyState();
     unawaited(removeListeners());
-    init();
-    unawaited(setupListeners());
+    unawaited(_reloadAfterClean());
     notifyListeners();
+
+    // Execute async state change hook
+    onAsyncStateChanged(previous, _state);
+  }
+  
+  Future<void> _reloadAfterClean() async {
+    try {
+      await init();
+      await setupListeners();
+    } catch (error, stackTrace) {
+      errorState(error, stackTrace);
+    }
   }
 
   /// [loadNotifier]

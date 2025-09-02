@@ -1,11 +1,14 @@
 # ReactiveNotifier - AI/Development Context Guide
 
 ## Quick Context
-- **Version**: 2.12.0
+- **Version**: 2.13.0
 - **Pattern**: Singleton state management with "create once, reuse always" philosophy
 - **Architecture**: MVVM with reactive ViewModels and independent lifecycle management
 - **Core Concept**: ViewModel lifecycle separated from UI lifecycle
-- **NEW**: Automatic BuildContext access in ViewModels for seamless migration support
+- **Inspiration**: Android's LiveData and ViewModel architecture patterns
+- **NEW v2.13.0**: State change hooks (onStateChanged, onAsyncStateChanged)
+- **NEW v2.13.0**: Cross-service communication with explicit sandbox architecture  
+- **Legacy v2.12.0**: Automatic BuildContext access in ViewModels for migration support
 
 ## Core Components
 
@@ -559,4 +562,220 @@ class ComplexViewModel extends AsyncViewModelImpl<ComplexData> {
 }
 ```
 
-This guide covers the current API and reactive patterns of ReactiveNotifier v2.11.1. Always use the latest builder API with correct parameters and leverage the powerful reactive communication system for clean, decoupled architectures.
+## NEW: Widget-Aware Lifecycle Management (v2.13.0)
+
+### Automatic Dispose & Reinitialize
+
+ReactiveNotifier now tracks widget usage automatically and can dispose instances when no widgets are using them, then recreate them when needed again. This solves memory management concerns while maintaining the "create once, reuse always" philosophy.
+
+#### Enable Auto-Dispose
+
+```dart
+mixin UserService {
+  static final ReactiveNotifier<UserViewModel> userState = 
+    ReactiveNotifier<UserViewModel>(
+      () => UserViewModel(),
+      autoDispose: true, // Enable automatic disposal
+    );
+    
+  // Configure custom timeout (optional)
+  static void configureAutoDispose() {
+    userState.enableAutoDispose(timeout: Duration(minutes: 5));
+  }
+}
+```
+
+#### Reference Counting
+
+The system automatically tracks active widgets:
+
+```dart
+// Widget 1 using the notifier
+ReactiveBuilder<UserModel>(
+  notifier: UserService.userState,
+  build: (user, notifier, keep) => Text(user.name),
+) // +1 reference
+
+// Widget 2 using the same notifier  
+ReactiveViewModelBuilder<UserViewModel, UserModel>(
+  viewmodel: UserService.userState.notifier,
+  build: (user, vm, keep) => Text(user.email),
+) // +1 reference (total: 2)
+
+// When both widgets dispose:
+// References reach 0 -> Auto-dispose timer starts
+// After timeout -> ReactiveNotifier cleans itself up
+// When needed again -> Automatically recreates fresh instance
+```
+
+#### Manual Reinitialize
+
+Force reinitialize after specific events:
+
+```dart
+mixin UserService {
+  static final ReactiveNotifier<UserViewModel> userState = 
+    ReactiveNotifier<UserViewModel>(() => UserViewModel());
+    
+  static void logout() {
+    // Reinitialize with fresh state after logout
+    ReactiveNotifier.reinitializeInstance<UserViewModel>(
+      userState.keyNotifier,
+      () => UserViewModel(), // Fresh ViewModel
+    );
+  }
+  
+  static bool get isUserActive => 
+    ReactiveNotifier.isInstanceActive<UserViewModel>(userState.keyNotifier);
+}
+```
+
+#### Debug Information
+
+Monitor lifecycle in development:
+
+```dart
+// Get reference count
+final refCount = UserService.userState.referenceCount;
+
+// Check if scheduled for dispose  
+final isScheduled = UserService.userState.isScheduledForDispose;
+
+// Get active references
+final refs = UserService.userState.activeReferences;
+
+print('User state references: $refCount');
+print('Active refs: $refs');
+```
+
+### Benefits
+
+1. **Memory Efficient**: Only keeps in memory what's actually being used
+2. **Zero Breaking Changes**: Existing code works unchanged
+3. **Automatic**: No manual memory management needed
+4. **Configurable**: Custom timeouts and behavior per instance
+5. **DevTools Ready**: Full visibility into lifecycle events
+
+## NEW in v2.13.0: State Change Hooks
+
+### ViewModel Hooks
+
+ViewModels can now react to their own state changes internally using hooks:
+
+```dart
+class UserViewModel extends ViewModel<UserModel> {
+  @override
+  void onStateChanged(UserModel previous, UserModel next) {
+    // React to any state change
+    print('User changed from ${previous.name} to ${next.name}');
+    
+    // Log specific changes
+    if (previous.email != next.email) {
+      logEmailChange(previous.email, next.email);
+    }
+    
+    // Trigger side effects
+    if (previous.isActive != next.isActive) {
+      notifyExternalServices(next.isActive);
+    }
+  }
+}
+```
+
+### AsyncViewModel Hooks
+
+AsyncViewModels have specialized hooks for async state changes:
+
+```dart
+class DataViewModel extends AsyncViewModelImpl<List<Item>> {
+  @override
+  void onAsyncStateChanged(AsyncState<List<Item>> previous, AsyncState<List<Item>> next) {
+    // Handle loading states
+    if (previous.isInitial && next.isLoading) {
+      showLoadingIndicator();
+    }
+    
+    // Handle success
+    if (previous.isLoading && next.isSuccess) {
+      hideLoadingIndicator();
+      logSuccessfulLoad(next.data?.length ?? 0);
+    }
+    
+    // Handle errors
+    if (next.isError) {
+      hideLoadingIndicator();
+      showErrorMessage(next.error.toString());
+    }
+  }
+}
+```
+
+### Hook Integration
+
+Hooks are automatically called in all state update methods:
+- `updateState()` - Triggers hooks with notifications
+- `updateSilently()` - Triggers hooks without notifications  
+- `transformState()` - Triggers hooks with notifications
+- `transformStateSilently()` - Triggers hooks without notifications
+
+## Cross-Service Communication (Explicit Architecture)
+
+ReactiveNotifier v2.13.0 supports explicit communication between services using `listenVM`:
+
+```dart
+// User Service (Sandbox 1)
+mixin UserService {
+  static final ReactiveNotifier<UserViewModel> currentUser = 
+    ReactiveNotifier<UserViewModel>(() => UserViewModel());
+}
+
+// Notification Service (Sandbox 2)
+mixin NotificationService {
+  static final ReactiveNotifier<NotificationViewModel> notifications = 
+    ReactiveNotifier<NotificationViewModel>(() => NotificationViewModel());
+}
+
+// Explicit cross-service communication
+class NotificationViewModel extends ViewModel<NotificationModel> {
+  @override
+  void init() {
+    // Listen to specific service instances (not magic type lookup)
+    UserService.currentUser.notifier.listenVM((userData) {
+      updateNotificationsForUser(userData);
+    });
+  }
+}
+```
+
+### Multiple Instances per Type
+
+```dart
+// Multiple instances of same type in different services
+mixin UserService {
+  static final ReactiveNotifier<UserViewModel> mainUser = 
+    ReactiveNotifier<UserViewModel>(() => UserViewModel());
+  static final ReactiveNotifier<UserViewModel> guestUser = 
+    ReactiveNotifier<UserViewModel>(() => UserViewModel());
+}
+
+mixin AdminService {
+  static final ReactiveNotifier<UserViewModel> adminUser = 
+    ReactiveNotifier<UserViewModel>(() => UserViewModel());
+}
+
+// Explicit service access - no ambiguity
+class DashboardViewModel extends ViewModel<DashboardModel> {
+  @override
+  void init() {
+    UserService.mainUser.notifier.listenVM((mainUser) {
+      updateDashboardForMainUser(mainUser);
+    });
+    
+    AdminService.adminUser.notifier.listenVM((adminUser) {
+      updateDashboardForAdmin(adminUser);
+    });
+  }
+}
+```
+
+This guide covers the current API and reactive patterns of ReactiveNotifier v2.13.0. The new hooks system provides internal reactivity while maintaining the explicit, sandbox-based architecture for cross-service communication.

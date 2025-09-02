@@ -69,6 +69,10 @@ class _ReactiveAsyncBuilderState<VM, T>
     final uniqueBuilderType = 'ReactiveAsyncBuilder<$VM,$T>_${hashCode}';
     context.registerForViewModels(uniqueBuilderType, widget.notifier);
     
+    // Add reference for widget-aware lifecycle if notifier is from ReactiveNotifier
+    // We need to find the parent ReactiveNotifier that contains this AsyncViewModel
+    _addReferenceToParentNotifier();
+    
     // Call reinitializeWithContext for consistency with ReactiveViewModelBuilder
     if (widget.notifier is AsyncViewModelImpl) {
       (widget.notifier as AsyncViewModelImpl).reinitializeWithContext();
@@ -77,18 +81,63 @@ class _ReactiveAsyncBuilderState<VM, T>
     widget.notifier.addListener(_valueChanged);
   }
 
+  /// Find and add reference to the parent ReactiveNotifier that contains this AsyncViewModel
+  void _addReferenceToParentNotifier() {
+    try {
+      // Look for a ReactiveNotifier that contains this AsyncViewModel
+      final instances = ReactiveNotifier.getInstances;
+      for (final instance in instances) {
+        if (instance.notifier == widget.notifier) {
+          // Found the ReactiveNotifier containing this AsyncViewModel
+          instance.addReference('ReactiveAsyncBuilder_${hashCode}');
+          break;
+        }
+      }
+    } catch (e) {
+      // If we can't find the parent ReactiveNotifier, that's okay
+      // This AsyncViewModel might be used directly without ReactiveNotifier wrapper
+    }
+  }
+
   @override
   void didUpdateWidget(ReactiveAsyncBuilder<VM, T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.notifier != widget.notifier) {
+      // Remove reference from old notifier's parent ReactiveNotifier
+      _removeReferenceFromParentNotifier(oldWidget.notifier);
+      
       oldWidget.notifier.removeListener(_valueChanged);
       widget.notifier.addListener(_valueChanged);
+      
+      // Add reference to new notifier's parent ReactiveNotifier
+      _addReferenceToParentNotifier();
+    }
+  }
+
+  /// Find and remove reference from the parent ReactiveNotifier that contains this AsyncViewModel
+  void _removeReferenceFromParentNotifier(dynamic asyncViewModel) {
+    try {
+      // Look for a ReactiveNotifier that contains this AsyncViewModel
+      final instances = ReactiveNotifier.getInstances;
+      for (final instance in instances) {
+        if (instance.notifier == asyncViewModel) {
+          // Found the ReactiveNotifier containing this AsyncViewModel
+          instance.removeReference('ReactiveAsyncBuilder_${hashCode}');
+          break;
+        }
+      }
+    } catch (e) {
+      // If we can't find the parent ReactiveNotifier, that's okay
+      // This AsyncViewModel might be used directly without ReactiveNotifier wrapper
     }
   }
 
   @override
   void dispose() {
     widget.notifier.removeListener(_valueChanged);
+    
+    // Remove reference from parent ReactiveNotifier
+    _removeReferenceFromParentNotifier(widget.notifier);
     
     // Automatically unregister context using the same unique identifier
     final uniqueBuilderType = 'ReactiveAsyncBuilder<$VM,$T>_${hashCode}';

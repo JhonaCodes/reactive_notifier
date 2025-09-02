@@ -492,8 +492,10 @@ class MigrationState {
   );
 }
 
-/// Example ViewModel demonstrating BuildContext access
+/// Example ViewModel demonstrating BuildContext access and State Change Hooks
 class MigrationViewModel extends ViewModel<MigrationState> {
+  final List<String> stateChanges = [];
+  
   MigrationViewModel() : super(MigrationState.initial());
   
   @override
@@ -503,6 +505,26 @@ class MigrationViewModel extends ViewModel<MigrationState> {
     
     // Update with context data if available
     _updateFromContext();
+  }
+  
+  @override
+  void onStateChanged(MigrationState previous, MigrationState next) {
+    // NEW v2.13.0: State change hooks
+    stateChanges.add('State changed: ${previous.userDisplayName} → ${next.userDisplayName}');
+    
+    // Log specific changes
+    if (previous.themeMode != next.themeMode) {
+      print('Theme changed from ${previous.themeMode} to ${next.themeMode}');
+    }
+    
+    if (previous.hasContextData != next.hasContextData) {
+      print('Context data availability: ${next.hasContextData}');
+    }
+    
+    // Trigger side effects based on state changes
+    if (next.hasContextData && !previous.hasContextData) {
+      print('Context data now available - triggering analytics');
+    }
   }
   
   void _updateFromContext() {
@@ -530,8 +552,9 @@ class MigrationViewModel extends ViewModel<MigrationState> {
     }
   }
   
-  @override
-  String _createEmptyState() => 'empty';
+  void simulateUserChange(String newName) {
+    transformState((current) => current.copyWith(userDisplayName: newName));
+  }
 }
 
 /// Service for migration demo
@@ -594,20 +617,35 @@ class ContextAccessDemo extends StatelessWidget {
                         color: Colors.purple.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: const Column(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Usage in ViewModel:',
+                          const Text(
+                            'NEW v2.13.0 Features:',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          SizedBox(height: 4),
-                          Text(
-                            '• context - Nullable BuildContext getter\n'
-                            '• hasContext - Check availability\n' 
-                            '• requireContext() - Required access with errors\n'
-                            '• Perfect for Riverpod migration!',
+                          const SizedBox(height: 4),
+                          const Text(
+                            '• State Change Hooks (onStateChanged)\n'
+                            '• BuildContext Access (context, hasContext)\n'
+                            '• Cross-Service Communication\n'
+                            '• Explicit Sandbox Architecture',
                             style: TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'State Changes Recorded: ${viewModel.stateChanges.length}',
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                          if (viewModel.stateChanges.isNotEmpty)
+                            Text(
+                              'Last: ${viewModel.stateChanges.last}',
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () => viewModel.simulateUserChange('John Doe'),
+                            child: const Text('Trigger State Change'),
                           ),
                         ],
                       ),

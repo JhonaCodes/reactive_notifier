@@ -48,7 +48,7 @@ abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier, ViewMode
 
     assert(() {
       log('''
-🔧 ViewModel<${T.toString()}> created
+ViewModel<${T.toString()}> created
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ID: $_instanceId
 Location: ${_getCreationLocation()}
@@ -113,7 +113,22 @@ Initial state hash: ${_data.hashCode}
 
   /// Abstract method that returns an empty/clean state of type T
   /// Must be implemented by subclasses
-  T _createEmptyState();
+  /// 
+  /// This method should return a "clean" or "empty" state that can be used
+  /// to reset the ViewModel to a fresh state without disposing it completely.
+  /// 
+  /// Example:
+  /// ```dart
+  /// class UserViewModel extends ViewModel<UserModel> {
+  ///   @override
+  ///   UserModel _createEmptyState() => UserModel.empty();
+  /// }
+  /// ```
+  T _createEmptyState() {
+    // Default implementation returns current data 
+    // Subclasses should override this for proper empty state
+    return data;
+  }
 
   /// Re-initialize if the ViewModel was initialized without context
   /// Called by builders when context becomes available
@@ -245,9 +260,13 @@ Was disposed for: ${DateTime.now().difference(_disposeTime!).inMilliseconds}ms
   void updateState(T newState) {
     _checkDisposed();
 
+    final previous = _data;
     _data = newState;
     _updateCount++;
     notifyListeners();
+
+    // Execute state change hook
+    onStateChanged(previous, newState);
 
     assert(() {
       log('''
@@ -266,11 +285,15 @@ New state hash: ${_data.hashCode}
   void transformState(T Function(T data) transformer) {
     _checkDisposed();
 
+    final previous = _data;
     final newState = transformer(_data);
 
     _data = newState;
     _updateCount++;
     notifyListeners();
+
+    // Execute state change hook
+    onStateChanged(previous, newState);
 
     assert(() {
       log('''
@@ -289,14 +312,18 @@ New state hash: ${_data.hashCode}
   void transformStateSilently(T Function(T data) transformer) {
     _checkDisposed();
 
+    final previous = _data;
     final newState = transformer(_data);
 
     _data = newState;
     _updateCount++;
 
+    // Execute state change hook (even for silent updates)
+    onStateChanged(previous, newState);
+
     assert(() {
       log('''
-🔄 ViewModel<${T.toString()}> transformed
+🔄 ViewModel<${T.toString()}> transformed silently
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ID: $_instanceId
 Update #: $_updateCount
@@ -310,7 +337,12 @@ New state hash: ${_data.hashCode}
   /// Updates the state without notifying listeners
   void updateSilently(T newState) {
     _checkDisposed();
+    
+    final previous = _data;
     _data = newState;
+
+    // Execute state change hook (even for silent updates)
+    onStateChanged(previous, newState);
 
     assert(() {
       log('''
@@ -626,6 +658,43 @@ Remaining listeners: ${_listeners.length}
   
   /// Get current listener count for debugging
   int get activeListenerCount => _listeners.length;
+
+  /// Hook that executes automatically after every state change
+  /// 
+  /// This method is called immediately after the state is updated via
+  /// updateState(), transformState(), or transformStateSilently().
+  /// 
+  /// Override this method to:
+  /// - Add logging for state changes
+  /// - Perform automatic validations 
+  /// - Trigger side effects based on state transitions
+  /// - Update derived state automatically
+  /// 
+  /// Example:
+  /// ```dart
+  /// @override
+  /// void onStateChanged(UserModel previous, UserModel next) {
+  ///   // Log important changes
+  ///   if (previous.isLoggedIn != next.isLoggedIn) {
+  ///     print('User login status changed: ${next.isLoggedIn}');
+  ///   }
+  ///   
+  ///   // Automatic validation
+  ///   if (next.email.isNotEmpty && !isValidEmail(next.email)) {
+  ///     showEmailError();
+  ///   }
+  ///   
+  ///   // Side effects
+  ///   if (next.isLoggedIn && previous.userId != next.userId) {
+  ///     loadUserPreferences(next.userId);
+  ///   }
+  /// }
+  /// ```
+  @protected
+  void onStateChanged(T previous, T next) {
+    // Base implementation does nothing
+    // Override in subclasses to react to state changes
+  }
 
   /// Called after the ViewModel's primary initialization logic (e.g., in `init(), setupListeners, etc`)
   /// has completed successfully.

@@ -1,3 +1,85 @@
+# 2.13.0
+## State Change Hooks + Architecture Improvements + Professional Documentation
+
+### ✨ New Features
+- **State Change Hooks**: Added `onStateChanged(previous, next)` hook for ViewModels
+- **Async State Hooks**: Added `onAsyncStateChanged(previous, next)` hook for AsyncViewModels  
+- **Internal State Reaction**: ViewModels can now react to their own state changes
+- **Hook Integration**: Hooks automatically called in all state update methods
+- **Cross-Service Communication**: Explicit communication between service sandboxes
+- **Multiple Instance Support**: Multiple instances of same type in different services
+
+### 🏗️ Architecture Improvements
+- **Eliminated Observer Complexity**: Removed ReactiveObserver in favor of explicit communication
+- **Sandbox Architecture**: Services act as independent sandboxes with explicit communication
+- **Simplified State Management**: No magic type lookup - everything is explicit
+- **Enhanced Service Pattern**: Better service organization with clear boundaries
+
+### 📚 Documentation Updates  
+- **Professional Documentation**: Removed excessive emojis, cleaner presentation
+- **Simplified Examples**: Direct, practical code samples
+- **Updated Migration Guides**: Enhanced guides for Provider, Riverpod, BLoC migration
+- **Comprehensive Testing**: Improved test coverage with proper isolation
+
+### 🔧 API Changes
+```dart
+// NEW: State change hooks
+class UserViewModel extends ViewModel<UserModel> {
+  @override
+  void onStateChanged(UserModel previous, UserModel next) {
+    // React to state changes internally
+    if (previous.status != next.status) {
+      logStatusChange(previous.status, next.status);
+    }
+  }
+}
+
+// NEW: Async state hooks  
+class DataViewModel extends AsyncViewModelImpl<List<Item>> {
+  @override
+  void onAsyncStateChanged(AsyncState<List<Item>> previous, AsyncState<List<Item>> next) {
+    // React to async state changes
+    if (previous.isLoading && next.isSuccess) {
+      logSuccessfulLoad(next.data?.length ?? 0);
+    }
+  }
+}
+```
+
+### 🚨 Breaking Changes
+- **Removed ReactiveObserver**: Use explicit service communication with `listenVM`
+- **Removed global notifier<T>()**: Use explicit service access instead
+
+### 🔄 Migration from ReactiveObserver
+```dart
+// OLD (Removed)
+class MyViewModel extends ViewModel<MyState> with ReactiveObserver {
+  @override
+  void init() {
+    observe<UserViewModel>((user) {  // ❌ Magic type lookup
+      updateForUser(user.data);
+    });
+  }
+}
+
+// NEW (Explicit)
+class MyViewModel extends ViewModel<MyState> {
+  @override
+  void init() {
+    UserService.mainUser.notifier.listenVM((userData) {  // ✅ Explicit service
+      updateForUser(userData);
+    });
+  }
+}
+```
+
+### ⚡ Performance Improvements
+- **Reduced Memory Usage**: Eliminated observer overhead
+- **Faster State Updates**: Direct communication without observer layer
+- **Better Test Isolation**: Improved test performance and reliability
+
+---
+
 # 2.12.0
 ## 🎯 BuildContext Access for ViewModels - Seamless Migration Support + Auto DevTools Integration
 

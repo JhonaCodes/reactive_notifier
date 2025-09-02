@@ -28,7 +28,6 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   final Key keyNotifier;
 
   // Factory function for recreation
-  // ignore: unused_field
   final T Function() _createFunction;
 
   // Notification overflow detection
@@ -37,7 +36,17 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   DateTime? _firstNotificationTime;
   int _notificationCount = 0;
 
+  // Widget-aware lifecycle management
   final bool autoDispose;
+  int _referenceCount = 0;
+  Timer? _disposeTimer;
+  Duration _autoDisposeTimeout = const Duration(seconds: 30);
+  bool _isScheduledForDispose = false;
+  bool _disposed = false;
+  
+  // Reference tracking for debugging
+  final Set<String> _activeReferences = <String>{};
+  static final Map<Key, ReactiveNotifier> _instanceRegistry = <Key, ReactiveNotifier>{};
 
   ReactiveNotifier._(
       T Function() create, this.related, this.keyNotifier, this.autoDispose)
@@ -98,6 +107,7 @@ Location: $trace
     try {
       final instance = ReactiveNotifier._(create, related, key, autoDispose);
       _instances[key] = instance;
+      _instanceRegistry[key] = instance;
       
       // Record instance creation for debug service (only in non-test environments)
       if (kDebugMode && !_isTestEnvironment) {
@@ -227,7 +237,7 @@ Location: $trace
   }
 
   @override
-  void transformStateSilently(T Function(T data) data) {
+  void transformStateSilently(T Function(T data) transformer) {
     // Prevent circular update
     if (_updatingNotifiers.contains(this)) {
       return;
@@ -238,25 +248,26 @@ Location: $trace
 
     log('🔄 Transforming state silently for $T', level: 10);
 
-    // Record state change for debug service
+    // Record old state for debug service
     dynamic oldState = notifier;
-    T newState = data(notifier);
-    if (kDebugMode) {
-      ReactiveNotifierDebugService.instance.recordStateChange(
-        instanceId: '${T.toString()}_${keyNotifier.toString()}',
-        type: T.toString(),
-        oldState: oldState,
-        newState: newState,
-        source: 'transformStateSilently',
-        isSilent: true,
-      );
-    }
 
     _updatingNotifiers.add(this);
 
     try {
       // Transform state without notifying
-      super.transformStateSilently(data);
+      super.transformStateSilently(transformer);
+
+      // Record state change for debug service after transformation
+      if (kDebugMode) {
+        ReactiveNotifierDebugService.instance.recordStateChange(
+          instanceId: '${T.toString()}_${keyNotifier.toString()}',
+          type: T.toString(),
+          oldState: oldState,
+          newState: notifier, // New state after transformation
+          source: 'transformStateSilently',
+          isSilent: true,
+        );
+      }
 
       // Notify parents if they exist
       if (_parents.isNotEmpty) {
@@ -275,7 +286,7 @@ Location: $trace
   }
 
   @override
-  void transformState(T Function(T data) data) {
+  void transformState(T Function(T data) transformer) {
     // Prevent circular update
     if (_updatingNotifiers.contains(this)) {
       return;
@@ -286,25 +297,26 @@ Location: $trace
 
     log('🔄 Transforming state for $T', level: 10);
 
-    // Record state change for debug service
+    // Record old state for debug service
     dynamic oldState = notifier;
-    T newState = data(notifier);
-    if (kDebugMode) {
-      ReactiveNotifierDebugService.instance.recordStateChange(
-        instanceId: '${T.toString()}_${keyNotifier.toString()}',
-        type: T.toString(),
-        oldState: oldState,
-        newState: newState,
-        source: 'transformState',
-        isSilent: false,
-      );
-    }
 
     _updatingNotifiers.add(this);
 
     try {
       // Transform state and notify
-      super.transformState(data);
+      super.transformState(transformer);
+
+      // Record state change for debug service after transformation
+      if (kDebugMode) {
+        ReactiveNotifierDebugService.instance.recordStateChange(
+          instanceId: '${T.toString()}_${keyNotifier.toString()}',
+          type: T.toString(),
+          oldState: oldState,
+          newState: notifier, // New state after transformation
+          source: 'transformState',
+          isSilent: false,
+        );
+      }
 
       // Notify parents if they exist
       if (_parents.isNotEmpty) {
@@ -581,6 +593,283 @@ Available types: ${related!.map((r) => '${r.notifier.runtimeType}(${r.keyNotifie
     return result.notifier as R;
   }
 
+  /// Widget-aware lifecycle management methods
+  
+  /// Increment reference count when a widget starts using this notifier
+  void addReference(String referenceId) {
+    // Only increment if this is a new reference
+    if (_activeReferences.add(referenceId)) {
+      _referenceCount++;
+    }
+    
+    // Cancel auto-dispose if scheduled
+    if (_isScheduledForDispose) {
+      _disposeTimer?.cancel();
+      _disposeTimer = null;
+      _isScheduledForDispose = false;
+      
+      assert(() {
+        log('''
+🔄 Auto-dispose cancelled for ReactiveNotifier<$T>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Reference added: $referenceId
+Active references: $_referenceCount
+Reason: New widget started using this notifier
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+        return true;
+      }());
+    }
+    
+    assert(() {
+      log('''
+➕ Reference added to ReactiveNotifier<$T>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Reference: $referenceId
+Total references: $_referenceCount
+Auto-dispose enabled: $autoDispose
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 5);
+      return true;
+    }());
+  }
+  
+  /// Decrement reference count when a widget stops using this notifier
+  void removeReference(String referenceId) {
+    // Only decrement if reference actually existed
+    if (_activeReferences.remove(referenceId)) {
+      _referenceCount--;
+    }
+    
+    assert(() {
+      log('''
+➖ Reference removed from ReactiveNotifier<$T>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Reference: $referenceId
+Remaining references: $_referenceCount
+Auto-dispose enabled: $autoDispose
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 5);
+      return true;
+    }());
+    
+    // Schedule auto-dispose if no more references and auto-dispose is enabled
+    if (_referenceCount <= 0 && autoDispose && !_isScheduledForDispose) {
+      _scheduleAutoDispose();
+    }
+  }
+  
+  /// Schedule automatic disposal after timeout
+  void _scheduleAutoDispose() {
+    if (_isScheduledForDispose || _disposed) return;
+    
+    _isScheduledForDispose = true;
+    _disposeTimer = Timer(_autoDisposeTimeout, () {
+      if (_referenceCount <= 0 && autoDispose && !_disposed) {
+        assert(() {
+          log('''
+🗑️ Auto-disposing ReactiveNotifier<$T>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Key: $keyNotifier
+Timeout: ${_autoDisposeTimeout.inSeconds}s
+Final reference count: $_referenceCount
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+          return true;
+        }());
+        
+        cleanCurrentNotifier(forceCleanup: true);
+      }
+      _isScheduledForDispose = false;
+    });
+    
+    assert(() {
+      log('''
+⏰ Auto-dispose scheduled for ReactiveNotifier<$T>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Timeout: ${_autoDisposeTimeout.inSeconds}s
+Current references: $_referenceCount
+Will dispose if no references are added
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+  }
+  
+  /// Configure auto-dispose timeout for this instance
+  void enableAutoDispose({Duration? timeout}) {
+    if (timeout != null) {
+      _autoDisposeTimeout = timeout;
+    }
+    
+    assert(() {
+      log('''
+⚙️ Auto-dispose configured for ReactiveNotifier<$T>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Timeout: ${_autoDisposeTimeout.inSeconds}s
+Current references: $_referenceCount
+Will auto-dispose when references reach 0
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+  }
+  
+  /// Get current reference count (for debugging)
+  int get referenceCount => _referenceCount;
+  
+  /// Check if instance is scheduled for dispose
+  bool get isScheduledForDispose => _isScheduledForDispose;
+  
+  /// Get active references (for debugging)
+  Set<String> get activeReferences => Set.from(_activeReferences);
+
+  /// Static methods for instance management
+  
+  /// Reinitialize a disposed instance with a fresh state
+  /// 
+  /// This method allows you to recreate an instance that was previously disposed,
+  /// maintaining the same key and configuration but with a fresh state.
+  /// 
+  /// Use cases:
+  /// - After logout to create fresh user state
+  /// - Reset application state to initial values  
+  /// - Recovery from corrupted state
+  /// - Testing scenarios where clean state is needed
+  ///
+  /// Example:
+  /// ```dart
+  /// mixin UserService {
+  ///   static final instance = ReactiveNotifier<UserViewModel>(() => UserViewModel());
+  ///   
+  ///   static void logout() {
+  ///     ReactiveNotifier.reinitializeInstance<UserViewModel>(
+  ///       instance.keyNotifier, 
+  ///       () => UserViewModel()
+  ///     );
+  ///   }
+  /// }
+  /// ```
+  static T reinitializeInstance<T>(Key key, T Function() creator) {
+    if (!_instances.containsKey(key)) {
+      throw StateError('''
+❌ Cannot reinitialize - instance not found
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Key: $key
+Type: $T
+Available instances: ${_instances.length}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''');
+    }
+
+    final instance = _instances[key] as ReactiveNotifier<T>;
+    
+    assert(() {
+      log('''
+🔄 Reinitializing ReactiveNotifier<$T>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Key: $key
+Was disposed: ${instance._disposed}
+Current references: ${instance._referenceCount}
+Creating fresh state...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+
+    // Cancel any pending auto-dispose
+    instance._disposeTimer?.cancel();
+    instance._disposeTimer = null;
+    instance._isScheduledForDispose = false;
+    
+    // Reset dispose flag
+    instance._disposed = false;
+    
+    // Create fresh state
+    final newState = creator();
+    
+    // Update the internal state
+    try {
+      if (instance.notifier is ViewModel) {
+        // For ViewModels, dispose old one first if not already disposed
+        final oldVM = instance.notifier as ViewModel;
+        if (!oldVM.isDisposed) {
+          oldVM.dispose();
+        }
+      } else if (instance.notifier is AsyncViewModelImpl) {
+        // For AsyncViewModels, dispose old one first if not already disposed
+        final oldAsyncVM = instance.notifier as AsyncViewModelImpl;
+        if (!oldAsyncVM.isDisposed) {
+          oldAsyncVM.dispose();
+        }
+      }
+    } catch (e) {
+      // If disposal fails, log but continue with replacement
+      assert(() {
+        log('''
+⚠️ Warning during old ViewModel disposal in reinitializeInstance
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Error: $e
+Continuing with state replacement...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 50);
+        return true;
+      }());
+    }
+    
+    // Replace with new state
+    instance.replaceNotifier(newState);
+    
+    // Notify listeners of the fresh state
+    instance.notifyListeners();
+    
+    assert(() {
+      log('''
+✅ ReactiveNotifier<$T> successfully reinitialized
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Key: $key
+New state hash: ${newState.hashCode}
+Active references: ${instance._referenceCount}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+    
+    return newState;
+  }
+  
+  /// Check if an instance with the given key is active (not disposed)
+  ///
+  /// Returns `true` if the instance exists and is not disposed,
+  /// `false` if the instance doesn't exist or is disposed.
+  ///
+  /// Example:
+  /// ```dart
+  /// if (ReactiveNotifier.isInstanceActive<UserViewModel>(userKey)) {
+  ///   // Instance is active, safe to use
+  ///   final user = UserService.instance.notifier;
+  /// } else {
+  ///   // Instance is disposed or doesn't exist
+  ///   UserService.initializeUser();
+  /// }
+  /// ```
+  static bool isInstanceActive<T>(Key key) {
+    if (!_instances.containsKey(key)) {
+      return false;
+    }
+    
+    final instance = _instances[key] as ReactiveNotifier<T>?;
+    return instance != null && !instance._disposed;
+  }
+
+  /// Replace the internal notifier with a new instance
+  /// Used by reinitializeInstance to update the internal state
+  void replaceNotifier(T newNotifier) {
+    // This is a protected method that updates the internal state
+    // It's used internally by reinitializeInstance
+    updateSilently(newNotifier);
+  }
+
   /// Global cleanup flag to prevent concurrent modifications during cleanup
   static bool _isGlobalCleanupInProgress = false;
 
@@ -613,6 +902,12 @@ Updating notifiers: ${_updatingNotifiers.length}
       if (instance is ReactiveNotifier) {
         final vm = instance.notifier;
         try {
+          // Cancel any pending dispose timers
+          instance._disposeTimer?.cancel();
+          instance._disposeTimer = null;
+          instance._isScheduledForDispose = false;
+          instance._disposed = true;
+          
           if (vm is ViewModel && !vm.isDisposed) {
             vm.dispose();
             viewModelsDisposed++;
@@ -642,6 +937,7 @@ Continuing with cleanup...
     // 2. Clear all global registries
     _instances.clear();
     _updatingNotifiers.clear();
+    _instanceRegistry.clear();
 
     // 3. Clear ReactiveContext registries
     try {
@@ -673,8 +969,9 @@ Total instances processed: ${viewModelsDisposed + asyncViewModelsDisposed + simp
 Global registries cleared:
 - _instances: ${_instances.isEmpty ? '✓' : '✗ (${_instances.length} remaining)'}
 - _updatingNotifiers: ${_updatingNotifiers.isEmpty ? '✓' : '✗ (${_updatingNotifiers.length} remaining)'}
+- _instanceRegistry: ${_instanceRegistry.isEmpty ? '✓' : '✗ (${_instanceRegistry.length} remaining)'}
 
-🎯 All memory should now be available for garbage collection
+All memory should now be available for garbage collection
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 10);
       return true;
@@ -782,7 +1079,7 @@ Location of cleanup request: $trace
     if (forceCleanup) {
       assert(() {
         log('''
-🔧 Force cleanup mode enabled for ReactiveNotifier<$T>
+Force cleanup mode enabled for ReactiveNotifier<$T>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Key: $keyNotifier
 Active listeners: $hasListeners
@@ -1077,12 +1374,20 @@ let ViewModel handle disposal via _handleViewModelDisposal().
       return true;
     }());
 
-    // 1. Stop any active listeners
+    // 1. Cancel any pending dispose timer
+    _disposeTimer?.cancel();
+    _disposeTimer = null;
+    _isScheduledForDispose = false;
+    
+    // 2. Mark as disposed
+    _disposed = true;
+    
+    // 3. Stop any active listeners
     if (hasListeners) {
       stopListening();
     }
 
-    // 2. If notifier is a ViewModel/AsyncViewModel, dispose it (but avoid circular calls)
+    // 4. If notifier is a ViewModel/AsyncViewModel, dispose it (but avoid circular calls)
     if (notifier is ViewModel || notifier is AsyncViewModelImpl) {
       // Only dispose if the ViewModel hasn't already called dispose
       // This prevents circular dispose calls between ReactiveNotifier and ViewModel
@@ -1119,7 +1424,7 @@ Note: Instance remains in global registry unless manually cleaned
       return true;
     }());
 
-    // 3. Call ChangeNotifier dispose
+    // 5. Call ChangeNotifier dispose
     super.dispose();
   }
   
