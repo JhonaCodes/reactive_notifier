@@ -1,6 +1,6 @@
 # ReactiveNotifier v2.13.0
 
-**Professional State Management for Flutter** - A powerful, elegant, and secure solution for managing reactive state in Flutter applications. Built with enterprise-grade architecture in mind, ReactiveNotifier provides fine-grained control, automatic BuildContext access, memory leak prevention, and reactive state change hooks.
+**State Management for Flutter** - ReactiveNotifier is a state manager designed for MVVM architecture with clear separation of responsibilities. It manages ViewModel lifecycle independently from UI, supports applications of any size, follows "create once, reuse always" philosophy, and keeps business logic out of widgets.
 
 ![reactive_notifier](https://github.com/user-attachments/assets/ca97c7e6-a254-4b19-b58d-fd07206ff6ee)
 
@@ -49,12 +49,13 @@
 - **Repository/Service layer integration** - Clean separation of concerns
 - **High performance** with minimal rebuilds and widget preservation
 - **Memory leak prevention** - Comprehensive listener tracking and cleanup
-- **Automatic BuildContext access** - Zero-configuration context availability
+- **Automatic BuildContext access** - Zero-configuration context availability in ALL ViewModels
+- **Hybrid state management** - Use ReactiveNotifier + Riverpod/Provider simultaneously
 - **State change hooks** - React to internal state changes
 - **Cross-service communication** - Explicit sandbox-to-sandbox messaging
 - **DevTools integration** - Enhanced debugging and monitoring capabilities
 - **Comprehensive testing support** - Easy mocking and test utilities
-- **Migration support** - Seamless transition from Provider, Riverpod, BLoC, GetX
+- **Migration support** - Gradual migration or hybrid usage with existing state managers
 
 ---
 
@@ -64,10 +65,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  reactive_notifier:
-    git:
-      url: https://github.com/jhonacode/reactive_notifier.git
-      ref: v2.13.0
+  reactive_notifier: ^2.12.0
 ```
 
 ### DevTools Extension (Automatic)
@@ -86,21 +84,6 @@ The ReactiveNotifier DevTools extension is automatically initialized in debug mo
 ## Core Philosophy: "Create Once, Reuse Always"
 
 ReactiveNotifier follows a singleton pattern where each state is created once and reused throughout the application lifecycle.
-
-### Traditional State Management
-```dart
-// ❌ Multiple instances, complex lifecycle management
-final provider1 = StateProvider<int>((ref) => 0);
-final provider2 = StateProvider<int>((ref) => 0);
-```
-
-### ReactiveNotifier Approach
-```dart
-// ✅ Single instance per service, automatic lifecycle
-mixin CounterService {
-  static final ReactiveNotifier<int> count = ReactiveNotifier<int>(() => 0);
-}
-```
 
 ### Key Principles
 
@@ -307,6 +290,98 @@ class TodoListWidget extends StatelessWidget {
 }
 ```
 
+### 4. Stream Operations with ReactiveStreamBuilder
+
+For reactive streams, you can use `ReactiveStreamBuilder` with ViewModels that manage streams internally:
+
+```dart
+// ViewModel that manages a stream internally
+class ChatViewModel extends ViewModel<ChatState> {
+  StreamSubscription? _messageSubscription;
+  
+  ChatViewModel() : super(ChatState.initial());
+  
+  @override
+  void init() {
+    // Listen to stream inside ViewModel
+    _messageSubscription = _chatRepository.messageStream().listen(
+      (message) => updateState(data.copyWith(messages: [...data.messages, message])),
+      onError: (error) => updateState(data.copyWith(error: error)),
+    );
+  }
+  
+  @override
+  void dispose() {
+    _messageSubscription?.cancel();
+    super.dispose();
+  }
+}
+
+// Service with ViewModel
+mixin ChatService {
+  static final ReactiveNotifier<ChatViewModel> chat = 
+    ReactiveNotifier<ChatViewModel>(() => ChatViewModel());
+}
+
+// Or: ReactiveNotifier holding a stream directly
+mixin StreamService {
+  static final ReactiveNotifier<Stream<String>> dataStream = 
+    ReactiveNotifier<Stream<String>>(() => Stream.periodic(
+      Duration(seconds: 1), 
+      (i) => 'Data $i'
+    ));
+}
+
+// Use ReactiveStreamBuilder for direct stream handling
+class StreamWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ReactiveStreamBuilder<ReactiveNotifier<Stream<String>>, String>(
+      notifier: StreamService.dataStream,
+      onData: (data, notifier, keep) {
+        return Column(
+          children: [
+            Text('Current: $data'),
+            keep(ExpensiveWidget()), // Preserved widget
+          ],
+        );
+      },
+      onLoading: () => CircularProgressIndicator(),
+      onError: (error) => Text('Error: $error'),
+      onEmpty: () => Text('Waiting for data...'),
+      onDone: () => Text('Stream finished'),
+    );
+  }
+}
+
+// Alternative: Use regular ReactiveBuilder with ViewModel
+class ChatWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ReactiveViewModelBuilder<ChatViewModel, ChatState>(
+      viewmodel: ChatService.chat.notifier,
+      build: (chatState, viewModel, keep) {
+        if (chatState.isLoading) {
+          return CircularProgressIndicator();
+        }
+        
+        return ListView.builder(
+          itemCount: chatState.messages.length,
+          itemBuilder: (context, index) {
+            return MessageTile(message: chatState.messages[index]);
+          },
+        );
+      },
+    );
+  }
+}
+```
+
+**Stream Usage Patterns:**
+- **ViewModel with internal stream** - Stream managed inside ViewModel lifecycle
+- **ReactiveNotifier<Stream<T>>** - Direct stream exposure for ReactiveStreamBuilder
+- **Hybrid approach** - Stream data transformed to ViewModel state
+
 ### Manual Listener Management
 
 For complex scenarios where you need to register external listeners manually, both `ViewModel` and `AsyncViewModelImpl` provide `setupListeners` and `removeListeners` methods:
@@ -352,6 +427,144 @@ class NotificationViewModel extends ViewModel<List<String>> {
 - Always call `super.setupListeners()` and `super.removeListeners()`
 - Store listener references as class properties for proper cleanup
 - Use named parameters: `{List<String> currentListeners = const []}`
+
+### BuildContext Access in ViewModels
+
+**ALL ViewModels** (both `ViewModel<T>` and `AsyncViewModelImpl<T>`) automatically provide `BuildContext` access for seamless migration from Provider/Riverpod and accessing Theme, MediaQuery, Navigator, etc.
+
+```dart
+// ✅ Works in ViewModel<T>
+class UserViewModel extends ViewModel<UserState> {
+  UserViewModel() : super(UserState.initial());
+  
+  @override
+  void init() {
+    if (hasContext) {
+      // Access Riverpod container - can use both simultaneously!
+      final container = ProviderScope.containerOf(context!);
+      final riverpodData = container.read(someRiverpodProvider);
+      
+      // Access Flutter services
+      final theme = Theme.of(context!);
+      final navigator = Navigator.of(context!);
+      
+      updateSilently(UserState.fromMigration(
+        riverpodData: riverpodData,
+        isDarkTheme: theme.brightness == Brightness.dark,
+      ));
+    }
+  }
+  
+  void navigateToProfile() {
+    if (hasContext) {
+      Navigator.of(context!).pushNamed('/profile');
+    }
+  }
+}
+
+// ✅ Works in AsyncViewModelImpl<T>  
+class DataViewModel extends AsyncViewModelImpl<List<Item>> {
+  DataViewModel() : super(AsyncState.initial());
+  
+  @override
+  Future<List<Item>> init() async {
+    // Context access works in async ViewModels too!
+    if (hasContext) {
+      // Can combine Riverpod with ReactiveNotifier
+      final container = ProviderScope.containerOf(context!);
+      final apiClient = container.read(apiClientProvider);
+      
+      // Use both state management systems together
+      final localData = await _localDatabase.getItems();
+      final serverData = await apiClient.fetchItems();
+      
+      return [...localData, ...serverData];
+    }
+    
+    // Fallback without context
+    return await _localDatabase.getItems();
+  }
+  
+  void showSnackBar(String message) {
+    if (hasContext) {
+      ScaffoldMessenger.of(context!).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+  }
+}
+
+// ✅ Hybrid usage - ReactiveNotifier + Riverpod simultaneously
+class HybridService {
+  // ReactiveNotifier state
+  static final ReactiveNotifier<HybridViewModel> state = 
+    ReactiveNotifier<HybridViewModel>(() => HybridViewModel());
+}
+
+class HybridViewModel extends ViewModel<HybridState> {
+  @override
+  void init() {
+    if (hasContext) {
+      // Read from Riverpod providers
+      final container = ProviderScope.containerOf(context!);
+      final userNotifier = container.read(userNotifierProvider.notifier);
+      final settingsNotifier = container.read(settingsNotifierProvider.notifier);
+      
+      // Listen to Riverpod changes and sync to ReactiveNotifier
+      container.listen(userNotifierProvider, (previous, next) {
+        updateState(data.copyWith(user: next));
+      });
+      
+      // Both systems work together seamlessly!
+    }
+  }
+}
+```
+
+**Context API:**
+- **`context`** - Nullable BuildContext getter (`BuildContext?`)
+- **`hasContext`** - Check if context is available (`bool`) 
+- **`requireContext([operation])`** - Required context with descriptive errors
+
+**Context Lifecycle:**
+- Context automatically registered when any `ReactiveBuilder` mounts
+- Context remains available while any builder is active
+- Context cleared when last builder disposes
+
+### Reactive Context Extensions
+
+Access reactive state directly from `BuildContext` for hybrid usage patterns:
+
+```dart
+// Create context extensions for your services
+extension AppContext on BuildContext {
+  UserModel get user => getReactiveState(UserService.userState);
+  SettingsModel get settings => getReactiveState(SettingsService.settings);
+}
+
+// Use in regular StatelessWidget/StatefulWidget
+class HybridWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Direct access without ReactiveBuilder
+    final user = context.user;
+    final settings = context.settings;
+    
+    return Column(
+      children: [
+        Text('Hello ${user.name}'),
+        Text('Theme: ${settings.isDarkMode ? 'Dark' : 'Light'}'),
+      ],
+    );
+  }
+}
+
+// Generic access by type
+final userState = context<UserModel>();
+
+// Access by service key
+final langState = context.getByKey('languageService');
+```
 
 ---
 
@@ -442,156 +655,6 @@ class DashboardViewModel extends ViewModel<DashboardModel> {
     });
   }
 }
-```
-
----
-
-## State Change Hooks
-
-ReactiveNotifier v2.13.0 introduces state change hooks that allow ViewModels to react to their own state changes internally.
-
-### ViewModel Hooks
-
-```dart
-class UserViewModel extends ViewModel<UserModel> {
-  @override
-  void onStateChanged(UserModel previous, UserModel next) {
-    // Called on every state change
-    print('User state changed from ${previous.name} to ${next.name}');
-    
-    // Log specific changes
-    if (previous.email != next.email) {
-      logEmailChange(previous.email, next.email);
-    }
-    
-    // Trigger side effects
-    if (previous.isActive != next.isActive) {
-      notifyUserStatusChange(next.isActive);
-    }
-  }
-
-  void logEmailChange(String oldEmail, String newEmail) {
-    // Analytics or logging
-    print('Email changed from $oldEmail to $newEmail');
-  }
-
-  void notifyUserStatusChange(bool isActive) {
-    // Notify external services
-    if (isActive) {
-      activateUserServices();
-    } else {
-      deactivateUserServices();
-    }
-  }
-}
-```
-
-### AsyncViewModel Hooks
-
-```dart
-class DataViewModel extends AsyncViewModelImpl<List<Item>> {
-  @override
-  void onAsyncStateChanged(AsyncState<List<Item>> previous, AsyncState<List<Item>> next) {
-    // Called on every async state change
-    
-    // Handle loading started
-    if (previous.isInitial && next.isLoading) {
-      showLoadingIndicator();
-    }
-    
-    // Handle successful load
-    if (previous.isLoading && next.isSuccess) {
-      hideLoadingIndicator();
-      logSuccessfulLoad(next.data?.length ?? 0);
-    }
-    
-    // Handle errors
-    if (next.isError) {
-      hideLoadingIndicator();
-      logError(next.error.toString());
-      showErrorMessage(next.error.toString());
-    }
-  }
-
-  void showLoadingIndicator() {
-    // UI feedback logic
-  }
-
-  void hideLoadingIndicator() {
-    // UI cleanup logic
-  }
-
-  void logSuccessfulLoad(int itemCount) {
-    print('Successfully loaded $itemCount items');
-  }
-
-  void logError(String error) {
-    print('Error loading data: $error');
-  }
-
-  void showErrorMessage(String error) {
-    // Show user-friendly error message
-  }
-}
-```
-
-### Hook Integration
-
-Hooks are automatically called in all state update methods:
-
-- `updateState()` - Triggers hooks with notifications
-- `updateSilently()` - Triggers hooks without notifications
-- `transformState()` - Triggers hooks with notifications
-- `transformStateSilently()` - Triggers hooks without notifications
-
----
-
-## Builder Components
-
-### ReactiveBuilder<T> - Simple Values
-
-```dart
-ReactiveBuilder<int>(
-  notifier: CounterService.count,
-  build: (value, notifier, keep) {
-    return Text('Count: $value');
-  },
-)
-```
-
-### ReactiveViewModelBuilder<VM, T> - Complex State
-
-```dart
-ReactiveViewModelBuilder<UserViewModel, UserModel>(
-  viewmodel: UserService.userState.notifier,
-  build: (user, viewModel, keep) {
-    return Column(
-      children: [
-        Text('Name: ${user.name}'),
-        ElevatedButton(
-          onPressed: () => viewModel.updateUserName('New Name'),
-          child: Text('Update Name'),
-        ),
-      ],
-    );
-  },
-)
-```
-
-### ReactiveAsyncBuilder<VM, T> - Async Operations
-
-```dart
-ReactiveAsyncBuilder<TodoListViewModel, List<Todo>>(
-  notifier: TodoService.todoList.notifier,
-  onData: (todos, viewModel, keep) {
-    return ListView.builder(
-      itemCount: todos.length,
-      itemBuilder: (context, index) => TodoTile(todo: todos[index]),
-    );
-  },
-  onLoading: () => CircularProgressIndicator(),
-  onError: (error, stackTrace) => ErrorWidget(error: error),
-)
 ```
 
 ---
@@ -729,65 +792,64 @@ void main() {
 
 ---
 
-## Migration Guides
+## ReactiveContextBuilder - Maximum Performance
 
-### From Provider
-
-```dart
-// Before (Provider)
-class Counter with ChangeNotifier {
-  int _count = 0;
-  int get count => _count;
-  
-  void increment() {
-    _count++;
-    notifyListeners();
-  }
-}
-
-// After (ReactiveNotifier)
-mixin CounterService {
-  static final ReactiveNotifier<int> count = ReactiveNotifier<int>(() => 0);
-}
-
-// Update usage
-CounterService.count.updateState(CounterService.count.notifier + 1);
-```
-
-### From Riverpod
+For high-performance applications with many reactive dependencies, use `ReactiveContextBuilder` to force InheritedWidget strategy, providing maximum efficiency:
 
 ```dart
-// Before (Riverpod)
-final counterProvider = StateProvider<int>((ref) => 0);
-
-// After (ReactiveNotifier)
-mixin CounterService {
-  static final ReactiveNotifier<int> count = ReactiveNotifier<int>(() => 0);
-}
-```
-
-### From BLoC
-
-```dart
-// Before (BLoC)
-class CounterBloc extends Bloc<CounterEvent, int> {
-  CounterBloc() : super(0) {
-    on<Increment>((event, emit) => emit(state + 1));
-  }
-}
-
-// After (ReactiveNotifier)
-class CounterViewModel extends ViewModel<int> {
-  CounterViewModel() : super(0);
-  
+class MyApp extends StatelessWidget {
   @override
-  void init() {}
-  
-  void increment() {
-    updateState(data + 1);
+  Widget build(BuildContext context) {
+    return ReactiveContextBuilder(
+      // Force InheritedWidget strategy for these notifiers
+      forceInheritedFor: [
+        UserService.userState,
+        SettingsService.settings,
+        ThemeService.theme,
+        LocalizationService.language,
+      ],
+      child: MaterialApp(
+        home: HomePage(),
+      ),
+    );
+  }
+}
+
+// Now these work with maximum performance through InheritedWidget
+class HomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Zero overhead - uses InheritedWidget.of() internally
+    final user = context.user;
+    final theme = context.theme;
+    final language = context.language;
+    
+    return Column(
+      children: [
+        Text('Hello ${user.name}'),
+        Text(language.greeting),
+        // Regular reactive builders still work
+        ReactiveBuilder<int>(
+          notifier: CounterService.count,
+          build: (value, notifier, keep) => Text('$value'),
+        ),
+      ],
+    );
   }
 }
 ```
+
+**Performance Benefits:**
+- **InheritedWidget efficiency** - Flutter's fastest rebuild mechanism
+- **Zero listener overhead** - Uses Flutter's native dependency system
+- **Automatic cleanup** - InheritedWidget handles lifecycle automatically
+- **Cross-widget optimization** - Multiple widgets share same InheritedWidget
+
+**When to Use ReactiveContextBuilder:**
+- Apps with 10+ reactive dependencies
+- Performance-critical applications
+- Many widgets accessing same state
+- When you need maximum Flutter efficiency
 
 ---
 
@@ -805,6 +867,7 @@ class CounterViewModel extends ViewModel<int> {
 - Business logic is involved
 - State validation needed
 - Cross-service reactive communication needed
+- **✅ BuildContext access** for migration/hybrid usage
 
 ### AsyncViewModelImpl<T>
 - Loading data from external sources
@@ -812,6 +875,28 @@ class CounterViewModel extends ViewModel<int> {
 - API calls or database operations
 - Background data synchronization
 - Async initialization required
+- **✅ BuildContext access** for migration/hybrid usage
+
+### ReactiveStreamBuilder<VM, T>
+- **Real-time data streams** (WebSocket, Server-Sent Events)
+- **Database change streams** (Firestore, PostgreSQL LISTEN/NOTIFY)
+- **File system watchers** and live data feeds
+- **Periodic data updates** with automatic stream management
+- **Chat applications**, live notifications, stock prices
+- **IoT sensor data** and real-time analytics
+
+### Reactive Context Extensions
+- **Hybrid apps** migrating from Provider/Riverpod
+- **Mixed architecture** with existing StatelessWidget/StatefulWidget
+- **Legacy code integration** without full ReactiveBuilder adoption
+- **Performance optimization** with context.keep() for expensive widgets
+- **Direct state access** without builder pattern
+
+### ReactiveContextBuilder
+- **High-performance apps** with many reactive dependencies
+- **Enterprise applications** requiring maximum efficiency
+- **Apps with complex state trees** (10+ reactive services)
+- **When InheritedWidget strategy is preferred** over listener-based rebuilds
 
 ---
 
@@ -834,21 +919,86 @@ void dispose() {
 }
 ```
 
-### Build Optimization
+### Build Optimization & Widget Preservation
 
+ReactiveNotifier provides multiple strategies for preventing expensive widget rebuilds:
+
+#### 1. keep() Function in Builders
 ```dart
 ReactiveBuilder<UserModel>(
   notifier: UserService.userState,
   build: (user, notifier, keep) {
     return Column(
       children: [
-        Text(user.name), // Rebuilds when user changes
-        keep(ExpensiveWidget()), // Never rebuilds
+        Text('Hello ${user.name}'), // Rebuilds when user changes
+        keep(ExpensiveAnimationWidget()), // Never rebuilds
+        keep(ComplexChartWidget(), 'chart_key'), // Preserved with specific key
       ],
     );
   },
 )
 ```
+
+#### 2. Widget Extensions for Preservation
+```dart
+class MyWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text('Dynamic content'),
+        // Extension method - preserves automatically
+        ExpensiveWidget().keep('expensive_key'),
+        HeavyAnimationWidget().keep(), // Auto-generated key
+      ],
+    );
+  }
+}
+```
+
+#### 3. Context-Based Preservation
+```dart
+class MyWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text('Dynamic content'),
+        // Context-aware preservation
+        context.keep(ExpensiveWidget(), 'context_key'),
+        // Batch preservation
+        ...context.keepAll([
+          Widget1(),
+          Widget2(),
+          Widget3(),
+        ], 'batch_widgets'),
+      ],
+    );
+  }
+}
+```
+
+#### 4. Advanced Preservation Strategies
+```dart
+// Automatic cleanup and intelligent caching
+ReactiveContextPreservationWrapper(
+  preservationKey: 'complex_widget',
+  enableAutomaticCleanup: true,
+  child: SuperExpensiveWidget(),
+)
+
+// Functional approach
+final preservedWidgets = preserveWidgets([
+  ExpensiveWidget1(),
+  ExpensiveWidget2(),
+], 'batch_key');
+```
+
+**Performance Benefits:**
+- **Automatic key management** - No manual key tracking needed
+- **LRU cache cleanup** - Prevents memory leaks with intelligent cleanup
+- **Batch operations** - Optimize multiple widget preservation
+- **Debug statistics** - Monitor preservation performance with `getPreservationStatistics()`
 
 ---
 
@@ -908,3 +1058,9 @@ If ReactiveNotifier has been helpful for your projects, consider:
 - Based on native resource management principles and lifecycle patterns
 - Community feedback and contributions
 - All developers who have tested and improved ReactiveNotifier
+
+---
+
+**Made with ❤️ by [@jhonacode](https://github.com/jhonacode)**
+
+*ReactiveNotifier - State Management for Flutter*
