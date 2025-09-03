@@ -9,12 +9,36 @@ import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
 /// Base ViewModel implementation for handling asynchronous operations with state management.
 ///
 /// Provides a standardized way to handle loading, success, and error states for async data.
-
-/// Base ViewModel implementation for handling asynchronous operations with state management.
+///
+/// ## Constructor Parameters:
+/// - [loadOnInit]: If true (default), automatically calls init() when the ViewModel is created
+/// - [waitForContext]: If true (default false), waits for BuildContext to be available before 
+///   calling init() when loadOnInit is true. The ViewModel stays in initial state until context is ready.
+///
+/// ## waitForContext Usage:
+/// When waitForContext is true:
+/// - The ViewModel stays in AsyncState.initial() until BuildContext becomes available
+/// - Once context is available, init() is called automatically
+/// - Useful for ViewModels that need MediaQuery, Theme, or other context-dependent data
+///
+/// Example:
+/// ```dart
+/// class MyViewModel extends AsyncViewModelImpl<MyData> {
+///   MyViewModel() : super(AsyncState.initial(), waitForContext: true);
+///   
+///   @override
+///   Future<MyData> init() async {
+///     // This will only run after BuildContext is available
+///     final theme = Theme.of(requireContext('theme access'));
+///     return await loadDataBasedOnTheme(theme);
+///   }
+/// }
+/// ```
 abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     with HelperNotifier, ViewModelContextService {
   AsyncState<T> _state;
   late bool loadOnInit;
+  bool waitForContext = false;
   bool _disposed = false;
   bool _initialized = false;
   bool _initializedWithoutContext = false;
@@ -23,17 +47,22 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// Used by ReactiveNotifier to avoid circular dispose calls
   bool get isDisposed => _disposed;
 
-  AsyncViewModelImpl(this._state, {this.loadOnInit = true}) : super() {
+  AsyncViewModelImpl(this._state, {this.loadOnInit = true, this.waitForContext = false}) : super() {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
 
     if (loadOnInit) {
-      // ALWAYS initialize like in main branch - context is optional feature
-      _initializeAsync();
-      
-      /// Yes and only if it is changed to true when the entire initialization process is finished.
-      hasInitializedListenerExecution = true;
+      if (waitForContext && !hasContext) {
+        // Wait for context - stay in initial state
+        hasInitializedListenerExecution = false;
+      } else {
+        // ALWAYS initialize like in main branch - context is optional feature
+        _initializeAsync();
+        
+        /// Yes and only if it is changed to true when the entire initialization process is finished.
+        hasInitializedListenerExecution = true;
+      }
     }
   }
 
@@ -732,12 +761,18 @@ Consider calling ReactiveNotifier.cleanup() manually when appropriate.
   /// Called when context becomes available for the first time
   /// Used to reinitialize ViewModels that were created without context
   void reinitializeWithContext() {
-    if (_initializedWithoutContext && hasContext && !_disposed) {
+    // Check if we need to initialize due to waitForContext or previous context-less initialization
+    bool shouldReinitialize = (_initializedWithoutContext && hasContext && !_disposed) ||
+                             (waitForContext && !_initialized && hasContext && !_disposed);
+    
+    if (shouldReinitialize) {
       assert(() {
         log('''
 🔄 AsyncViewModelImpl<${T.toString()}> re-initializing with context
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Context now available: ✓
+Wait for context: $waitForContext
+Previously initialized without context: $_initializedWithoutContext
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 10);
         return true;

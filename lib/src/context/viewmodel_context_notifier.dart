@@ -14,10 +14,31 @@ class ViewModelContextNotifier {
   // For backward compatibility - keeps track of last registered context
   static BuildContext? _lastRegisteredContext;
   
+  // Global context initialized via ReactiveNotifier.initContext()
+  static BuildContext? _globalContext;
+  
   /// Internal method called by builders when they mount
   /// Automatically registers context without user intervention
   static void _registerContext(BuildContext context, String builderType, Object? viewModel) {
     final vmKey = viewModel?.hashCode ?? 0;
+    
+    // Handle global context registration (when viewModel is null and builderType indicates global init)
+    if (viewModel == null && builderType == 'ReactiveNotifier.initContext') {
+      _globalContext = context;
+      _lastRegisteredContext = context;
+      assert(() {
+        log('''
+🌍 ViewModelContextNotifier: Global context registered
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Builder: $builderType
+Widget: ${context.widget.runtimeType}
+Global context now available for all ViewModels
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 5);
+        return true;
+      }());
+      return;
+    }
     
     // Store context for this specific ViewModel
     _contexts[vmKey] = context;
@@ -89,35 +110,51 @@ Total contexts remaining: ${_contexts.length}
   
   /// Get BuildContext for a specific ViewModel instance
   static BuildContext? getContextForViewModel(Object? viewModel) {
-    if (viewModel == null) return _lastRegisteredContext;
-    return _contexts[viewModel.hashCode];
+    if (viewModel == null) return _lastRegisteredContext ?? _globalContext;
+    // Try specific ViewModel context first, then fall back to global context
+    return _contexts[viewModel.hashCode] ?? _globalContext;
   }
   
   /// Check if context is available for a specific ViewModel
   static bool hasContextForViewModel(Object? viewModel) {
-    if (viewModel == null) return _lastRegisteredContext != null;
-    return _contexts.containsKey(viewModel.hashCode);
+    if (viewModel == null) return _lastRegisteredContext != null || _globalContext != null;
+    // Check if specific ViewModel has context or if global context is available
+    return _contexts.containsKey(viewModel.hashCode) || _globalContext != null;
   }
   
   /// Get current BuildContext - for backward compatibility
-  /// Returns the last registered context or null
-  static BuildContext? get currentContext => _lastRegisteredContext;
+  /// Returns the last registered context or global context
+  static BuildContext? get currentContext => _lastRegisteredContext ?? _globalContext;
   
   /// Check if any context is available - for backward compatibility
-  static bool get hasContext => _contexts.isNotEmpty;
+  static bool get hasContext => _contexts.isNotEmpty || _globalContext != null;
   
   /// Get active builders count for debugging
   static int get activeBuilders => _viewModelBuilders.values
       .fold<int>(0, (sum, set) => sum + set.length);
   
+  /// Register context globally - used by ReactiveNotifier.initContext()
+  /// This is a public method to allow external initialization
+  static void registerGlobalContext(BuildContext context) {
+    _registerContext(context, 'ReactiveNotifier.initContext', null);
+  }
+  
+  /// Register context for specific ViewModel - used for testing
+  /// This is a public method to allow test-specific registrations
+  static void registerContextForTesting(BuildContext context, String builderType, Object? viewModel) {
+    _registerContext(context, builderType, viewModel);
+  }
+  
   /// Global cleanup for testing and disposal
   static void cleanup() {
     final contextsCount = _contexts.length;
     final buildersCount = activeBuilders;
+    final hasGlobalContext = _globalContext != null;
     
     _contexts.clear();
     _viewModelBuilders.clear();
     _lastRegisteredContext = null;
+    _globalContext = null;
     
     assert(() {
       log('''
@@ -125,6 +162,7 @@ Total contexts remaining: ${_contexts.length}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Contexts cleared: $contextsCount
 Builders cleared: $buildersCount
+Global context cleared: $hasGlobalContext
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 10);
       return true;

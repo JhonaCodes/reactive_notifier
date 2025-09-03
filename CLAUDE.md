@@ -45,7 +45,9 @@ class MyViewModel extends ViewModel<MyModel> {
 **When to use**: API calls, database operations, file I/O
 **Key methods**: `init()`, `reload()`, `setupListeners()`, `removeListeners()`, `transformDataState()`, `transformDataStateSilently()`, `loadingState()`, `errorState()`
 **States**: `AsyncState.initial()`, `loading()`, `success(data)`, `error(error)`
+**Constructor Parameters**: `loadOnInit` (default: true), `waitForContext` (default: false)
 
+#### Basic Usage
 ```dart
 class DataViewModel extends AsyncViewModelImpl<List<Item>> {
   DataViewModel() : super(AsyncState.initial(), loadOnInit: true);
@@ -55,6 +57,73 @@ class DataViewModel extends AsyncViewModelImpl<List<Item>> {
     // Called once when created (MUST be asynchronous)
     return await repository.getData();
   }
+}
+```
+
+#### NEW: waitForContext Parameter (v2.13.0+)
+When `waitForContext: true`, the AsyncViewModel waits for BuildContext availability before initializing:
+
+```dart
+class ThemeAwareViewModel extends AsyncViewModelImpl<ThemeData> {
+  ThemeAwareViewModel() : super(AsyncState.initial(), 
+    loadOnInit: true, 
+    waitForContext: true  // Wait for context before init()
+  );
+  
+  @override
+  Future<ThemeData> init() async {
+    // This only runs after BuildContext becomes available
+    final theme = Theme.of(requireContext('theme access'));
+    return await loadThemeBasedData(theme);
+  }
+}
+```
+
+**waitForContext Benefits:**
+- ViewModel stays in `AsyncState.initial()` until context is ready
+- Automatic initialization once BuildContext becomes available
+- Perfect for ViewModels needing MediaQuery, Theme, or Localizations
+- No manual context management required
+
+#### NEW: Global Context Initialization (v2.13.0+)
+Initialize BuildContext globally for all ViewModels from app startup:
+
+```dart
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Initialize global context for all ViewModels
+    ReactiveNotifier.initContext(context);
+    
+    return MaterialApp(
+      home: MyHomePage(),
+    );
+  }
+}
+```
+
+**Global Context Benefits:**
+- All ViewModels have immediate access to BuildContext
+- No need for `waitForContext: true` on individual ViewModels  
+- Theme, MediaQuery, Localizations available in all init() methods
+- Automatic reinitialize of existing ViewModels with waitForContext: true
+- Single setup for entire app
+
+**Usage Pattern Comparison:**
+```dart
+// Option 1: Global initialization (recommended)
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  Widget build(context) {
+    ReactiveNotifier.initContext(context); // ✅ All VMs get context
+    return MaterialApp(...);
+  }
+}
+
+// Option 2: Individual ViewModel waiting
+class MyViewModel extends AsyncViewModelImpl<Data> {
+  MyViewModel() : super(AsyncState.initial(), waitForContext: true); // ✅ This VM waits
 }
 ```
 
@@ -283,6 +352,7 @@ class SafeContextViewModel extends ViewModel<SafeState> {
 - API calls or database operations
 - Background data synchronization
 - Async initialization required
+- Need to wait for BuildContext before initialization (`waitForContext: true`)
 
 ## Mandatory Patterns
 
@@ -520,6 +590,44 @@ dataState.updateState(dataState.notifier);
 - No complex mocking required
 
 ## Common Use Cases
+
+### Global Context Setup
+```dart
+// main.dart - Single setup for entire app
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Enable context access for all ViewModels
+    ReactiveNotifier.initContext(context);
+    
+    return MaterialApp(
+      title: 'My App',
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      home: HomePage(),
+    );
+  }
+}
+
+// Any ViewModel can now access context in init()
+class ThemeAwareViewModel extends AsyncViewModelImpl<AppTheme> {
+  @override
+  Future<AppTheme> init() async {
+    final theme = Theme.of(requireContext('theme initialization'));
+    final isDark = theme.brightness == Brightness.dark;
+    return AppTheme(isDarkMode: isDark, primaryColor: theme.primaryColor);
+  }
+}
+
+class ResponsiveViewModel extends ViewModel<ResponsiveState> {
+  @override
+  void init() {
+    final mediaQuery = MediaQuery.of(requireContext('responsive setup'));
+    final isTablet = mediaQuery.size.width > 600;
+    updateSilently(ResponsiveState(isTablet: isTablet));
+  }
+}
+```
 
 ### Cross-ViewModel Communication
 ```dart

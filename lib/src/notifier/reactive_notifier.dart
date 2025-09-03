@@ -1427,6 +1427,88 @@ Note: Instance remains in global registry unless manually cleaned
     super.dispose();
   }
   
+  /// Initialize global BuildContext for all ViewModels
+  /// 
+  /// Call this method early in your app (typically in MyApp.build() or main())
+  /// to make BuildContext available to all ViewModels from the start.
+  /// 
+  /// This is especially useful when:
+  /// - Multiple ViewModels need context access
+  /// - You want to avoid using waitForContext: true on individual ViewModels
+  /// - You need Theme, MediaQuery, or Localizations available during ViewModel init()
+  /// 
+  /// Usage:
+  /// ```dart
+  /// class MyApp extends StatelessWidget {
+  ///   @override
+  ///   Widget build(BuildContext context) {
+  ///     // Initialize global context for all ViewModels
+  ///     ReactiveNotifier.initContext(context);
+  ///     
+  ///     return MaterialApp(...);
+  ///   }
+  /// }
+  /// ```
+  /// 
+  /// After calling this:
+  /// - All ViewModels (ViewModel<T> and AsyncViewModelImpl<T>) have hasContext = true
+  /// - context and requireContext() work immediately in init() methods
+  /// - No need to use waitForContext: true for individual ViewModels
+  /// - Existing ViewModels with waitForContext: true will reinitialize automatically
+  static void initContext(BuildContext context) {
+    assert(() {
+      log('''
+🌍 ReactiveNotifier: Initializing global BuildContext
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Widget: ${context.widget.runtimeType}
+Context: ${context.runtimeType}
+Current ViewModels: ${_instances.length}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 5);
+      return true;
+    }());
+    
+    // Register context globally using the ContextNotifier system
+    ViewModelContextNotifier.registerGlobalContext(context);
+    
+    // Check for ViewModels that were waiting for context and reinitialize them
+    int reinitializedCount = 0;
+    for (var instance in _instances.values) {
+      if (instance is ReactiveNotifier) {
+        final notifier = instance.notifier;
+        
+        // Check if the ViewModel has a reinitializeWithContext method (AsyncViewModelImpl)
+        if (notifier != null && notifier is ViewModelContextService) {
+          try {
+            // Try to call reinitializeWithContext if it exists using dynamic call
+            final dynamic asyncVM = notifier;
+            asyncVM.reinitializeWithContext();
+            reinitializedCount++;
+          } catch (e) {
+            // Silently ignore if method doesn't exist or fails - happens for ViewModel<T> which don't have this method
+            assert(() {
+              log('Note: Could not reinitialize ViewModel ${notifier.runtimeType}: $e', level: 10);
+              return true;
+            }());
+          }
+        }
+      }
+    }
+    
+    assert(() {
+      log('''
+✅ ReactiveNotifier: Global context initialization completed
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Context registered: ✓
+ViewModels checked: ${_instances.length}
+ViewModels reinitialized: $reinitializedCount
+Global context now available for all ViewModels
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 5);
+      return true;
+    }());
+  }
+  
   /// Check if we're running in a test environment
   static bool get _isTestEnvironment {
     try {

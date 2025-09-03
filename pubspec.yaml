@@ -1,7 +1,7 @@
 name: reactive_notifier
 description: Efficient Dart state management with MVVM-inspired ViewModels & Notifiers. Offers fine-grained control for reactive, complex, and interconnected states. Now with automatic BuildContext access.
 
-version: 2.12.0
+version: 2.13.0
 homepage: https://github.com/JhonaCodes/reactive_notifier.git
 
 environment:
@@ -23,3 +23,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+# DevTools extension configuration
+devtools_extensions:
+  - extension/devtools_extensions

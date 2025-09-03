@@ -1,11 +1,22 @@
 # 2.13.0
-## State Change Hooks + Architecture Improvements + Professional Documentation
+## State Change Hooks + BuildContext Management + Architecture Improvements
 
 ### ✨ New Features
+
+#### BuildContext Management System
+- **`waitForContext` Parameter**: AsyncViewModelImpl can now wait for BuildContext before initialization
+- **Global Context Initialization**: `ReactiveNotifier.initContext(context)` provides context to all ViewModels
+- **Automatic Context Fallback**: ViewModels automatically use global context when specific context unavailable
+- **Context-Aware Initialization**: ViewModels can access Theme, MediaQuery, Localizations in init() methods
+- **Smart Reinitialize**: ViewModels with `waitForContext: true` automatically reinitialize when context becomes available
+
+#### State Change Hooks
 - **State Change Hooks**: Added `onStateChanged(previous, next)` hook for ViewModels
 - **Async State Hooks**: Added `onAsyncStateChanged(previous, next)` hook for AsyncViewModels  
 - **Internal State Reaction**: ViewModels can now react to their own state changes
 - **Hook Integration**: Hooks automatically called in all state update methods
+
+#### Architecture Improvements
 - **Cross-Service Communication**: Explicit communication between service sandboxes
 - **Multiple Instance Support**: Multiple instances of same type in different services
 
@@ -22,6 +33,47 @@
 - **Comprehensive Testing**: Improved test coverage with proper isolation
 
 ### 🔧 API Changes
+
+#### BuildContext Management
+```dart
+// NEW: Global context initialization (recommended)
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // All ViewModels now have access to context
+    ReactiveNotifier.initContext(context);
+    return MaterialApp(...);
+  }
+}
+
+// NEW: waitForContext parameter for individual ViewModels
+class ThemeAwareViewModel extends AsyncViewModelImpl<ThemeData> {
+  ThemeAwareViewModel() : super(
+    AsyncState.initial(), 
+    waitForContext: true  // Wait for context before init()
+  );
+  
+  @override
+  Future<ThemeData> init() async {
+    // Context is guaranteed to be available here
+    final theme = Theme.of(requireContext('theme initialization'));
+    return await loadThemeBasedData(theme);
+  }
+}
+
+// ViewModels can access context in init() methods
+class ResponsiveViewModel extends ViewModel<ResponsiveState> {
+  @override
+  void init() {
+    // Access MediaQuery in synchronous init
+    final mediaQuery = MediaQuery.of(requireContext('responsive setup'));
+    final isTablet = mediaQuery.size.width > 600;
+    updateSilently(ResponsiveState(isTablet: isTablet));
+  }
+}
+```
+
+#### State Change Hooks
 ```dart
 // NEW: State change hooks
 class UserViewModel extends ViewModel<UserModel> {
@@ -45,6 +97,50 @@ class DataViewModel extends AsyncViewModelImpl<List<Item>> {
   }
 }
 ```
+
+### ✅ Migration & Compatibility
+
+#### BuildContext Migration Patterns
+```dart
+// BEFORE: ViewModels couldn't access context in init()
+class OldViewModel extends AsyncViewModelImpl<Data> {
+  @override
+  Future<Data> init() async {
+    // ❌ No access to Theme, MediaQuery, etc.
+    return await loadDefaultData();
+  }
+}
+
+// AFTER: Multiple migration options
+// Option 1: Global context (recommended)
+void main() {
+  runApp(MyApp());
+}
+class MyApp extends StatelessWidget {
+  Widget build(context) {
+    ReactiveNotifier.initContext(context); // ✅ All VMs get context
+    return MaterialApp(...);
+  }
+}
+
+// Option 2: Individual ViewModel waiting
+class NewViewModel extends AsyncViewModelImpl<Data> {
+  NewViewModel() : super(AsyncState.initial(), waitForContext: true);
+  
+  @override
+  Future<Data> init() async {
+    // ✅ Context available after waiting
+    final theme = Theme.of(requireContext());
+    return await loadThemedData(theme);
+  }
+}
+```
+
+#### Backward Compatibility
+- **100% Compatible**: All existing code works without changes
+- **No Breaking Changes**: New parameters have safe defaults (`waitForContext: false`)
+- **Gradual Migration**: Can adopt global context or individual ViewModel waiting incrementally
+- **Existing Tests Pass**: All 27+ existing tests continue to work
 
 ### 🚨 Breaking Changes
 - **Removed ReactiveObserver**: Use explicit service communication with `listenVM`
