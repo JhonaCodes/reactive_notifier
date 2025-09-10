@@ -118,8 +118,9 @@ Total contexts remaining: ${_contexts.length}
 
   /// Check if context is available for a specific ViewModel
   static bool hasContextForViewModel(Object? viewModel) {
-    if (viewModel == null)
+    if (viewModel == null) {
       return _lastRegisteredContext != null || _globalContext != null;
+    }
     // Check if specific ViewModel has context or if global context is available
     return _contexts.containsKey(viewModel.hashCode) || _globalContext != null;
   }

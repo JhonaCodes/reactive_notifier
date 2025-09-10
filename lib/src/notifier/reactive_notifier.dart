@@ -26,9 +26,6 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   static final Set<ReactiveNotifier> _updatingNotifiers = {};
   final Key keyNotifier;
 
-  // Factory function for recreation
-  final T Function() _createFunction;
-
   // Notification overflow detection
   static const _notificationThreshold = 50;
   static const _thresholdTimeWindow = Duration(milliseconds: 500);
@@ -50,8 +47,7 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
 
   ReactiveNotifier._(
       T Function() create, this.related, this.keyNotifier, this.autoDispose)
-      : _createFunction = create,
-        super(create()) {
+      : super(create()) {
     if (related != null) {
       assert(() {
         log('''
@@ -248,9 +244,6 @@ Location: $trace
 
     log('🔄 Transforming state silently for $T', level: 10);
 
-    // Record old state for debug service
-    dynamic oldState = notifier;
-
     _updatingNotifiers.add(this);
 
     try {
@@ -296,9 +289,6 @@ Location: $trace
     _checkNotificationOverflow();
 
     log('🔄 Transforming state for $T', level: 10);
-
-    // Record old state for debug service
-    dynamic oldState = notifier;
 
     _updatingNotifiers.add(this);
 
