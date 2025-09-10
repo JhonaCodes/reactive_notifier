@@ -236,7 +236,7 @@ Location: $trace
   }
 
   @override
-  void transformStateSilently(T Function(T data) transformer) {
+  void transformStateSilently(T Function(T data) transform) {
     // Prevent circular update
     if (_updatingNotifiers.contains(this)) {
       return;
@@ -254,7 +254,7 @@ Location: $trace
 
     try {
       // Transform state without notifying
-      super.transformStateSilently(transformer);
+      super.transformStateSilently(transform);
 
       // Debug service recording disabled to avoid VM service errors
       // if (kDebugMode) {
@@ -285,7 +285,7 @@ Location: $trace
   }
 
   @override
-  void transformState(T Function(T data) transformer) {
+  void transformState(T Function(T data) transform) {
     // Prevent circular update
     if (_updatingNotifiers.contains(this)) {
       return;
@@ -303,7 +303,7 @@ Location: $trace
 
     try {
       // Transform state and notify
-      super.transformState(transformer);
+      super.transformState(transform);
 
       // Debug service recording disabled to avoid VM service errors
       // if (kDebugMode) {
@@ -1509,39 +1509,4 @@ Global context now available for all ViewModels
     }());
   }
   
-  /// Check if we're running in a test environment
-  static bool get _isTestEnvironment {
-    try {
-      // Check for flutter_test environment variable
-      if (const bool.fromEnvironment('FLUTTER_TEST', defaultValue: false)) {
-        return true;
-      }
-      
-      // Check for test-related zones
-      final zone = Zone.current;
-      final zoneValues = zone.toString();
-      if (zoneValues.contains('flutter_test') || 
-          zoneValues.contains('test_api') ||
-          zoneValues.contains('TestWidgetsFlutterBinding') ||
-          zoneValues.contains('FakeAsync')) {
-        return true;
-      }
-      
-      // Check for test binding
-      try {
-        final binding = WidgetsBinding.instance;
-        final bindingType = binding.runtimeType.toString();
-        if (bindingType.contains('Test') || 
-            bindingType.contains('AutomatedTest')) {
-          return true;
-        }
-      } catch (_) {
-        // Ignore errors when WidgetsBinding is not available
-      }
-      
-      return false;
-    } catch (_) {
-      return false;
-    }
-  }
 }

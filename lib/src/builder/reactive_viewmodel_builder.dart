@@ -69,7 +69,7 @@ class _ReactiveBuilderStateViewModel<VM, T>
     
     // Register context BEFORE accessing the viewmodel to ensure it's available during init()
     // Use unique identifier for each builder instance to handle multiple builders for same ViewModel
-    final uniqueBuilderType = 'ReactiveViewModelBuilder<$VM,$T>_${hashCode}';
+    final uniqueBuilderType = 'ReactiveViewModelBuilder<$VM,$T>_$hashCode';
     context.registerForViewModels(uniqueBuilderType, widget.viewmodel);
     
     // Add reference for widget-aware lifecycle if viewmodel is from ReactiveNotifier
@@ -77,10 +77,8 @@ class _ReactiveBuilderStateViewModel<VM, T>
     _addReferenceToParentNotifier();
     
     // Re-initialize ViewModels that were created without context
-    if (widget.viewmodel is ViewModel) {
-      (widget.viewmodel as ViewModel).reinitializeWithContext();
-    }
-    
+    (widget.viewmodel as ViewModel).reinitializeWithContext();
+
     // Initialize with data from either source
     value = widget.viewmodel.data;
 
@@ -96,7 +94,7 @@ class _ReactiveBuilderStateViewModel<VM, T>
       for (final instance in instances) {
         if (instance.notifier == widget.viewmodel) {
           // Found the ReactiveNotifier containing this ViewModel
-          instance.addReference('ReactiveViewModelBuilder_${hashCode}');
+          instance.addReference('ReactiveViewModelBuilder_$hashCode');
           break;
         }
       }
@@ -130,7 +128,7 @@ class _ReactiveBuilderStateViewModel<VM, T>
       for (final instance in instances) {
         if (instance.notifier == viewmodel) {
           // Found the ReactiveNotifier containing this ViewModel
-          instance.removeReference('ReactiveViewModelBuilder_${hashCode}');
+          instance.removeReference('ReactiveViewModelBuilder_$hashCode');
           break;
         }
       }
@@ -149,7 +147,7 @@ class _ReactiveBuilderStateViewModel<VM, T>
     _removeReferenceFromParentNotifier(widget.viewmodel);
     
     // Automatically unregister context using the same unique identifier
-    final uniqueBuilderType = 'ReactiveViewModelBuilder<$VM,$T>_${hashCode}';
+    final uniqueBuilderType = 'ReactiveViewModelBuilder<$VM,$T>_$hashCode';
     context.unregisterFromViewModels(uniqueBuilderType, widget.viewmodel);
 
     // Handle auto-dispose if applicable

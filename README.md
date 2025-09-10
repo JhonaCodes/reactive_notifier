@@ -1,4 +1,4 @@
-# ReactiveNotifier v2.13.0
+# reactive_notifier
 
 **State Management for Flutter** - ReactiveNotifier is a state manager designed for MVVM architecture with clear separation of responsibilities. It manages ViewModel lifecycle independently from UI, supports applications of any size, follows "create once, reuse always" philosophy, and keeps business logic out of widgets.
 
@@ -16,7 +16,7 @@
 
 ---
 
-## What's New in v2.13.0
+## What's New in v2.13.xx
 
 ### State Change Hooks
 - **onStateChanged(previous, next)** hooks for ViewModels
@@ -65,7 +65,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  reactive_notifier: ^2.12.0
+  reactive_notifier: ^2.13.1
 ```
 
 ### DevTools Extension (Automatic)

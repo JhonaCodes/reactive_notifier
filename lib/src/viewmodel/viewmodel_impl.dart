@@ -587,7 +587,7 @@ Current listeners: ${_listeners.length}
     }());
 
     // Create callback
-    final callback = () => value(_data);
+    void callback() => value(_data);
     
     // Store listener
     _listeners[listenerKey] = callback;

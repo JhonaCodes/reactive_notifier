@@ -66,7 +66,7 @@ class _ReactiveAsyncBuilderState<VM, T>
     
     // Register context BEFORE accessing the notifier to ensure it's available during init()
     // Use unique identifier for each builder instance to handle multiple builders for same ViewModel
-    final uniqueBuilderType = 'ReactiveAsyncBuilder<$VM,$T>_${hashCode}';
+    final uniqueBuilderType = 'ReactiveAsyncBuilder<$VM,$T>_$hashCode';
     context.registerForViewModels(uniqueBuilderType, widget.notifier);
     
     // Add reference for widget-aware lifecycle if notifier is from ReactiveNotifier
@@ -74,10 +74,8 @@ class _ReactiveAsyncBuilderState<VM, T>
     _addReferenceToParentNotifier();
     
     // Call reinitializeWithContext for consistency with ReactiveViewModelBuilder
-    if (widget.notifier is AsyncViewModelImpl) {
-      (widget.notifier as AsyncViewModelImpl).reinitializeWithContext();
-    }
-    
+    (widget.notifier as AsyncViewModelImpl).reinitializeWithContext();
+
     widget.notifier.addListener(_valueChanged);
   }
 
@@ -89,7 +87,7 @@ class _ReactiveAsyncBuilderState<VM, T>
       for (final instance in instances) {
         if (instance.notifier == widget.notifier) {
           // Found the ReactiveNotifier containing this AsyncViewModel
-          instance.addReference('ReactiveAsyncBuilder_${hashCode}');
+          instance.addReference('ReactiveAsyncBuilder_$hashCode');
           break;
         }
       }
@@ -122,7 +120,7 @@ class _ReactiveAsyncBuilderState<VM, T>
       for (final instance in instances) {
         if (instance.notifier == asyncViewModel) {
           // Found the ReactiveNotifier containing this AsyncViewModel
-          instance.removeReference('ReactiveAsyncBuilder_${hashCode}');
+          instance.removeReference('ReactiveAsyncBuilder_$hashCode');
           break;
         }
       }
@@ -140,7 +138,7 @@ class _ReactiveAsyncBuilderState<VM, T>
     _removeReferenceFromParentNotifier(widget.notifier);
     
     // Automatically unregister context using the same unique identifier
-    final uniqueBuilderType = 'ReactiveAsyncBuilder<$VM,$T>_${hashCode}';
+    final uniqueBuilderType = 'ReactiveAsyncBuilder<$VM,$T>_$hashCode';
     context.unregisterFromViewModels(uniqueBuilderType, widget.notifier);
 
     if (widget.notifier is ReactiveNotifier) {

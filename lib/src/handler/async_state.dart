@@ -41,7 +41,7 @@ class AsyncState<T> {
       case AsyncStatus.empty:
         return empty();
       case AsyncStatus.error:
-        return error(this.error, this.stackTrace);
+        return error(this.error, stackTrace);
     }
   }
 
@@ -59,7 +59,7 @@ class AsyncState<T> {
       case AsyncStatus.success:
         return success(data as T);
       default:
-        return error(this.error, this.stackTrace);
+        return error(this.error, stackTrace);
     }
   }
 }

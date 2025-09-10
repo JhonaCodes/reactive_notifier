@@ -4,7 +4,6 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 import 'package:reactive_notifier/src/helper/helper_notifier.dart';
-import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
 
 /// Base ViewModel implementation for handling asynchronous operations with state management.
 ///
@@ -600,7 +599,7 @@ Current listeners: ${_listeners.length}
     }());
 
     // Create callback
-    final callback = () => value(_state);
+    void callback() => value(_state);
     
     // Store listener
     _listeners[listenerKey] = callback;

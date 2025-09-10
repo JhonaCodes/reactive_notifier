@@ -1,3 +1,6 @@
+# 2.13.1
+- Clean documentation and few code tweaks.
+
 # 2.13.0
 ## State Change Hooks + BuildContext Management + Architecture Improvements
 

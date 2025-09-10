@@ -215,7 +215,7 @@ mixin ViewModelContextService {
 ⚠️ BuildContext Required But Not Available
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Operation: ${operation ?? 'ViewModel operation'}
-ViewModel: ${runtimeType}
+ViewModel: $runtimeType
 
 💡 Context is not available when:
   1. No ReactiveBuilder widgets are currently mounted

@@ -44,8 +44,8 @@ abstract class NotifierImpl<T> extends ChangeNotifier {
     notifyListeners();
   }
 
-  void transformStateSilently(T Function(T data) data) {
-    _notifier = data(_notifier);
+  void transformStateSilently(T Function(T data) transform) {
+    _notifier = transform(_notifier);
   }
 
   @protected
