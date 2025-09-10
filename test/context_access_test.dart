@@ -6,14 +6,14 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 class ContextTestViewModel extends ViewModel<String> {
   String? capturedContextWidget;
   bool hadContextDuringInit = false;
-  
+
   ContextTestViewModel() : super('initial');
 
   @override
   void init() {
     // Test context access during init
     hadContextDuringInit = hasContext;
-    
+
     if (hasContext) {
       capturedContextWidget = context?.widget.runtimeType.toString();
       updateSilently('initialized with context');
@@ -30,14 +30,14 @@ class ContextTestViewModel extends ViewModel<String> {
 class AsyncContextTestViewModel extends AsyncViewModelImpl<String> {
   String? capturedContextWidget;
   bool hadContextDuringInit = false;
-  
+
   AsyncContextTestViewModel() : super(AsyncState.initial(), loadOnInit: false);
 
   @override
   Future<String> init() async {
     // Test context access during async init
     hadContextDuringInit = hasContext;
-    
+
     if (hasContext) {
       capturedContextWidget = context?.widget.runtimeType.toString();
       return 'async initialized with context';
@@ -55,7 +55,8 @@ mixin ContextTestService {
 
 mixin AsyncContextTestService {
   static ReactiveNotifier<AsyncContextTestViewModel> createAsyncViewModel() =>
-      ReactiveNotifier<AsyncContextTestViewModel>(() => AsyncContextTestViewModel());
+      ReactiveNotifier<AsyncContextTestViewModel>(
+          () => AsyncContextTestViewModel());
 }
 
 void main() {
@@ -64,9 +65,11 @@ void main() {
       ReactiveNotifier.cleanup();
     });
 
-    testWidgets('ViewModel should have context access during init when used with ReactiveViewModelBuilder', (tester) async {
+    testWidgets(
+        'ViewModel should have context access during init when used with ReactiveViewModelBuilder',
+        (tester) async {
       final viewModelNotifier = ContextTestService.createViewModel();
-      
+
       await tester.pumpWidget(MaterialApp(
         home: ReactiveViewModelBuilder<ContextTestViewModel, String>(
           viewmodel: viewModelNotifier.notifier,
@@ -87,17 +90,21 @@ void main() {
       // Verify ViewModel had context during initialization
       final viewModel = viewModelNotifier.notifier;
       expect(viewModel.hadContextDuringInit, true);
-      expect(viewModel.capturedContextWidget, contains('ReactiveViewModelBuilder'));
+      expect(viewModel.capturedContextWidget,
+          contains('ReactiveViewModelBuilder'));
       expect(viewModel.data, 'initialized with context');
-      
+
       // Verify UI shows correct information
       expect(find.text('State: initialized with context'), findsOneWidget);
       expect(find.text('Had context: true'), findsOneWidget);
     });
 
-    testWidgets('AsyncViewModel should have context access during reload when used with ReactiveAsyncBuilder', (tester) async {
-      final asyncViewModelNotifier = AsyncContextTestService.createAsyncViewModel();
-      
+    testWidgets(
+        'AsyncViewModel should have context access during reload when used with ReactiveAsyncBuilder',
+        (tester) async {
+      final asyncViewModelNotifier =
+          AsyncContextTestService.createAsyncViewModel();
+
       // First create the widget tree
       await tester.pumpWidget(MaterialApp(
         home: ReactiveAsyncBuilder<AsyncContextTestViewModel, String>(
@@ -118,44 +125,49 @@ void main() {
 
       // Wait for initial render
       await tester.pump();
-      
+
       // Trigger reload now that context is available
       final asyncViewModel = asyncViewModelNotifier.notifier;
       await asyncViewModel.reload();
-      
+
       await tester.pumpAndSettle();
 
       // Verify AsyncViewModel had context during reload
       expect(asyncViewModel.hadContextDuringInit, true);
-      expect(asyncViewModel.capturedContextWidget, contains('ReactiveAsyncBuilder'));
+      expect(asyncViewModel.capturedContextWidget,
+          contains('ReactiveAsyncBuilder'));
       expect(asyncViewModel.data, 'async initialized with context');
-      
+
       // Verify UI shows correct information
-      expect(find.text('State: async initialized with context'), findsOneWidget);
+      expect(
+          find.text('State: async initialized with context'), findsOneWidget);
       expect(find.text('Had context: true'), findsOneWidget);
     });
 
-    testWidgets('hasContext should return false when no builders are active', (tester) async {
+    testWidgets('hasContext should return false when no builders are active',
+        (tester) async {
       // Create ViewModel outside of any builder
       final viewModel = ContextTestViewModel();
-      
+
       expect(viewModel.hasContext, false);
       expect(viewModel.hadContextDuringInit, false);
       // Current behavior: ViewModel initializes without context and can be reinitialize later
       expect(viewModel.data, 'initialized without context');
     });
 
-    testWidgets('requireContext should throw when context is not available', (tester) async {
+    testWidgets('requireContext should throw when context is not available',
+        (tester) async {
       final viewModel = ContextTestViewModel();
-      
-      expect(() => viewModel.requireContext('test operation'), 
-             throwsA(isA<StateError>()));
+
+      expect(() => viewModel.requireContext('test operation'),
+          throwsA(isA<StateError>()));
     });
 
-    testWidgets('requireContext should return context when available', (tester) async {
+    testWidgets('requireContext should return context when available',
+        (tester) async {
       final viewModelNotifier = ContextTestService.createViewModel();
       BuildContext? capturedContext;
-      
+
       await tester.pumpWidget(MaterialApp(
         home: ReactiveViewModelBuilder<ContextTestViewModel, String>(
           viewmodel: viewModelNotifier.notifier,
@@ -168,16 +180,17 @@ void main() {
       ));
 
       await tester.pumpAndSettle();
-      
+
       expect(capturedContext, isNotNull);
-      expect(capturedContext?.widget.runtimeType.toString(), 
-             contains('ReactiveViewModelBuilder'));
+      expect(capturedContext?.widget.runtimeType.toString(),
+          contains('ReactiveViewModelBuilder'));
     });
 
-    testWidgets('context should be cleared when all builders are disposed', (tester) async {
+    testWidgets('context should be cleared when all builders are disposed',
+        (tester) async {
       final viewModelNotifier = ContextTestService.createViewModel();
       late ContextTestViewModel viewModel;
-      
+
       await tester.pumpWidget(MaterialApp(
         home: ReactiveViewModelBuilder<ContextTestViewModel, String>(
           viewmodel: viewModelNotifier.notifier,
@@ -189,25 +202,27 @@ void main() {
       ));
 
       await tester.pumpAndSettle();
-      
+
       // Context should be available
       expect(viewModel.hasContext, true);
-      
+
       // Navigate away (dispose the builder)
       await tester.pumpWidget(const MaterialApp(
         home: Text('Different screen'),
       ));
-      
+
       await tester.pumpAndSettle();
-      
+
       // Context should be cleared
       expect(viewModel.hasContext, false);
     });
 
-    testWidgets('context should remain available when switching between builders', (tester) async {
+    testWidgets(
+        'context should remain available when switching between builders',
+        (tester) async {
       final viewModelNotifier = ContextTestService.createViewModel();
       late ContextTestViewModel viewModel;
-      
+
       // Start with first builder
       await tester.pumpWidget(MaterialApp(
         home: ReactiveViewModelBuilder<ContextTestViewModel, String>(
@@ -221,7 +236,7 @@ void main() {
 
       await tester.pumpAndSettle();
       expect(viewModel.hasContext, true);
-      
+
       // Switch to second builder (different widget type)
       await tester.pumpWidget(MaterialApp(
         home: ReactiveBuilder<String>(
@@ -233,14 +248,14 @@ void main() {
       ));
 
       await tester.pumpAndSettle();
-      
+
       // After switching builders, the original ViewModel might not have context
       // since it's not being used in the new builder
     });
 
     testWidgets('multiple builders can share context access', (tester) async {
       final viewModelNotifier = ContextTestService.createViewModel();
-      
+
       await tester.pumpWidget(MaterialApp(
         home: Scaffold(
           body: Column(
@@ -263,11 +278,11 @@ void main() {
       ));
 
       await tester.pumpAndSettle();
-      
+
       // Both builders should show context is available
       expect(find.text('Builder 1: true'), findsOneWidget);
       expect(find.text('Builder 2: true'), findsOneWidget);
-      
+
       final viewModel = viewModelNotifier.notifier;
       expect(viewModel.hasContext, true);
     });

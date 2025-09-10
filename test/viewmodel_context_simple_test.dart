@@ -10,17 +10,18 @@ class TestItem {
   TestItem({required this.message, required this.hasContextAccess});
 
   factory TestItem.withContext() => TestItem(
-    message: 'Created with context access',
-    hasContextAccess: true,
-  );
+        message: 'Created with context access',
+        hasContextAccess: true,
+      );
 
   factory TestItem.withoutContext() => TestItem(
-    message: 'Created without context access',
-    hasContextAccess: false,
-  );
+        message: 'Created without context access',
+        hasContextAccess: false,
+      );
 
   @override
-  String toString() => 'TestItem(message: $message, hasContext: $hasContextAccess)';
+  String toString() =>
+      'TestItem(message: $message, hasContext: $hasContextAccess)';
 }
 
 /// Test AsyncViewModel that uses context
@@ -54,13 +55,13 @@ class TestVM extends ViewModel<TestItem> {
 
 /// Test services
 mixin TestAsyncService {
-  static final ReactiveNotifier<TestAsyncVM> instance = 
-    ReactiveNotifier<TestAsyncVM>(TestAsyncVM.new);
+  static final ReactiveNotifier<TestAsyncVM> instance =
+      ReactiveNotifier<TestAsyncVM>(TestAsyncVM.new);
 }
 
 mixin TestService {
-  static final ReactiveNotifier<TestVM> instance = 
-    ReactiveNotifier<TestVM>(TestVM.new);
+  static final ReactiveNotifier<TestVM> instance =
+      ReactiveNotifier<TestVM>(TestVM.new);
 }
 
 void main() {
@@ -89,12 +90,13 @@ void main() {
 
       // Verify context was available during init
       expect(find.text('Created with context access'), findsOneWidget);
-      
+
       final vm = TestAsyncService.instance.notifier;
       expect(vm.hasContext, isTrue);
     });
 
-    testWidgets('Regular ViewModel receives context during init', (tester) async {
+    testWidgets('Regular ViewModel receives context during init',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -112,7 +114,7 @@ void main() {
 
       // Verify context was available during init
       expect(find.text('Created with context access'), findsOneWidget);
-      
+
       final vm = TestService.instance.notifier;
       expect(vm.hasContext, isTrue);
     });
@@ -121,7 +123,7 @@ void main() {
       final vm = TestVM();
       expect(vm.hasContext, isFalse);
       expect(vm.context, isNull);
-      
+
       // Should have initialized with no context
       expect(vm.data.hasContextAccess, isFalse);
     });

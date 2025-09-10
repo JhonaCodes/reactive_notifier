@@ -105,14 +105,14 @@ class SlowAsyncViewModel extends AsyncViewModelImpl<String> {
     if (delay <= 0) {
       return 'slow_data';
     }
-    
+
     final completer = Completer<String>();
     _delayTimer = Timer(Duration(milliseconds: delay), () {
       if (!isDisposed && !completer.isCompleted) {
         completer.complete('slow_data');
       }
     });
-    
+
     return completer.future;
   }
 

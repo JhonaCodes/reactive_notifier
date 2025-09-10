@@ -64,8 +64,10 @@ class CounterViewModel extends ViewModel<CounterModel> {
     // Synchronous initialization if needed
   }
 
-  void increment() => transformState((current) => current.copyWith(value: current.value + 1));
-  void decrement() => transformState((current) => current.copyWith(value: current.value - 1));
+  void increment() =>
+      transformState((current) => current.copyWith(value: current.value + 1));
+  void decrement() =>
+      transformState((current) => current.copyWith(value: current.value - 1));
   void reset() => updateState(CounterModel(value: 0, label: data.label));
 }
 
@@ -77,23 +79,26 @@ class UserViewModel extends ViewModel<UserModel> {
     // Synchronous initialization if needed
   }
 
-  void updateName(String name) => transformState((current) => current.copyWith(name: name));
-  void updateAge(int age) => transformState((current) => current.copyWith(age: age));
-  void toggleActive() => transformState((current) => current.copyWith(isActive: !current.isActive));
+  void updateName(String name) =>
+      transformState((current) => current.copyWith(name: name));
+  void updateAge(int age) =>
+      transformState((current) => current.copyWith(age: age));
+  void toggleActive() => transformState(
+      (current) => current.copyWith(isActive: !current.isActive));
 }
 
 // Services
 mixin CounterService {
-  static final ReactiveNotifier<CounterViewModel> instance = 
+  static final ReactiveNotifier<CounterViewModel> instance =
       ReactiveNotifier<CounterViewModel>(() => CounterViewModel());
 }
 
 mixin UserService {
-  static final ReactiveNotifier<UserViewModel> instance = 
+  static final ReactiveNotifier<UserViewModel> instance =
       ReactiveNotifier<UserViewModel>(() => UserViewModel());
-  
+
   // Simple notifier example
-  static final ReactiveNotifier<String> status = 
+  static final ReactiveNotifier<String> status =
       ReactiveNotifier<String>(() => 'Ready');
 }
 
@@ -135,7 +140,8 @@ class DemoScreen extends StatelessWidget {
                           ),
                           Text(
                             'Open Flutter DevTools → ReactiveNotifier tab to inspect state',
-                            style: TextStyle(color: Colors.white70, fontSize: 14),
+                            style:
+                                TextStyle(color: Colors.white70, fontSize: 14),
                           ),
                         ],
                       ),
@@ -145,9 +151,10 @@ class DemoScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Counter Section
-            const SectionHeader(title: 'Counter ViewModel', icon: Icons.add_circle),
+            const SectionHeader(
+                title: 'Counter ViewModel', icon: Icons.add_circle),
             const SizedBox(height: 8),
             ReactiveViewModelBuilder<CounterViewModel, CounterModel>(
               viewmodel: CounterService.instance.notifier,
@@ -159,7 +166,8 @@ class DemoScreen extends StatelessWidget {
                       children: [
                         Text(
                           counter.label,
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -198,7 +206,7 @@ class DemoScreen extends StatelessWidget {
               },
             ),
             const SizedBox(height: 24),
-            
+
             // User Section
             const SectionHeader(title: 'User ViewModel', icon: Icons.person),
             const SizedBox(height: 8),
@@ -211,21 +219,27 @@ class DemoScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Name: ${user.name}', style: const TextStyle(fontSize: 16)),
-                        Text('Age: ${user.age}', style: const TextStyle(fontSize: 16)),
-                        Text('Status: ${user.isActive ? 'Active' : 'Inactive'}', 
-                             style: TextStyle(fontSize: 16, 
-                                            color: user.isActive ? Colors.green : Colors.red)),
+                        Text('Name: ${user.name}',
+                            style: const TextStyle(fontSize: 16)),
+                        Text('Age: ${user.age}',
+                            style: const TextStyle(fontSize: 16)),
+                        Text('Status: ${user.isActive ? 'Active' : 'Inactive'}',
+                            style: TextStyle(
+                                fontSize: 16,
+                                color:
+                                    user.isActive ? Colors.green : Colors.red)),
                         const SizedBox(height: 16),
                         Wrap(
                           spacing: 8,
                           children: [
                             ElevatedButton(
-                              onPressed: () => viewModel.updateName('User ${DateTime.now().millisecond}'),
+                              onPressed: () => viewModel.updateName(
+                                  'User ${DateTime.now().millisecond}'),
                               child: const Text('Random Name'),
                             ),
                             ElevatedButton(
-                              onPressed: () => viewModel.updateAge((20 + (DateTime.now().millisecond % 40))),
+                              onPressed: () => viewModel.updateAge(
+                                  (20 + (DateTime.now().millisecond % 40))),
                               child: const Text('Random Age'),
                             ),
                             ElevatedButton(
@@ -241,7 +255,7 @@ class DemoScreen extends StatelessWidget {
               },
             ),
             const SizedBox(height: 24),
-            
+
             // Simple Notifier Section
             const SectionHeader(title: 'Simple Notifier', icon: Icons.circle),
             const SizedBox(height: 8),
@@ -253,22 +267,26 @@ class DemoScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
-                        Text('Status: $status', 
-                             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text('Status: $status',
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             ElevatedButton(
-                              onPressed: () => UserService.status.updateState('Loading...'),
+                              onPressed: () =>
+                                  UserService.status.updateState('Loading...'),
                               child: const Text('Loading'),
                             ),
                             ElevatedButton(
-                              onPressed: () => UserService.status.updateState('Success!'),
+                              onPressed: () =>
+                                  UserService.status.updateState('Success!'),
                               child: const Text('Success'),
                             ),
                             ElevatedButton(
-                              onPressed: () => UserService.status.updateState('Error'),
+                              onPressed: () =>
+                                  UserService.status.updateState('Error'),
                               child: const Text('Error'),
                             ),
                           ],
@@ -280,7 +298,7 @@ class DemoScreen extends StatelessWidget {
               },
             ),
             const SizedBox(height: 24),
-            
+
             // Instructions
             Card(
               color: Colors.blue[50],
@@ -293,16 +311,19 @@ class DemoScreen extends StatelessWidget {
                       children: [
                         Icon(Icons.info, color: Colors.blue[600]),
                         const SizedBox(width: 8),
-                        const Text('How to use DevTools Extension:', 
-                                   style: TextStyle(fontWeight: FontWeight.bold)),
+                        const Text('How to use DevTools Extension:',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
                       ],
                     ),
                     const SizedBox(height: 12),
                     const Text('1. Run this app in debug mode'),
-                    const Text('2. Open Flutter DevTools in your browser or IDE'),
+                    const Text(
+                        '2. Open Flutter DevTools in your browser or IDE'),
                     const Text('3. Look for the "ReactiveNotifier" tab'),
-                    const Text('4. Interact with the widgets above to see real-time state changes'),
-                    const Text('5. Monitor ViewModels and simple notifiers independently'),
+                    const Text(
+                        '4. Interact with the widgets above to see real-time state changes'),
+                    const Text(
+                        '5. Monitor ViewModels and simple notifiers independently'),
                   ],
                 ),
               ),
@@ -312,7 +333,6 @@ class DemoScreen extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class SectionHeader extends StatelessWidget {

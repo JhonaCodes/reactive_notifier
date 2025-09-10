@@ -23,14 +23,14 @@ class ProductionAuthViewModel extends ViewModel<AuthState> {
       ));
       return;
     }
-    
+
     // Initialize with basic state first
     updateSilently(AuthState(
       isAuthenticated: false,
       userTheme: 'initializing',
       contextAvailable: true,
     ));
-    
+
     // Use postFrameCallback for safe context access (PRODUCTION PATTERN)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!isDisposed && hasContext) {
@@ -38,7 +38,7 @@ class ProductionAuthViewModel extends ViewModel<AuthState> {
           // NOW we can safely access Theme and other InheritedWidgets
           final theme = Theme.of(requireContext('Riverpod migration'));
           final isDarkMode = theme.brightness == Brightness.dark;
-          
+
           updateState(AuthState(
             isAuthenticated: false,
             userTheme: isDarkMode ? 'dark' : 'light',
@@ -78,12 +78,12 @@ class ProductionDataViewModel extends AsyncViewModelImpl<UserData> {
     try {
       // Use postFrameCallback for safe MediaQuery access
       await Future.delayed(Duration.zero); // Allow frame to complete
-      
+
       if (!isDisposed && hasContext) {
         // NOW we can safely access MediaQuery and other InheritedWidgets
         final mediaQuery = MediaQuery.of(requireContext('Provider migration'));
         final screenSize = mediaQuery.size;
-        
+
         return UserData(
           name: 'Test User',
           screenWidth: screenSize.width,
@@ -98,7 +98,7 @@ class ProductionDataViewModel extends AsyncViewModelImpl<UserData> {
         screenHeight: 0,
       );
     }
-    
+
     // Fallback
     return UserData(
       name: 'No context',
@@ -113,25 +113,25 @@ class AuthState {
   final bool isAuthenticated;
   final String userTheme;
   final bool contextAvailable;
-  
+
   const AuthState({
     required this.isAuthenticated,
     required this.userTheme,
     required this.contextAvailable,
   });
-  
+
   static AuthState initial() => const AuthState(
-    isAuthenticated: false,
-    userTheme: 'unknown',
-    contextAvailable: false,
-  );
+        isAuthenticated: false,
+        userTheme: 'unknown',
+        contextAvailable: false,
+      );
 }
 
 class UserData {
   final String name;
   final double screenWidth;
   final double screenHeight;
-  
+
   UserData({
     required this.name,
     required this.screenWidth,
@@ -142,28 +142,32 @@ class UserData {
 /// Services
 mixin ProductionAuthService {
   static ReactiveNotifier<ProductionAuthViewModel>? _instance;
-  
+
   static ReactiveNotifier<ProductionAuthViewModel> get instance {
-    _instance ??= ReactiveNotifier<ProductionAuthViewModel>(ProductionAuthViewModel.new);
+    _instance ??=
+        ReactiveNotifier<ProductionAuthViewModel>(ProductionAuthViewModel.new);
     return _instance!;
   }
-  
+
   static ReactiveNotifier<ProductionAuthViewModel> createNew() {
-    _instance = ReactiveNotifier<ProductionAuthViewModel>(ProductionAuthViewModel.new);
+    _instance =
+        ReactiveNotifier<ProductionAuthViewModel>(ProductionAuthViewModel.new);
     return _instance!;
   }
 }
 
 mixin ProductionDataService {
   static ReactiveNotifier<ProductionDataViewModel>? _instance;
-  
+
   static ReactiveNotifier<ProductionDataViewModel> get instance {
-    _instance ??= ReactiveNotifier<ProductionDataViewModel>(ProductionDataViewModel.new);
+    _instance ??=
+        ReactiveNotifier<ProductionDataViewModel>(ProductionDataViewModel.new);
     return _instance!;
   }
-  
+
   static ReactiveNotifier<ProductionDataViewModel> createNew() {
-    _instance = ReactiveNotifier<ProductionDataViewModel>(ProductionDataViewModel.new);
+    _instance =
+        ReactiveNotifier<ProductionDataViewModel>(ProductionDataViewModel.new);
     return _instance!;
   }
 }
@@ -176,7 +180,8 @@ void main() {
       ProductionDataService.createNew();
     });
 
-    testWidgets('ViewModel MUST receive context in production scenario', (tester) async {
+    testWidgets('ViewModel MUST receive context in production scenario',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(brightness: Brightness.dark),
@@ -202,25 +207,26 @@ void main() {
       // Trigger reinitializeWithContext manually since automatic might not work
       final vm = ProductionAuthService.instance.notifier;
       vm.reinitializeWithContext();
-      
+
       // Wait for reinitialize and postFrameCallback to complete
       await tester.pump();
       await tester.pumpAndSettle();
-      
+
       // STRICT assertions - must work exactly as expected
       expect(find.text('Theme: dark'), findsOneWidget);
       expect(find.text('Context Available: true'), findsOneWidget);
       expect(find.text('HasContext VM: true'), findsOneWidget);
-      
+
       // Verify ViewModel actually has context
       expect(vm.hasContext, isTrue);
       expect(vm.context, isNotNull);
     });
 
-    testWidgets('AsyncViewModel MUST receive context in production scenario', (tester) async {
+    testWidgets('AsyncViewModel MUST receive context in production scenario',
+        (tester) async {
       // Reset service before test
       ProductionDataService.createNew();
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: MediaQuery(
@@ -249,9 +255,9 @@ void main() {
       // Wait for initial load
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-      
+
       final vm = ProductionDataService.instance.notifier;
-      
+
       // If still showing "Waiting for context", trigger reload
       if (vm.data?.name == 'Waiting for context') {
         await vm.reload();
@@ -264,7 +270,7 @@ void main() {
       expect(find.text('Width: 800'), findsOneWidget);
       expect(find.text('Height: 600'), findsOneWidget);
       expect(find.text('HasContext: true'), findsOneWidget);
-      
+
       // Verify AsyncViewModel actually has context
       expect(vm.hasContext, isTrue);
       expect(vm.context, isNotNull);
@@ -274,11 +280,11 @@ void main() {
       // Create ViewModel outside widget tree - it should not fail immediately
       // But should be marked as needing context
       final vm = ProductionAuthViewModel();
-      
+
       // Should not have context
       expect(vm.hasContext, isFalse);
       expect(vm.context, isNull);
-      
+
       // Should fail when trying to access context
       expect(
         () => vm.requireContext('test operation'),
@@ -293,19 +299,20 @@ void main() {
     test('AsyncViewModel WITHOUT builder handles gracefully', () async {
       // Create AsyncViewModel outside widget tree
       final vm = ProductionDataViewModel();
-      
+
       // Should not fail, but return fallback data
       final result = await vm.init();
-      
+
       expect(result.name, equals('Waiting for context'));
       expect(result.screenWidth, equals(0));
       expect(result.screenHeight, equals(0));
-      
+
       // Should not have context
       expect(vm.hasContext, isFalse);
     });
 
-    testWidgets('Context cleanup works correctly in production', (tester) async {
+    testWidgets('Context cleanup works correctly in production',
+        (tester) async {
       // Build widget with context
       await tester.pumpWidget(
         MaterialApp(
@@ -317,7 +324,7 @@ void main() {
       );
 
       await tester.pumpAndSettle();
-      
+
       final vm = ProductionAuthService.instance.notifier;
       expect(vm.hasContext, isTrue);
 
@@ -327,7 +334,7 @@ void main() {
       ));
 
       await tester.pumpAndSettle();
-      
+
       // Context should now be null
       expect(vm.hasContext, isFalse);
       expect(vm.context, isNull);
@@ -339,9 +346,11 @@ void main() {
           home: Column(
             children: [
               Expanded(
-                child: ReactiveViewModelBuilder<ProductionAuthViewModel, AuthState>(
+                child: ReactiveViewModelBuilder<ProductionAuthViewModel,
+                    AuthState>(
                   viewmodel: ProductionAuthService.instance.notifier,
-                  build: (state, viewModel, keep) => Text('Auth: ${state.userTheme}'),
+                  build: (state, viewModel, keep) =>
+                      Text('Auth: ${state.userTheme}'),
                 ),
               ),
               Expanded(
@@ -360,23 +369,23 @@ void main() {
 
       final authVM = ProductionAuthService.instance.notifier;
       final dataVM = ProductionDataService.instance.notifier;
-      
+
       // Both should have context
       expect(authVM.hasContext, isTrue);
       expect(dataVM.hasContext, isTrue);
-      
+
       // Each ViewModel should have its own context (isolated)
       // This is the CORRECT behavior to avoid shared context issues
       expect(authVM.context, isNotNull);
       expect(dataVM.context, isNotNull);
-      
+
       // Contexts should be from the same widget tree but isolated per ViewModel
       // They don't need to be the same instance anymore - this is better design
     });
 
     test('requireContext provides descriptive errors', () {
       final vm = ProductionAuthViewModel();
-      
+
       expect(
         () => vm.requireContext('test operation'),
         throwsA(isA<StateError>().having(

@@ -661,8 +661,7 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           // Reset to initial state
-          ProductService.products
-              .updateSilently(ProductsViewModel());
+          ProductService.products.updateSilently(ProductsViewModel());
 
           return GoldenTestGroup(
             scenarioConstraints:

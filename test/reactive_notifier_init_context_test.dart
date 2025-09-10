@@ -24,7 +24,8 @@ void main() {
     });
 
     group('Global Context Initialization', () {
-      testWidgets('should initialize global context and make it available', (WidgetTester tester) async {
+      testWidgets('should initialize global context and make it available',
+          (WidgetTester tester) async {
         // Build a basic widget to get context
         await tester.pumpWidget(MaterialApp(
           home: Builder(
@@ -43,11 +44,12 @@ void main() {
             reason: 'Current context should be available');
       });
 
-      test('should verify ViewModelContextNotifier global context behavior', () {
+      test('should verify ViewModelContextNotifier global context behavior',
+          () {
         // Initially no global context
         expect(ViewModelContextNotifier.hasContext, isFalse,
             reason: 'Should not have global context initially');
-        
+
         // Create a mock BuildContext (we can't create real ones in unit tests)
         // This test verifies the basic structure is in place
         expect(() => ViewModelContextNotifier.cleanup(), returnsNormally,
@@ -56,7 +58,8 @@ void main() {
     });
 
     group('Cleanup Behavior', () {
-      testWidgets('should cleanup global context properly', (WidgetTester tester) async {
+      testWidgets('should cleanup global context properly',
+          (WidgetTester tester) async {
         // Initialize global context
         await tester.pumpWidget(MaterialApp(
           home: Builder(

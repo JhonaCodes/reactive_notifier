@@ -21,13 +21,12 @@ class ReactiveNotifierDevToolsScreen extends StatefulWidget {
   const ReactiveNotifierDevToolsScreen({super.key});
 
   @override
-  State<ReactiveNotifierDevToolsScreen> createState() => 
+  State<ReactiveNotifierDevToolsScreen> createState() =>
       _ReactiveNotifierDevToolsScreenState();
 }
 
-class _ReactiveNotifierDevToolsScreenState 
+class _ReactiveNotifierDevToolsScreenState
     extends State<ReactiveNotifierDevToolsScreen> {
-  
   List<Map<String, dynamic>> instances = [];
   bool isConnected = false;
   String connectionStatus = 'Disconnected';
@@ -41,7 +40,7 @@ class _ReactiveNotifierDevToolsScreenState
   void _loadInstances() {
     // Get instances from ReactiveNotifier
     final activeInstances = ReactiveNotifier.getInstances;
-    
+
     setState(() {
       instances = activeInstances.map((instance) {
         return {
@@ -51,7 +50,8 @@ class _ReactiveNotifierDevToolsScreenState
           'autoDispose': instance.autoDispose,
           'relatedCount': instance.related?.length ?? 0,
           'state': _getStateString(instance.notifier),
-          'isViewModel': instance.notifier.runtimeType.toString().contains('ViewModel'),
+          'isViewModel':
+              instance.notifier.runtimeType.toString().contains('ViewModel'),
         };
       }).toList();
     });
@@ -60,7 +60,9 @@ class _ReactiveNotifierDevToolsScreenState
   String _getStateString(dynamic notifier) {
     try {
       final stateStr = notifier.toString();
-      return stateStr.length > 100 ? '${stateStr.substring(0, 97)}...' : stateStr;
+      return stateStr.length > 100
+          ? '${stateStr.substring(0, 97)}...'
+          : stateStr;
     } catch (e) {
       return 'Error getting state: $e';
     }
@@ -91,10 +93,10 @@ class _ReactiveNotifierDevToolsScreenState
       ),
       body: instances.isEmpty
           ? EmptyStateWidget(onRefresh: _loadInstances)
-          : InstancesListWidget(instances: instances, onInstanceTap: _loadInstances),
+          : InstancesListWidget(
+              instances: instances, onInstanceTap: _loadInstances),
     );
   }
-
 }
 
 class EmptyStateWidget extends StatelessWidget {
@@ -148,9 +150,10 @@ class InstancesListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModels = instances.where((i) => i['isViewModel'] as bool).toList();
+    final viewModels =
+        instances.where((i) => i['isViewModel'] as bool).toList();
     final simple = instances.where((i) => !(i['isViewModel'] as bool)).toList();
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -160,7 +163,7 @@ class InstancesListWidget extends StatelessWidget {
           const SizedBox(height: 24),
           if (viewModels.isNotEmpty) ...[
             DevToolsSectionHeader(
-              title: 'ViewModels (${viewModels.length})', 
+              title: 'ViewModels (${viewModels.length})',
               icon: Icons.view_module,
             ),
             const SizedBox(height: 8),
@@ -169,7 +172,7 @@ class InstancesListWidget extends StatelessWidget {
           ],
           if (simple.isNotEmpty) ...[
             DevToolsSectionHeader(
-              title: 'Simple Notifiers (${simple.length})', 
+              title: 'Simple Notifiers (${simple.length})',
               icon: Icons.circle,
             ),
             const SizedBox(height: 8),
@@ -189,21 +192,39 @@ class SummaryCardsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final total = instances.length;
-    final viewModelCount = instances.where((i) => i['isViewModel'] as bool).length;
-    final withoutListeners = instances.where((i) => !(i['hasListeners'] as bool)).length;
-    
+    final viewModelCount =
+        instances.where((i) => i['isViewModel'] as bool).length;
+    final withoutListeners =
+        instances.where((i) => !(i['hasListeners'] as bool)).length;
+
     return Row(
       children: [
-        Expanded(child: SummaryCard(title: 'Total', value: '$total', icon: Icons.memory, color: Colors.blue)),
+        Expanded(
+            child: SummaryCard(
+                title: 'Total',
+                value: '$total',
+                icon: Icons.memory,
+                color: Colors.blue)),
         const SizedBox(width: 8),
-        Expanded(child: SummaryCard(title: 'ViewModels', value: '$viewModelCount', icon: Icons.view_module, color: Colors.green)),
+        Expanded(
+            child: SummaryCard(
+                title: 'ViewModels',
+                value: '$viewModelCount',
+                icon: Icons.view_module,
+                color: Colors.green)),
         const SizedBox(width: 8),
-        Expanded(child: SummaryCard(title: 'Simple', value: '${total - viewModelCount}', icon: Icons.circle, color: Colors.orange)),
+        Expanded(
+            child: SummaryCard(
+                title: 'Simple',
+                value: '${total - viewModelCount}',
+                icon: Icons.circle,
+                color: Colors.orange)),
         const SizedBox(width: 8),
-        Expanded(child: SummaryCard(
-          title: 'No Listeners', 
-          value: '$withoutListeners', 
-          icon: withoutListeners > 0 ? Icons.warning : Icons.check, 
+        Expanded(
+            child: SummaryCard(
+          title: 'No Listeners',
+          value: '$withoutListeners',
+          icon: withoutListeners > 0 ? Icons.warning : Icons.check,
           color: withoutListeners > 0 ? Colors.red : Colors.green,
         )),
       ],
@@ -234,7 +255,9 @@ class SummaryCard extends StatelessWidget {
           children: [
             Icon(icon, color: color, size: 24),
             const SizedBox(height: 8),
-            Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
+            Text(value,
+                style: TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.bold, color: color)),
             const SizedBox(height: 4),
             Text(title, style: Theme.of(context).textTheme.bodySmall),
           ],
@@ -260,7 +283,11 @@ class DevToolsSectionHeader extends StatelessWidget {
       children: [
         Icon(icon, size: 20),
         const SizedBox(width: 8),
-        Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        Text(title,
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold)),
       ],
     );
   }
@@ -324,13 +351,24 @@ class InstanceCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DetailRow(label: '🔑 Key', value: key),
-                DetailRow(label: '📡 Has Listeners', value: hasListeners ? 'Yes ✅' : 'No ❌'),
-                DetailRow(label: '🗑️ Auto Dispose', value: autoDispose ? 'Enabled' : 'Disabled'),
+                DetailRow(
+                    label: '📡 Has Listeners',
+                    value: hasListeners ? 'Yes ✅' : 'No ❌'),
+                DetailRow(
+                    label: '🗑️ Auto Dispose',
+                    value: autoDispose ? 'Enabled' : 'Disabled'),
                 if (relatedCount > 0)
-                  DetailRow(label: '🔗 Related States', value: '$relatedCount connected'),
-                DetailRow(label: '📊 Type', value: isViewModel ? 'Complex ViewModel' : 'Simple Notifier'),
+                  DetailRow(
+                      label: '🔗 Related States',
+                      value: '$relatedCount connected'),
+                DetailRow(
+                    label: '📊 Type',
+                    value:
+                        isViewModel ? 'Complex ViewModel' : 'Simple Notifier'),
                 const SizedBox(height: 8),
-                const Text('📋 Current State:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                const Text('📋 Current State:',
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                 const SizedBox(height: 4),
                 Container(
                   width: double.infinity,
@@ -342,7 +380,8 @@ class InstanceCard extends StatelessWidget {
                   ),
                   child: Text(
                     state,
-                    style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
+                    style:
+                        const TextStyle(fontFamily: 'monospace', fontSize: 11),
                   ),
                 ),
               ],

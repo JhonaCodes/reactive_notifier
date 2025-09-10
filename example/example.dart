@@ -73,8 +73,10 @@ class MyTheme {
 
 /// Counter service with complex business logic - USE REACTIVEBUILDER
 mixin CounterService {
-  static final ReactiveNotifier<CounterState> instance = ReactiveNotifier<CounterState>(
-    () => const CounterState(count: 0, message: 'Initial', isEven: true, isAtLimit: false),
+  static final ReactiveNotifier<CounterState> instance =
+      ReactiveNotifier<CounterState>(
+    () => const CounterState(
+        count: 0, message: 'Initial', isEven: true, isAtLimit: false),
   );
 
   static void increment() {
@@ -109,7 +111,8 @@ mixin CounterService {
 
   static void reset() {
     instance.updateState(
-      const CounterState(count: 0, message: 'Reset to 0', isEven: true, isAtLimit: false),
+      const CounterState(
+          count: 0, message: 'Reset to 0', isEven: true, isAtLimit: false),
     );
   }
 }
@@ -381,11 +384,13 @@ class ControlButtonsSection extends StatelessWidget {
               spacing: 8,
               children: [
                 ElevatedButton(
-                  onPressed: () => LanguageService.switchLanguage('English', 'en'),
+                  onPressed: () =>
+                      LanguageService.switchLanguage('English', 'en'),
                   child: const Text('English'),
                 ),
                 ElevatedButton(
-                  onPressed: () => LanguageService.switchLanguage('Español', 'es'),
+                  onPressed: () =>
+                      LanguageService.switchLanguage('Español', 'es'),
                   child: const Text('Español'),
                 ),
                 const ElevatedButton(
@@ -505,7 +510,8 @@ class MigrationViewModel extends ViewModel<MigrationState> {
   @override
   void onStateChanged(MigrationState previous, MigrationState next) {
     // NEW v2.13.0: State change hooks
-    stateChanges.add('State changed: ${previous.userDisplayName} → ${next.userDisplayName}');
+    stateChanges.add(
+        'State changed: ${previous.userDisplayName} → ${next.userDisplayName}');
 
     // Log specific changes
     if (previous.themeMode != next.themeMode) {
@@ -540,7 +546,8 @@ class MigrationViewModel extends ViewModel<MigrationState> {
             ));
           } catch (e) {
             // Fallback if context access fails
-            updateState(MigrationState.initial().copyWith(hasContextData: false));
+            updateState(
+                MigrationState.initial().copyWith(hasContextData: false));
           }
         }
       });
@@ -582,10 +589,11 @@ class ContextAccessDemo extends StatelessWidget {
                   children: [
                     Text(
                       'NEW: Automatic BuildContext Access',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: Colors.purple,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                color: Colors.purple,
+                                fontWeight: FontWeight.bold,
+                              ),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -600,7 +608,8 @@ class ContextAccessDemo extends StatelessWidget {
                     Text('Has Context: ${viewModel.hasContext}'),
                     Text('User: ${state.userDisplayName}'),
                     Text('Theme Mode: ${state.themeMode}'),
-                    Text('Screen Width: ${state.screenWidth.toStringAsFixed(0)}'),
+                    Text(
+                        'Screen Width: ${state.screenWidth.toStringAsFixed(0)}'),
                     Text('Context Data Available: ${state.hasContextData}'),
 
                     const SizedBox(height: 16),
@@ -625,12 +634,14 @@ class ContextAccessDemo extends StatelessWidget {
                             '• BuildContext Access (context, hasContext)\n'
                             '• Cross-Service Communication\n'
                             '• Explicit Sandbox Architecture',
-                            style: TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                            style: TextStyle(
+                                fontSize: 12, fontFamily: 'monospace'),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'State Changes Recorded: ${viewModel.stateChanges.length}',
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.bold),
                           ),
                           if (viewModel.stateChanges.isNotEmpty)
                             Text(
@@ -639,7 +650,8 @@ class ContextAccessDemo extends StatelessWidget {
                             ),
                           const SizedBox(height: 8),
                           ElevatedButton(
-                            onPressed: () => viewModel.simulateUserChange('John Doe'),
+                            onPressed: () =>
+                                viewModel.simulateUserChange('John Doe'),
                             child: const Text('Trigger State Change'),
                           ),
                         ],

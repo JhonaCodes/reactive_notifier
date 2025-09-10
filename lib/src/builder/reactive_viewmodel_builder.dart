@@ -66,16 +66,16 @@ class _ReactiveBuilderStateViewModel<VM, T>
   @override
   void initState() {
     super.initState();
-    
+
     // Register context BEFORE accessing the viewmodel to ensure it's available during init()
     // Use unique identifier for each builder instance to handle multiple builders for same ViewModel
     final uniqueBuilderType = 'ReactiveViewModelBuilder<$VM,$T>_$hashCode';
     context.registerForViewModels(uniqueBuilderType, widget.viewmodel);
-    
+
     // Add reference for widget-aware lifecycle if viewmodel is from ReactiveNotifier
     // We need to find the parent ReactiveNotifier that contains this ViewModel
     _addReferenceToParentNotifier();
-    
+
     // Re-initialize ViewModels that were created without context
     (widget.viewmodel as ViewModel).reinitializeWithContext();
 
@@ -110,11 +110,11 @@ class _ReactiveBuilderStateViewModel<VM, T>
     if (oldWidget.viewmodel != widget.viewmodel) {
       // Remove reference from old viewmodel's parent ReactiveNotifier
       _removeReferenceFromParentNotifier(oldWidget.viewmodel);
-      
+
       oldWidget.viewmodel.removeListener(_valueChanged);
       value = widget.viewmodel.data;
       widget.viewmodel.addListener(_valueChanged);
-      
+
       // Add reference to new viewmodel's parent ReactiveNotifier
       _addReferenceToParentNotifier();
     }
@@ -142,10 +142,10 @@ class _ReactiveBuilderStateViewModel<VM, T>
   void dispose() {
     // Cleanup subscriptions and timer
     widget.viewmodel.removeListener(_valueChanged);
-    
+
     // Remove reference from parent ReactiveNotifier
     _removeReferenceFromParentNotifier(widget.viewmodel);
-    
+
     // Automatically unregister context using the same unique identifier
     final uniqueBuilderType = 'ReactiveViewModelBuilder<$VM,$T>_$hashCode';
     context.unregisterFromViewModels(uniqueBuilderType, widget.viewmodel);
@@ -186,7 +186,7 @@ class _ReactiveBuilderStateViewModel<VM, T>
   Widget build(BuildContext context) {
     // Note: Rebuild tracking disabled to avoid VM service errors
     // The in-app DevTool uses its own tracking mechanism
-    
+
     return widget.build?.call(value, (widget.viewmodel as VM), _noRebuild) ??
         widget.builder?.call(value, _noRebuild) ??
         const SizedBox.shrink();

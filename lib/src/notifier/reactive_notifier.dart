@@ -42,10 +42,11 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   Duration _autoDisposeTimeout = const Duration(seconds: 30);
   bool _isScheduledForDispose = false;
   bool _disposed = false;
-  
+
   // Reference tracking for debugging
   final Set<String> _activeReferences = <String>{};
-  static final Map<Key, ReactiveNotifier> _instanceRegistry = <Key, ReactiveNotifier>{};
+  static final Map<Key, ReactiveNotifier> _instanceRegistry =
+      <Key, ReactiveNotifier>{};
 
   ReactiveNotifier._(
       T Function() create, this.related, this.keyNotifier, this.autoDispose)
@@ -107,7 +108,7 @@ Location: $trace
       final instance = ReactiveNotifier._(create, related, key, autoDispose);
       _instances[key] = instance;
       _instanceRegistry[key] = instance;
-      
+
       // Debug service recording disabled to avoid VM service errors
       // if (kDebugMode && !_isTestEnvironment) {
       //   ReactiveNotifierDebugService.instance.recordInstanceCreation(instance);
@@ -593,20 +594,20 @@ Available types: ${related!.map((r) => '${r.notifier.runtimeType}(${r.keyNotifie
   }
 
   /// Widget-aware lifecycle management methods
-  
+
   /// Increment reference count when a widget starts using this notifier
   void addReference(String referenceId) {
     // Only increment if this is a new reference
     if (_activeReferences.add(referenceId)) {
       _referenceCount++;
     }
-    
+
     // Cancel auto-dispose if scheduled
     if (_isScheduledForDispose) {
       _disposeTimer?.cancel();
       _disposeTimer = null;
       _isScheduledForDispose = false;
-      
+
       assert(() {
         log('''
 🔄 Auto-dispose cancelled for ReactiveNotifier<$T>
@@ -619,7 +620,7 @@ Reason: New widget started using this notifier
         return true;
       }());
     }
-    
+
     assert(() {
       log('''
 ➕ Reference added to ReactiveNotifier<$T>
@@ -632,14 +633,14 @@ Auto-dispose enabled: $autoDispose
       return true;
     }());
   }
-  
+
   /// Decrement reference count when a widget stops using this notifier
   void removeReference(String referenceId) {
     // Only decrement if reference actually existed
     if (_activeReferences.remove(referenceId)) {
       _referenceCount--;
     }
-    
+
     assert(() {
       log('''
 ➖ Reference removed from ReactiveNotifier<$T>
@@ -651,17 +652,17 @@ Auto-dispose enabled: $autoDispose
 ''', level: 5);
       return true;
     }());
-    
+
     // Schedule auto-dispose if no more references and auto-dispose is enabled
     if (_referenceCount <= 0 && autoDispose && !_isScheduledForDispose) {
       _scheduleAutoDispose();
     }
   }
-  
+
   /// Schedule automatic disposal after timeout
   void _scheduleAutoDispose() {
     if (_isScheduledForDispose || _disposed) return;
-    
+
     _isScheduledForDispose = true;
     _disposeTimer = Timer(_autoDisposeTimeout, () {
       if (_referenceCount <= 0 && autoDispose && !_disposed) {
@@ -676,12 +677,12 @@ Final reference count: $_referenceCount
 ''', level: 10);
           return true;
         }());
-        
+
         cleanCurrentNotifier(forceCleanup: true);
       }
       _isScheduledForDispose = false;
     });
-    
+
     assert(() {
       log('''
 ⏰ Auto-dispose scheduled for ReactiveNotifier<$T>
@@ -694,13 +695,13 @@ Will dispose if no references are added
       return true;
     }());
   }
-  
+
   /// Configure auto-dispose timeout for this instance
   void enableAutoDispose({Duration? timeout}) {
     if (timeout != null) {
       _autoDisposeTimeout = timeout;
     }
-    
+
     assert(() {
       log('''
 ⚙️ Auto-dispose configured for ReactiveNotifier<$T>
@@ -713,26 +714,26 @@ Will auto-dispose when references reach 0
       return true;
     }());
   }
-  
+
   /// Get current reference count (for debugging)
   int get referenceCount => _referenceCount;
-  
+
   /// Check if instance is scheduled for dispose
   bool get isScheduledForDispose => _isScheduledForDispose;
-  
+
   /// Get active references (for debugging)
   Set<String> get activeReferences => Set.from(_activeReferences);
 
   /// Static methods for instance management
-  
+
   /// Reinitialize a disposed instance with a fresh state
-  /// 
+  ///
   /// This method allows you to recreate an instance that was previously disposed,
   /// maintaining the same key and configuration but with a fresh state.
-  /// 
+  ///
   /// Use cases:
   /// - After logout to create fresh user state
-  /// - Reset application state to initial values  
+  /// - Reset application state to initial values
   /// - Recovery from corrupted state
   /// - Testing scenarios where clean state is needed
   ///
@@ -740,10 +741,10 @@ Will auto-dispose when references reach 0
   /// ```dart
   /// mixin UserService {
   ///   static final instance = ReactiveNotifier<UserViewModel>(() => UserViewModel());
-  ///   
+  ///
   ///   static void logout() {
   ///     ReactiveNotifier.reinitializeInstance<UserViewModel>(
-  ///       instance.keyNotifier, 
+  ///       instance.keyNotifier,
   ///       () => UserViewModel()
   ///     );
   ///   }
@@ -762,7 +763,7 @@ Available instances: ${_instances.length}
     }
 
     final instance = _instances[key] as ReactiveNotifier<T>;
-    
+
     assert(() {
       log('''
 🔄 Reinitializing ReactiveNotifier<$T>
@@ -780,13 +781,13 @@ Creating fresh state...
     instance._disposeTimer?.cancel();
     instance._disposeTimer = null;
     instance._isScheduledForDispose = false;
-    
+
     // Reset dispose flag
     instance._disposed = false;
-    
+
     // Create fresh state
     final newState = creator();
-    
+
     // Update the internal state
     try {
       if (instance.notifier is ViewModel) {
@@ -815,13 +816,13 @@ Continuing with state replacement...
         return true;
       }());
     }
-    
+
     // Replace with new state
     instance.replaceNotifier(newState);
-    
+
     // Notify listeners of the fresh state
     instance.notifyListeners();
-    
+
     assert(() {
       log('''
 ✅ ReactiveNotifier<$T> successfully reinitialized
@@ -833,10 +834,10 @@ Active references: ${instance._referenceCount}
 ''', level: 10);
       return true;
     }());
-    
+
     return newState;
   }
-  
+
   /// Check if an instance with the given key is active (not disposed)
   ///
   /// Returns `true` if the instance exists and is not disposed,
@@ -856,7 +857,7 @@ Active references: ${instance._referenceCount}
     if (!_instances.containsKey(key)) {
       return false;
     }
-    
+
     final instance = _instances[key] as ReactiveNotifier<T>?;
     return instance != null && !instance._disposed;
   }
@@ -877,7 +878,7 @@ Active references: ${instance._referenceCount}
     if (_isGlobalCleanupInProgress) {
       return; // Already cleaning up, avoid recursive calls
     }
-    
+
     _isGlobalCleanupInProgress = true;
     assert(() {
       log('''
@@ -906,7 +907,7 @@ Updating notifiers: ${_updatingNotifiers.length}
           instance._disposeTimer = null;
           instance._isScheduledForDispose = false;
           instance._disposed = true;
-          
+
           if (vm is ViewModel && !vm.isDisposed) {
             vm.dispose();
             viewModelsDisposed++;
@@ -1377,10 +1378,10 @@ let ViewModel handle disposal via _handleViewModelDisposal().
     _disposeTimer?.cancel();
     _disposeTimer = null;
     _isScheduledForDispose = false;
-    
+
     // 2. Mark as disposed
     _disposed = true;
-    
+
     // 3. Stop any active listeners
     if (hasListeners) {
       stopListening();
@@ -1426,17 +1427,17 @@ Note: Instance remains in global registry unless manually cleaned
     // 5. Call ChangeNotifier dispose
     super.dispose();
   }
-  
+
   /// Initialize global BuildContext for all ViewModels
-  /// 
+  ///
   /// Call this method early in your app (typically in MyApp.build() or main())
   /// to make BuildContext available to all ViewModels from the start.
-  /// 
+  ///
   /// This is especially useful when:
   /// - Multiple ViewModels need context access
   /// - You want to avoid using waitForContext: true on individual ViewModels
   /// - You need Theme, MediaQuery, or Localizations available during ViewModel init()
-  /// 
+  ///
   /// Usage:
   /// ```dart
   /// class MyApp extends StatelessWidget {
@@ -1444,12 +1445,12 @@ Note: Instance remains in global registry unless manually cleaned
   ///   Widget build(BuildContext context) {
   ///     // Initialize global context for all ViewModels
   ///     ReactiveNotifier.initContext(context);
-  ///     
+  ///
   ///     return MaterialApp(...);
   ///   }
   /// }
   /// ```
-  /// 
+  ///
   /// After calling this:
   /// - All ViewModels (ViewModel<T> and AsyncViewModelImpl<T>) have hasContext = true
   /// - context and requireContext() work immediately in init() methods
@@ -1467,16 +1468,16 @@ Current ViewModels: ${_instances.length}
 ''', level: 5);
       return true;
     }());
-    
+
     // Register context globally using the ContextNotifier system
     ViewModelContextNotifier.registerGlobalContext(context);
-    
+
     // Check for ViewModels that were waiting for context and reinitialize them
     int reinitializedCount = 0;
     for (var instance in _instances.values) {
       if (instance is ReactiveNotifier) {
         final notifier = instance.notifier;
-        
+
         // Check if the ViewModel has a reinitializeWithContext method (AsyncViewModelImpl)
         if (notifier != null && notifier is ViewModelContextService) {
           try {
@@ -1487,14 +1488,15 @@ Current ViewModels: ${_instances.length}
           } catch (e) {
             // Silently ignore if method doesn't exist or fails - happens for ViewModel<T> which don't have this method
             assert(() {
-              log('Note: Could not reinitialize ViewModel ${notifier.runtimeType}: $e', level: 10);
+              log('Note: Could not reinitialize ViewModel ${notifier.runtimeType}: $e',
+                  level: 10);
               return true;
             }());
           }
         }
       }
     }
-    
+
     assert(() {
       log('''
 ✅ ReactiveNotifier: Global context initialization completed
@@ -1508,5 +1510,4 @@ Global context now available for all ViewModels
       return true;
     }());
   }
-  
 }

@@ -11,7 +11,7 @@ import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 ///
 /// ## Constructor Parameters:
 /// - [loadOnInit]: If true (default), automatically calls init() when the ViewModel is created
-/// - [waitForContext]: If true (default false), waits for BuildContext to be available before 
+/// - [waitForContext]: If true (default false), waits for BuildContext to be available before
 ///   calling init() when loadOnInit is true. The ViewModel stays in initial state until context is ready.
 ///
 /// ## waitForContext Usage:
@@ -24,7 +24,7 @@ import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 /// ```dart
 /// class MyViewModel extends AsyncViewModelImpl<MyData> {
 ///   MyViewModel() : super(AsyncState.initial(), waitForContext: true);
-///   
+///
 ///   @override
 ///   Future<MyData> init() async {
 ///     // This will only run after BuildContext is available
@@ -46,7 +46,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// Used by ReactiveNotifier to avoid circular dispose calls
   bool get isDisposed => _disposed;
 
-  AsyncViewModelImpl(this._state, {this.loadOnInit = true, this.waitForContext = false}) : super() {
+  AsyncViewModelImpl(this._state,
+      {this.loadOnInit = true, this.waitForContext = false})
+      : super() {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
@@ -58,7 +60,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
       } else {
         // ALWAYS initialize like in main branch - context is optional feature
         _initializeAsync();
-        
+
         /// Yes and only if it is changed to true when the entire initialization process is finished.
         hasInitializedListenerExecution = true;
       }
@@ -87,9 +89,10 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
       }());
 
       _initialized = true;
+
       /// Yes and only if it is changed to true when the entire initialization process is finished.
       hasInitializedListenerExecution = true;
-      
+
       // Mark if we initialized without context for potential reinitialize later
       if (!hasContext) {
         _initializedWithoutContext = true;
@@ -351,23 +354,23 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
 
   /// Abstract method that returns an empty/clean AsyncState of type T
   /// Can be overridden by subclasses for custom empty state behavior
-  /// 
+  ///
   /// Default implementation returns AsyncState.initial()
   AsyncState<T> _createEmptyState() {
     return AsyncState<T>.initial();
   }
 
   /// Hook that executes automatically after every async state change
-  /// 
+  ///
   /// This method is called immediately after the async state is updated via
   /// updateState(), errorState(), loadingState(), transformState(), etc.
-  /// 
+  ///
   /// Override this method to:
   /// - Add logging for async state transitions
   /// - Perform automatic actions based on state changes
   /// - Track loading/error patterns
   /// - Update UI indicators or analytics
-  /// 
+  ///
   /// Example:
   /// ```dart
   /// @override
@@ -376,12 +379,12 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   ///   if (previous.isLoading && next.isSuccess) {
   ///     print('User loaded successfully: ${next.data?.name}');
   ///   }
-  ///   
+  ///
   ///   // Handle errors automatically
   ///   if (next.isError) {
   ///     showErrorDialog(next.error.toString());
   ///   }
-  ///   
+  ///
   ///   // Analytics tracking
   ///   if (previous.isInitial && next.isLoading) {
   ///     analytics.track('UserLoad_Started');
@@ -459,7 +462,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     // Execute async state change hook
     onAsyncStateChanged(previous, _state);
   }
-  
+
   Future<void> _reloadAfterClean() async {
     try {
       await init();
@@ -567,7 +570,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// Holds the currently active listener callbacks.
   /// Maps listener keys to their callback functions for better tracking.
   final Map<String, VoidCallback> _listeners = {};
-  
+
   /// Tracks which ViewModels this AsyncViewModel is listening to
   /// Format: 'ListenerVM_hashCode' -> 'ListenedToVM_hashCode'
   final Map<String, int> _listeningTo = {};
@@ -585,8 +588,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   Future<AsyncState<T>> listenVM(void Function(AsyncState<T> data) value,
       {bool callOnInit = false}) async {
     // Create unique key for this listener
-    final listenerKey = 'async_vm_${hashCode}_${DateTime.now().microsecondsSinceEpoch}';
-    
+    final listenerKey =
+        'async_vm_${hashCode}_${DateTime.now().microsecondsSinceEpoch}';
+
     assert(() {
       log('''
 🔗 AsyncViewModelImpl<${T.toString()}> adding listener
@@ -600,10 +604,10 @@ Current listeners: ${_listeners.length}
 
     // Create callback
     void callback() => value(_state);
-    
+
     // Store listener
     _listeners[listenerKey] = callback;
-    
+
     // Track relationship (this AsyncViewModel is listening to current AsyncViewModel)
     _listeningTo[listenerKey] = hashCode;
 
@@ -624,7 +628,7 @@ Current listeners: ${_listeners.length}
   /// This helps prevent memory leaks from circular references.
   void stopListeningVM() {
     final listenerCount = _listeners.length;
-    
+
     assert(() {
       log('''
 🔌 AsyncViewModelImpl<${T.toString()}> stopping listeners
@@ -635,17 +639,17 @@ Listening relationships: ${_listeningTo.length}
 ''', level: 5);
       return true;
     }());
-    
+
     // Remove all listeners from ChangeNotifier
     for (final callback in _listeners.values) {
       removeListener(callback);
     }
-    
+
     // Clear tracking maps
     _listeners.clear();
     _listeningTo.clear();
   }
-  
+
   /// Stops a specific listener by key
   /// Useful for more granular listener management
   void stopSpecificListener(String listenerKey) {
@@ -654,7 +658,7 @@ Listening relationships: ${_listeningTo.length}
       removeListener(callback);
       _listeners.remove(listenerKey);
       _listeningTo.remove(listenerKey);
-      
+
       assert(() {
         log('''
 🔌 AsyncViewModelImpl<${T.toString()}> stopped specific listener
@@ -667,7 +671,7 @@ Remaining listeners: ${_listeners.length}
       }());
     }
   }
-  
+
   /// Get current listener count for debugging
   int get activeListenerCount => _listeners.length;
 
@@ -761,9 +765,10 @@ Consider calling ReactiveNotifier.cleanup() manually when appropriate.
   /// Used to reinitialize ViewModels that were created without context
   void reinitializeWithContext() {
     // Check if we need to initialize due to waitForContext or previous context-less initialization
-    bool shouldReinitialize = (_initializedWithoutContext && hasContext && !_disposed) ||
-                             (waitForContext && !_initialized && hasContext && !_disposed);
-    
+    bool shouldReinitialize =
+        (_initializedWithoutContext && hasContext && !_disposed) ||
+            (waitForContext && !_initialized && hasContext && !_disposed);
+
     if (shouldReinitialize) {
       assert(() {
         log('''
@@ -776,11 +781,11 @@ Previously initialized without context: $_initializedWithoutContext
 ''', level: 10);
         return true;
       }());
-      
+
       // Reset flags and perform full initialization
       _initializedWithoutContext = false;
       _initialized = false;
-      
+
       // Now perform async initialization with context
       _initializeAsync();
     }

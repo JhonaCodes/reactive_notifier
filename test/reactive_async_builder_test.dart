@@ -720,7 +720,7 @@ void main() {
 
 class TestAsyncViewModel extends AsyncViewModelImpl<String> {
   Timer? _loadDataTimer;
-  
+
   TestAsyncViewModel() : super(AsyncState.initial(), loadOnInit: false);
 
   @override
@@ -774,7 +774,7 @@ class ComplexData {
 
 class ComplexAsyncViewModel extends AsyncViewModelImpl<ComplexData> {
   Timer? _loadDataTimer;
-  
+
   ComplexAsyncViewModel() : super(AsyncState.initial(), loadOnInit: false);
 
   @override

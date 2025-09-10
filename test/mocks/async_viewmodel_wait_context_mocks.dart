@@ -13,7 +13,7 @@ class TestWaitForContextViewModel extends AsyncViewModelImpl<String> {
   int removeListenersCallCount = 0;
   int onResumeCallCount = 0;
   String? lastOnResumeData;
-  
+
   // Mock context simulation
   bool _mockHasContext = false;
 
@@ -22,27 +22,30 @@ class TestWaitForContextViewModel extends AsyncViewModelImpl<String> {
     bool loadOnInit = true,
     bool waitForContext = false,
     this.shouldThrowError = false,
-  }) : super(AsyncState.initial(), loadOnInit: loadOnInit, waitForContext: waitForContext);
+  }) : super(AsyncState.initial(),
+            loadOnInit: loadOnInit, waitForContext: waitForContext);
 
   @override
   Future<String> init() async {
     initCallCount++;
-    
+
     if (shouldThrowError) {
       throw Exception('Test error during initialization');
     }
-    
+
     return initialData;
   }
 
   @override
-  Future<void> setupListeners({List<String> currentListeners = const []}) async {
+  Future<void> setupListeners(
+      {List<String> currentListeners = const []}) async {
     setupListenersCallCount++;
     await super.setupListeners(currentListeners: currentListeners);
   }
 
   @override
-  Future<void> removeListeners({List<String> currentListeners = const []}) async {
+  Future<void> removeListeners(
+      {List<String> currentListeners = const []}) async {
     removeListenersCallCount++;
     await super.removeListeners(currentListeners: currentListeners);
   }

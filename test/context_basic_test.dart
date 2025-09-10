@@ -18,10 +18,10 @@ class SimpleTestVM extends AsyncViewModelImpl<String> {
 void main() {
   testWidgets('Context access works in AsyncViewModel', (tester) async {
     // No cleanup - solo test directo
-    
+
     final vm = SimpleTestVM();
     final notifier = ReactiveNotifier<SimpleTestVM>(() => vm);
-    
+
     await tester.pumpWidget(
       MaterialApp(
         home: ReactiveAsyncBuilder<SimpleTestVM, String>(
@@ -33,7 +33,7 @@ void main() {
     );
 
     await tester.pumpAndSettle();
-    
+
     // Si funciona, deberíamos ver "HAS_CONTEXT"
     expect(find.text('HAS_CONTEXT'), findsOneWidget);
   });

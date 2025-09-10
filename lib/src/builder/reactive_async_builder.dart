@@ -63,16 +63,16 @@ class _ReactiveAsyncBuilderState<VM, T>
   @override
   void initState() {
     super.initState();
-    
+
     // Register context BEFORE accessing the notifier to ensure it's available during init()
     // Use unique identifier for each builder instance to handle multiple builders for same ViewModel
     final uniqueBuilderType = 'ReactiveAsyncBuilder<$VM,$T>_$hashCode';
     context.registerForViewModels(uniqueBuilderType, widget.notifier);
-    
+
     // Add reference for widget-aware lifecycle if notifier is from ReactiveNotifier
     // We need to find the parent ReactiveNotifier that contains this AsyncViewModel
     _addReferenceToParentNotifier();
-    
+
     // Call reinitializeWithContext for consistency with ReactiveViewModelBuilder
     (widget.notifier as AsyncViewModelImpl).reinitializeWithContext();
 
@@ -103,10 +103,10 @@ class _ReactiveAsyncBuilderState<VM, T>
     if (oldWidget.notifier != widget.notifier) {
       // Remove reference from old notifier's parent ReactiveNotifier
       _removeReferenceFromParentNotifier(oldWidget.notifier);
-      
+
       oldWidget.notifier.removeListener(_valueChanged);
       widget.notifier.addListener(_valueChanged);
-      
+
       // Add reference to new notifier's parent ReactiveNotifier
       _addReferenceToParentNotifier();
     }
@@ -133,10 +133,10 @@ class _ReactiveAsyncBuilderState<VM, T>
   @override
   void dispose() {
     widget.notifier.removeListener(_valueChanged);
-    
+
     // Remove reference from parent ReactiveNotifier
     _removeReferenceFromParentNotifier(widget.notifier);
-    
+
     // Automatically unregister context using the same unique identifier
     final uniqueBuilderType = 'ReactiveAsyncBuilder<$VM,$T>_$hashCode';
     context.unregisterFromViewModels(uniqueBuilderType, widget.notifier);
@@ -172,7 +172,7 @@ class _ReactiveAsyncBuilderState<VM, T>
   Widget build(BuildContext context) {
     // Note: Rebuild tracking disabled to avoid VM service errors
     // The in-app DevTool uses its own tracking mechanism
-    
+
     return widget.notifier.when(
       initial: () => widget.onInitial?.call() ?? const SizedBox.shrink(),
       loading: () =>

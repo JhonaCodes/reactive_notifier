@@ -16,12 +16,12 @@ class TestModel {
 
 class TestViewModel extends ViewModel<TestModel> {
   TestViewModel() : super(const TestModel(0));
-  
+
   @override
   void init() {
     // Simple initialization
   }
-  
+
   void increment() {
     updateState(TestModel(data.value + 1));
   }
@@ -32,7 +32,7 @@ void main() {
     setUp(() {
       ReactiveNotifier.cleanup();
     });
-    
+
     tearDown(() {
       ReactiveNotifier.cleanup();
     });
@@ -52,7 +52,7 @@ void main() {
       expect(notifier.referenceCount, equals(1));
 
       // Add another reference
-      notifier.addReference('test_widget_2');  
+      notifier.addReference('test_widget_2');
       expect(notifier.referenceCount, equals(2));
 
       // Remove a reference (simulating widget disposal)
@@ -74,7 +74,7 @@ void main() {
 
       notifier.addReference('test_widget');
       notifier.removeReference('test_widget');
-      
+
       expect(notifier.referenceCount, equals(0));
       expect(notifier.isScheduledForDispose, isFalse);
     });
@@ -122,18 +122,18 @@ void main() {
     // TODO: Fix isInstanceActive test - currently causing test hang
     // test('isInstanceActive should return correct status', () {
     //   final key = UniqueKey();
-    //   
+    //
     //   // No instance exists
     //   expect(ReactiveNotifier.isInstanceActive<TestViewModel>(key), isFalse);
-    //   
+    //
     //   // Create instance
     //   final notifier = ReactiveNotifier<TestViewModel>(
     //     () => TestViewModel(),
     //     key: key,
     //   );
-    //   
+    //
     //   expect(ReactiveNotifier.isInstanceActive<TestViewModel>(key), isTrue);
-    //   
+    //
     //   // Dispose instance
     //   notifier.dispose();
     //   expect(ReactiveNotifier.isInstanceActive<TestViewModel>(key), isFalse);
@@ -147,11 +147,11 @@ void main() {
 
       // Configure custom timeout
       notifier.enableAutoDispose(timeout: const Duration(minutes: 10));
-      
+
       // Add and remove reference to trigger timer
       notifier.addReference('test_widget');
       notifier.removeReference('test_widget');
-      
+
       expect(notifier.isScheduledForDispose, isTrue);
       // Timer should be set but not expired yet
       expect(notifier.referenceCount, equals(0));
@@ -170,7 +170,7 @@ void main() {
 
       // Add different references
       notifier.addReference('widget_1');
-      notifier.addReference('widget_2'); 
+      notifier.addReference('widget_2');
       expect(notifier.referenceCount, equals(3));
 
       // Remove non-existent reference (should be safe)
@@ -199,7 +199,7 @@ void main() {
 
       notifier.addReference('widget_1');
       notifier.addReference('widget_2');
-      
+
       final refs = notifier.activeReferences;
       expect(refs.length, equals(2));
       expect(refs.contains('widget_1'), isTrue);

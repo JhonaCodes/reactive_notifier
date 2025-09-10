@@ -20,7 +20,8 @@ void main() {
     });
 
     group('waitForContext = false (default behavior)', () {
-      test('should initialize immediately when waitForContext is false', () async {
+      test('should initialize immediately when waitForContext is false',
+          () async {
         // Setup: Create AsyncViewModel with waitForContext false (default)
         final viewModel = TestWaitForContextViewModel(
           initialData: 'immediate_data',
@@ -33,7 +34,8 @@ void main() {
 
         // Assert: Should have initialized immediately without waiting for context
         expect(viewModel.initCallCount, equals(1),
-            reason: 'init() should be called immediately when waitForContext is false');
+            reason:
+                'init() should be called immediately when waitForContext is false');
         expect(viewModel.hasData, isTrue,
             reason: 'Should have data after immediate initialization');
         expect(viewModel.data, equals('immediate_data'),
@@ -42,7 +44,8 @@ void main() {
             reason: 'Listener execution should be initialized');
       });
 
-      test('should work normally without context when waitForContext is false', () async {
+      test('should work normally without context when waitForContext is false',
+          () async {
         // Setup: Create AsyncViewModel without context
         final viewModel = TestWaitForContextViewModel(
           initialData: 'no_context_data',
@@ -62,7 +65,9 @@ void main() {
     });
 
     group('waitForContext = true behavior', () {
-      test('should stay in initial state when waitForContext is true and no context', () async {
+      test(
+          'should stay in initial state when waitForContext is true and no context',
+          () async {
         // Setup: Create AsyncViewModel with waitForContext true
         final viewModel = TestWaitForContextViewModel(
           initialData: 'context_waiting_data',
@@ -83,7 +88,8 @@ void main() {
         expect(viewModel.initCallCount, equals(0),
             reason: 'init() should not be called while waiting for context');
         expect(viewModel.hasInitializedListenerExecution, isFalse,
-            reason: 'Listener execution should not be initialized while waiting');
+            reason:
+                'Listener execution should not be initialized while waiting');
       });
 
       // Note: Context simulation tests are disabled due to changes in the context system
@@ -91,7 +97,8 @@ void main() {
     });
 
     group('waitForContext with loadOnInit = false', () {
-      test('should not initialize automatically when loadOnInit is false', () async {
+      test('should not initialize automatically when loadOnInit is false',
+          () async {
         // Setup: Create AsyncViewModel with waitForContext true but loadOnInit false
         final viewModel = TestWaitForContextViewModel(
           initialData: 'manual_init_data',
@@ -113,9 +120,11 @@ void main() {
 
         // Assert: Should still not initialize even with context when loadOnInit is false
         expect(viewModel.isInitial(), isTrue,
-            reason: 'Should stay in initial state even with context when loadOnInit is false');
+            reason:
+                'Should stay in initial state even with context when loadOnInit is false');
         expect(viewModel.initCallCount, equals(0),
-            reason: 'init() should still not be called when loadOnInit is false');
+            reason:
+                'init() should still not be called when loadOnInit is false');
       });
     });
 
@@ -126,7 +135,7 @@ void main() {
           initialData: 'test',
           waitForContext: false,
         );
-        
+
         final viewModelTrue = TestWaitForContextViewModel(
           initialData: 'test',
           waitForContext: true,

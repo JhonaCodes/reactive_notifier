@@ -5,7 +5,8 @@ import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
 
 /// Debug test to understand the timing issues
 class DebugAsyncVM extends AsyncViewModelImpl<String> {
-  DebugAsyncVM() : super(AsyncState.initial(), loadOnInit: false); // Don't auto-initialize
+  DebugAsyncVM()
+      : super(AsyncState.initial(), loadOnInit: false); // Don't auto-initialize
 
   @override
   Future<String> init() async {
@@ -16,7 +17,7 @@ class DebugAsyncVM extends AsyncViewModelImpl<String> {
     }
     return 'init without context';
   }
-  
+
   // Manual initialization method
   Future<void> manualInit() async {
     await reload(); // This will call init()
@@ -24,8 +25,8 @@ class DebugAsyncVM extends AsyncViewModelImpl<String> {
 }
 
 mixin DebugService {
-  static final ReactiveNotifier<DebugAsyncVM> instance = 
-    ReactiveNotifier<DebugAsyncVM>(DebugAsyncVM.new);
+  static final ReactiveNotifier<DebugAsyncVM> instance =
+      ReactiveNotifier<DebugAsyncVM>(DebugAsyncVM.new);
 }
 
 void main() {
@@ -36,24 +37,24 @@ void main() {
 
     testWidgets('Debug context registration timing', (tester) async {
       print('\n=== Starting test ===');
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: Builder(
               builder: (context) {
                 print('Builder context: ${context.widget.runtimeType}');
-                
+
                 // Manually register context first
                 context.registerForViewModels('DebugBuilder');
-                
+
                 // Now get the ViewModel
                 final vm = DebugService.instance.notifier;
                 print('ViewModel created, hasContext: ${vm.hasContext}');
-                
+
                 // Manually initialize now that context is available
                 vm.manualInit();
-                
+
                 return ReactiveAsyncBuilder<DebugAsyncVM, String>(
                   notifier: vm,
                   onData: (data, viewModel, keep) {

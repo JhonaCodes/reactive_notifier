@@ -10,32 +10,32 @@ class TenderItem {
 
   TenderItem({
     required this.id,
-    required this.name, 
+    required this.name,
     required this.status,
   });
 
   factory TenderItem.empty() => TenderItem(
-    id: '',
-    name: 'Empty Tender',
-    status: 'initial',
-  );
+        id: '',
+        name: 'Empty Tender',
+        status: 'initial',
+      );
 
   factory TenderItem.fromTheme(ThemeData theme) => TenderItem(
-    id: 'theme-${theme.hashCode}',
-    name: 'Themed Tender',
-    status: theme.brightness == Brightness.dark ? 'dark' : 'light',
-  );
+        id: 'theme-${theme.hashCode}',
+        name: 'Themed Tender',
+        status: theme.brightness == Brightness.dark ? 'dark' : 'light',
+      );
 
   @override
   String toString() => 'TenderItem(id: $id, name: $name, status: $status)';
-  
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is TenderItem &&
-      other.id == id &&
-      other.name == name &&
-      other.status == status;
+        other.id == id &&
+        other.name == name &&
+        other.status == status;
   }
 
   @override
@@ -50,13 +50,13 @@ class TenderItemsVM extends AsyncViewModelImpl<TenderItem> {
   Future<TenderItem> init() async {
     // Test context access
     final currentContext = context;
-    
+
     if (currentContext != null) {
       // Access theme from context (simulating migration scenario)
       final theme = Theme.of(currentContext);
       return TenderItem.fromTheme(theme);
     }
-    
+
     // Fallback when no context
     return TenderItem.empty();
   }
@@ -65,12 +65,12 @@ class TenderItemsVM extends AsyncViewModelImpl<TenderItem> {
 /// Test service
 mixin TenderItemsService {
   static ReactiveNotifier<TenderItemsVM>? _instance;
-  
+
   static ReactiveNotifier<TenderItemsVM> get instance {
     _instance ??= ReactiveNotifier<TenderItemsVM>(TenderItemsVM.new);
     return _instance!;
   }
-  
+
   static ReactiveNotifier<TenderItemsVM> createNew() {
     _instance = ReactiveNotifier<TenderItemsVM>(TenderItemsVM.new);
     return _instance!;
@@ -85,14 +85,14 @@ class SimpleCounterVM extends ViewModel<int> {
   void init() {
     // Initialize with default value first
     updateSilently(0);
-    
+
     // Check if context is available and update accordingly
     _updateFromContext();
   }
 
   void _updateFromContext() {
     final currentContext = context;
-    
+
     if (currentContext != null) {
       // Use post-frame callback to ensure MediaQuery is available
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -116,12 +116,12 @@ class SimpleCounterVM extends ViewModel<int> {
 
 mixin CounterService {
   static ReactiveNotifier<SimpleCounterVM>? _instance;
-  
+
   static ReactiveNotifier<SimpleCounterVM> get instance {
     _instance ??= ReactiveNotifier<SimpleCounterVM>(SimpleCounterVM.new);
     return _instance!;
   }
-  
+
   static ReactiveNotifier<SimpleCounterVM> createNew() {
     _instance = ReactiveNotifier<SimpleCounterVM>(SimpleCounterVM.new);
     return _instance!;
@@ -133,13 +133,14 @@ void main() {
     setUp(() {
       // Clean up before each test
       ReactiveNotifier.cleanup();
-      
+
       // Create completely new ReactiveNotifier instances
       CounterService.createNew();
       TenderItemsService.createNew();
     });
 
-    testWidgets('AsyncViewModel can access context during init', (tester) async {
+    testWidgets('AsyncViewModel can access context during init',
+        (tester) async {
       // Create a widget tree with specific theme
       final testTheme = ThemeData(
         brightness: Brightness.dark,
@@ -181,12 +182,13 @@ void main() {
       expect(find.text('Name: Themed Tender'), findsOneWidget);
       expect(find.text('Status: dark'), findsOneWidget);
       expect(find.text('Has Context: true'), findsOneWidget);
-      
+
       // Verify ID contains theme reference
       expect(vm.data!.id, contains('theme-'));
     });
 
-    testWidgets('Regular ViewModel can access context during init', (tester) async {
+    testWidgets('Regular ViewModel can access context during init',
+        (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: MediaQuery(
@@ -221,11 +223,12 @@ void main() {
       // Test increment works
       await tester.tap(find.byType(ElevatedButton));
       await tester.pump();
-      
+
       expect(find.text('Count: 101'), findsOneWidget);
     });
 
-    testWidgets('ViewModel context becomes null when builder is disposed', (tester) async {
+    testWidgets('ViewModel context becomes null when builder is disposed',
+        (tester) async {
       // First, build the widget
       await tester.pumpWidget(
         MaterialApp(
@@ -237,7 +240,7 @@ void main() {
       );
 
       await tester.pumpAndSettle();
-      
+
       // Verify context is available
       final vm = CounterService.instance.notifier;
       expect(vm.hasContext, isTrue);
@@ -268,7 +271,8 @@ void main() {
               Expanded(
                 child: ReactiveAsyncBuilder<TenderItemsVM, TenderItem>(
                   notifier: TenderItemsService.instance.notifier,
-                  onData: (item, viewModel, keep) => Text('Builder 2: ${item.name}'),
+                  onData: (item, viewModel, keep) =>
+                      Text('Builder 2: ${item.name}'),
                   onLoading: () => const Text('Loading'),
                 ),
               ),
@@ -282,14 +286,14 @@ void main() {
       // Both ViewModels should have context
       final counterVM = CounterService.instance.notifier;
       final tenderVM = TenderItemsService.instance.notifier;
-      
+
       expect(counterVM.hasContext, isTrue);
       expect(tenderVM.hasContext, isTrue);
 
       // Each ViewModel should have its own isolated context (improved design)
       expect(counterVM.context, isNotNull);
       expect(tenderVM.context, isNotNull);
-      
+
       // Contexts should be isolated per ViewModel instance (prevents context pollution)
       // This is the CORRECT behavior for better memory management
     });
@@ -297,10 +301,10 @@ void main() {
     test('ViewModel context access without UI throws descriptive error', () {
       // Create ViewModel outside widget tree
       final vm = SimpleCounterVM();
-      
+
       expect(vm.hasContext, isFalse);
       expect(vm.context, isNull);
-      
+
       expect(
         () => vm.requireContext('test operation'),
         throwsA(isA<StateError>().having(
@@ -316,9 +320,10 @@ void main() {
       final vm = SimpleCounterVM();
       expect(vm.hasContext, isFalse);
       expect(vm.context, isNull);
-      
+
       // ReactiveNotifier cleanup should handle ViewModelContextNotifier
-      ReactiveNotifier.cleanup(); // This calls ViewModelContextNotifier.cleanup internally
+      ReactiveNotifier
+          .cleanup(); // This calls ViewModelContextNotifier.cleanup internally
     });
   });
 }
