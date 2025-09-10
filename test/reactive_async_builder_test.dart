@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
@@ -717,18 +719,25 @@ void main() {
 // Test Models and ViewModels for ReactiveAsyncBuilder testing
 
 class TestAsyncViewModel extends AsyncViewModelImpl<String> {
+  Timer? _loadDataTimer;
+  
   TestAsyncViewModel() : super(AsyncState.initial(), loadOnInit: false);
 
   @override
   Future<String> init() async {
-    await Future.delayed(const Duration(milliseconds: 100));
+    // Use immediate completion to avoid pending timers
     return 'initialized';
   }
 
   void loadData() {
     loadingState();
-    Future.delayed(const Duration(milliseconds: 100)).then((_) {
-      updateState('loaded data');
+    // Cancel any existing timer
+    _loadDataTimer?.cancel();
+    // Create new timer that can be cancelled
+    _loadDataTimer = Timer(const Duration(milliseconds: 100), () {
+      if (!isDisposed) {
+        updateState('loaded data');
+      }
     });
   }
 
@@ -739,6 +748,12 @@ class TestAsyncViewModel extends AsyncViewModelImpl<String> {
 
   // Helper to check if has listeners
   bool get testHasListeners => hasListeners;
+
+  @override
+  void dispose() {
+    _loadDataTimer?.cancel();
+    super.dispose();
+  }
 }
 
 class NullableAsyncViewModel extends AsyncViewModelImpl<String?> {
@@ -758,18 +773,32 @@ class ComplexData {
 }
 
 class ComplexAsyncViewModel extends AsyncViewModelImpl<ComplexData> {
+  Timer? _loadDataTimer;
+  
   ComplexAsyncViewModel() : super(AsyncState.initial(), loadOnInit: false);
 
   @override
   Future<ComplexData> init() async {
-    await Future.delayed(const Duration(milliseconds: 100));
+    // Use immediate completion to avoid pending timers
     return ComplexData('initialized', DateTime.now());
   }
 
   Future<void> loadData() async {
     loadingState();
-    await Future.delayed(const Duration(milliseconds: 100));
-    updateState(ComplexData('loaded data', DateTime.now()));
+    // Cancel any existing timer
+    _loadDataTimer?.cancel();
+    // Create new timer that can be cancelled
+    _loadDataTimer = Timer(const Duration(milliseconds: 100), () {
+      if (!isDisposed) {
+        updateState(ComplexData('loaded data', DateTime.now()));
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _loadDataTimer?.cancel();
+    super.dispose();
   }
 
   // Expose protected methods for testing

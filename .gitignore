@@ -28,7 +28,7 @@ migrate_working_dir/
 .dart_tool/
 build/
 /example/app/
-/CLAUDE.md
+/AGENTS.md
 /REACTIVE_NOTIFIER_MASTER_GUIDE.md
 .claude/
 /coverage/
@@ -37,3 +37,5 @@ build/
 /TEST_COVERAGE_ANALYSIS.md
 /test_fixes.md
 /test/failures/
+/.flutter-plugins-dependencies
+/extension/devtools_extensions/

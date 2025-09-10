@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
+import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
 
 /// Used in ViewModel classes where all business logic should reside.
 ///
@@ -13,11 +14,12 @@ import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 ///
 /// Implementations of this class are expected to encapsulate the presentation
 /// logic and state for a particular view or feature.
-abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier {
+abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier, ViewModelContextService {
   // Internal state
   T _data;
   bool _initialized = false;
   bool _disposed = false;
+  bool _initializedWithoutContext = false;
 
   /// Public getter to check if ViewModel is disposed
   /// Used by ReactiveNotifier to avoid circular dispose calls
@@ -33,14 +35,20 @@ abstract class ViewModel<T> extends ChangeNotifier with HelperNotifier {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
 
+    // ALWAYS initialize like in main branch - context is optional feature
     _safeInitialization();
-
+    
     /// Yes and only if it is changed to true when the entire initialization process is finished.
     hasInitializedListenerExecution = true;
 
+    // Mark if we initialized without context for potential reinitialize later
+    if (!hasContext) {
+      _initializedWithoutContext = true;
+    }
+
     assert(() {
       log('''
-🔧 ViewModel<${T.toString()}> created
+ViewModel<${T.toString()}> created
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ID: $_instanceId
 Location: ${_getCreationLocation()}
@@ -105,7 +113,47 @@ Initial state hash: ${_data.hashCode}
 
   /// Abstract method that returns an empty/clean state of type T
   /// Must be implemented by subclasses
-  T _createEmptyState();
+  /// 
+  /// This method should return a "clean" or "empty" state that can be used
+  /// to reset the ViewModel to a fresh state without disposing it completely.
+  /// 
+  /// Example:
+  /// ```dart
+  /// class UserViewModel extends ViewModel<UserModel> {
+  ///   @override
+  ///   UserModel _createEmptyState() => UserModel.empty();
+  /// }
+  /// ```
+  T _createEmptyState() {
+    // Default implementation returns current data 
+    // Subclasses should override this for proper empty state
+    return data;
+  }
+
+  /// Re-initialize if the ViewModel was initialized without context
+  /// Called by builders when context becomes available
+  void reinitializeWithContext() {
+    if (_initializedWithoutContext && hasContext && !_disposed) {
+      assert(() {
+        log('''
+🔄 ViewModel<${T.toString()}> re-initializing with context
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ID: $_instanceId
+Context now available: ✓
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+        return true;
+      }());
+      
+      // Reset flags and perform full initialization
+      _initializedWithoutContext = false;
+      _initialized = false;
+      
+      // Now perform safe initialization with context
+      _safeInitialization();
+      hasInitializedListenerExecution = true;
+    }
+  }
 
   /// Public getter for the data
   T get data {
@@ -133,6 +181,11 @@ Initial state hash: ${_data.hashCode}
     if (_initialized || _disposed) return;
 
     try {
+      // Track if we're initializing without context
+      if (!hasContext) {
+        _initializedWithoutContext = true;
+      }
+      
       init();
 
       // Ensure _data was assigned in init()
@@ -207,9 +260,13 @@ Was disposed for: ${DateTime.now().difference(_disposeTime!).inMilliseconds}ms
   void updateState(T newState) {
     _checkDisposed();
 
+    final previous = _data;
     _data = newState;
     _updateCount++;
     notifyListeners();
+
+    // Execute state change hook
+    onStateChanged(previous, newState);
 
     assert(() {
       log('''
@@ -228,11 +285,15 @@ New state hash: ${_data.hashCode}
   void transformState(T Function(T data) transformer) {
     _checkDisposed();
 
+    final previous = _data;
     final newState = transformer(_data);
 
     _data = newState;
     _updateCount++;
     notifyListeners();
+
+    // Execute state change hook
+    onStateChanged(previous, newState);
 
     assert(() {
       log('''
@@ -251,14 +312,18 @@ New state hash: ${_data.hashCode}
   void transformStateSilently(T Function(T data) transformer) {
     _checkDisposed();
 
+    final previous = _data;
     final newState = transformer(_data);
 
     _data = newState;
     _updateCount++;
 
+    // Execute state change hook (even for silent updates)
+    onStateChanged(previous, newState);
+
     assert(() {
       log('''
-🔄 ViewModel<${T.toString()}> transformed
+🔄 ViewModel<${T.toString()}> transformed silently
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ID: $_instanceId
 Update #: $_updateCount
@@ -272,7 +337,12 @@ New state hash: ${_data.hashCode}
   /// Updates the state without notifying listeners
   void updateSilently(T newState) {
     _checkDisposed();
+    
+    final previous = _data;
     _data = newState;
+
+    // Execute state change hook (even for silent updates)
+    onStateChanged(previous, newState);
 
     assert(() {
       log('''
@@ -299,6 +369,8 @@ New state hash: ${_data.hashCode}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ID: $_instanceId
 Current updates: $_updateCount
+Active listeners: ${_listeners.length}
+Listening to: ${_listeningTo.length} ViewModels
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 10);
       return true;
@@ -481,47 +553,147 @@ New empty state hash: ${_data.hashCode}
     }
   }
 
-  /// Holds the currently active listener callback.
-  /// Ensures that only one listener is attached at any given time.
-  VoidCallback? _currentListener;
+  /// Holds the currently active listener callbacks.
+  /// Maps listener keys to their callback functions for better tracking.
+  final Map<String, VoidCallback> _listeners = {};
+  
+  /// Tracks which ViewModels this ViewModel is listening to
+  /// Format: 'ListenerVM_hashCode' -> 'ListenedToVM_hashCode'
+  final Map<String, int> _listeningTo = {};
 
   /// Starts listening for changes in the ViewModel.
   ///
   /// This method:
-  /// - Removes any previously registered listener.
-  /// - Registers a new listener that invokes the provided [value] callback with the current [_data].
+  /// - Creates a unique listener for this specific callback
+  /// - Tracks the relationship between listener and listened-to ViewModel
   /// - Immediately returns the current value of [_data], allowing the caller to sync with the initial state.
   ///
   /// [value] is the callback function that receives the updated data whenever a change occurs.
   ///
   /// Returns the current value of [_data].
   T listenVM(void Function(T data) value, {bool callOnInit = false}) {
-    log("Listen notifier is active");
+    // Create unique key for this listener
+    final listenerKey = 'vm_${hashCode}_${DateTime.now().microsecondsSinceEpoch}';
+    
+    assert(() {
+      log('''
+🔗 ViewModel<${T.toString()}> adding listener
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Listener key: $listenerKey
+Current listeners: ${_listeners.length}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 5);
+      return true;
+    }());
 
-    if (_currentListener != null) {
-      removeListener(_currentListener!);
-    }
+    // Create callback
+    final callback = () => value(_data);
+    
+    // Store listener
+    _listeners[listenerKey] = callback;
+    
+    // Track relationship (this ViewModel is listening to current ViewModel)
+    _listeningTo[listenerKey] = hashCode;
 
-    _currentListener = () => value(_data);
-
+    // Call on init if requested
     if (callOnInit) {
-      _currentListener?.call();
+      callback();
     }
 
-    addListener(_currentListener!);
+    // Register with ChangeNotifier
+    addListener(callback);
 
     return _data;
   }
 
   /// Stops listening for changes in the ViewModel.
   ///
-  /// If a listener is currently registered, it will be removed and
-  /// [_currentListener] will be set to null to free up resources.
+  /// Removes all active listeners and clears tracking information.
+  /// This helps prevent memory leaks from circular references.
   void stopListeningVM() {
-    if (_currentListener != null) {
-      removeListener(_currentListener!);
-      _currentListener = null;
+    final listenerCount = _listeners.length;
+    
+    assert(() {
+      log('''
+🔌 ViewModel<${T.toString()}> stopping listeners
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Removing listeners: $listenerCount
+Listening relationships: ${_listeningTo.length}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 5);
+      return true;
+    }());
+    
+    // Remove all listeners from ChangeNotifier
+    for (final callback in _listeners.values) {
+      removeListener(callback);
     }
+    
+    // Clear tracking maps
+    _listeners.clear();
+    _listeningTo.clear();
+  }
+  
+  /// Stops a specific listener by key
+  /// Useful for more granular listener management
+  void stopSpecificListener(String listenerKey) {
+    final callback = _listeners[listenerKey];
+    if (callback != null) {
+      removeListener(callback);
+      _listeners.remove(listenerKey);
+      _listeningTo.remove(listenerKey);
+      
+      assert(() {
+        log('''
+🔌 ViewModel<${T.toString()}> stopped specific listener
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Listener key: $listenerKey
+Remaining listeners: ${_listeners.length}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 5);
+        return true;
+      }());
+    }
+  }
+  
+  /// Get current listener count for debugging
+  int get activeListenerCount => _listeners.length;
+
+  /// Hook that executes automatically after every state change
+  /// 
+  /// This method is called immediately after the state is updated via
+  /// updateState(), transformState(), or transformStateSilently().
+  /// 
+  /// Override this method to:
+  /// - Add logging for state changes
+  /// - Perform automatic validations 
+  /// - Trigger side effects based on state transitions
+  /// - Update derived state automatically
+  /// 
+  /// Example:
+  /// ```dart
+  /// @override
+  /// void onStateChanged(UserModel previous, UserModel next) {
+  ///   // Log important changes
+  ///   if (previous.isLoggedIn != next.isLoggedIn) {
+  ///     print('User login status changed: ${next.isLoggedIn}');
+  ///   }
+  ///   
+  ///   // Automatic validation
+  ///   if (next.email.isNotEmpty && !isValidEmail(next.email)) {
+  ///     showEmailError();
+  ///   }
+  ///   
+  ///   // Side effects
+  ///   if (next.isLoggedIn && previous.userId != next.userId) {
+  ///     loadUserPreferences(next.userId);
+  ///   }
+  /// }
+  /// ```
+  @protected
+  void onStateChanged(T previous, T next) {
+    // Base implementation does nothing
+    // Override in subclasses to react to state changes
   }
 
   /// Called after the ViewModel's primary initialization logic (e.g., in `init(), setupListeners, etc`)
