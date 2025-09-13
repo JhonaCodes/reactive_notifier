@@ -1,3 +1,6 @@
+# 2.13.2
+- Update format.
+
 # 2.13.1
 - Clean documentation and few code tweaks.
 

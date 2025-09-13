@@ -5,7 +5,7 @@ import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 /// Internal InheritedWidget that provides reactive state through ReactiveNotifier
 /// This widget is created dynamically and injected into the widget tree automatically
-/// when context<T>() or extensions like context.lang are used
+/// ```when context<T>()``` or extensions like context.lang are used
 class ReactiveInheritedContext<T>
     extends InheritedNotifier<ReactiveNotifier<T>> {
   /// The type identifier for this reactive context
@@ -25,7 +25,7 @@ class ReactiveInheritedContext<T>
   }
 
   /// Get the reactive state of type T from the nearest ReactiveInheritedContext
-  /// Throws if no ReactiveInheritedContext<T> is found
+  /// Throws if no ```ReactiveInheritedContext<T>``` is found
   static T of<T>(BuildContext context) {
     final inherited = maybeOf<T>(context);
     if (inherited == null) {
