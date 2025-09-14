@@ -26,7 +26,7 @@ class ReactiveViewModelBuilder<VM, T> extends StatefulWidget {
   /// - [viewmodel]: The [ViewModel] instance containing business logic, async control, and update methods.
   /// - [keep]: A helper function to prevent unnecessary widget rebuilds by maintaining widget identity.
   ///
-  /// Use this builder when working with complex state logic encapsulated in a [ViewModel<T>].
+  /// Use this builder when working with complex state logic encapsulated in a ```ViewModel<T>```.
   final Widget Function(
     /// The current value of the reactive state.
     T state,

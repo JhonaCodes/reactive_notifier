@@ -210,8 +210,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// Transforms the current entire [AsyncState] using the provided [transformer]
   /// function and notifies listeners.
   ///
-  /// The [transformer] function receives the current [AsyncState<T>] and should
-  /// return a new [AsyncState<T>]. This allows for complex state transitions,
+  /// The [transformer] function receives the current ```AsyncState<T>``` and should
+  /// return a new ```AsyncState<T>```. This allows for complex state transitions,
   /// such as changing from a loading state to an error state, or modifying
   /// data within a success state while preserving the state type.
   ///
@@ -326,8 +326,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// or modifying data within a success state) that should not immediately
   /// trigger a UI rebuild or other listener-driven side effects.
   ///
-  /// The [transformer] function receives the current [AsyncState<T>] and should
-  /// return a new [AsyncState<T>].
+  /// The [transformer] function receives the current ```AsyncState<T>``` and should
+  /// return a new ```AsyncState<T>```.
   ///
   /// Example:
   ///```dart
@@ -341,7 +341,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   ///
   /// - Parameter transformer: A function that takes the current [AsyncState<T>]
   ///   and returns a new [AsyncState<T>].
-  ///   ```
+  ///```
   ///
   void transformStateSilently(
       AsyncState<T> Function(AsyncState<T> state) transformer) {
@@ -582,7 +582,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// - Tracks the relationship between listener and listened-to ViewModel
   /// - Returns the current AsyncState allowing the caller to sync with the initial state.
   ///
-  /// The [value] callback receives the current [AsyncState<T>] whenever the state updates.
+  /// The [value] callback receives the current ```AsyncState<T>``` whenever the state updates.
   ///
   /// Returns a [Future] that completes with the current state.
   Future<AsyncState<T>> listenVM(void Function(AsyncState<T> data) value,

@@ -1442,7 +1442,7 @@ Note: Instance remains in global registry unless manually cleaned
   /// ```
   ///
   /// After calling this:
-  /// - All ViewModels (ViewModel<T> and AsyncViewModelImpl<T>) have hasContext = true
+  /// - All ViewModels ```ViewModel<T> and AsyncViewModelImpl<T>``` have hasContext = true
   /// - context and requireContext() work immediately in init() methods
   /// - No need to use waitForContext: true for individual ViewModels
   /// - Existing ViewModels with waitForContext: true will reinitialize automatically

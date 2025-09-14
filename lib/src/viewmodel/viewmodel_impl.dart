@@ -163,7 +163,7 @@ Context now available: ✓
   }
 
   /// This method must be implemented as fully synchronous.
-  /// Do not use `async` or return a `Future<void>`.
+  /// Do not use `async` or return a ```Future<void>```.
   ///
   /// The base `ViewModel` does not handle asynchronous processes.
   /// Using `async` here can lead to uncontrolled rebuilds or race conditions,

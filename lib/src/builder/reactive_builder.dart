@@ -19,7 +19,7 @@ class ReactiveBuilder<T> extends StatefulWidget {
   ///
   /// This function provides:
   /// - [state]: The current reactive value of type `T`.
-  /// - [notifier]: The internal [NotifierImpl<T>] containing state update methods and logic.
+  /// - [notifier]: The internal ```NotifierImpl<T>``` containing state update methods and logic.
   /// - [keep]: A wrapper function used to prevent unnecessary widget rebuilds by maintaining widget identity.
   ///
   /// Useful for customizing the UI based on reactive changes while having full access to state logic and optimization tools.

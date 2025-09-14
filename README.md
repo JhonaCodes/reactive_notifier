@@ -65,7 +65,7 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  reactive_notifier: ^2.13.2
+  reactive_notifier: ^2.13.3
 ```
 
 ### DevTools Extension (Automatic)

@@ -176,7 +176,7 @@ Global context cleared: $hasGlobalContext
 }
 
 /// Mixin that provides organic context access to ViewModels
-/// Add this to ViewModel<T> and AsyncViewModelImpl<T> base classes
+/// Add this to ```ViewModel<T> and AsyncViewModelImpl<T>``` base classes
 /// No setup required - context is automatically available when builders are active
 mixin ViewModelContextService {
   /// Get current BuildContext if available
