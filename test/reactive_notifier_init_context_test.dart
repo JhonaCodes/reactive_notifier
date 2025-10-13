@@ -156,8 +156,7 @@ void main() {
         ));
 
         // Assert: requireGlobalContext should work
-        expect(
-            () => viewModel.requireGlobalContext('test operation'),
+        expect(() => viewModel.requireGlobalContext('test operation'),
             returnsNormally,
             reason: 'requireGlobalContext should not throw when available');
 
@@ -174,8 +173,7 @@ void main() {
             reason: 'Global context should not be available');
 
         // Assert: requireGlobalContext should throw
-        expect(
-            () => viewModel.requireGlobalContext('test operation'),
+        expect(() => viewModel.requireGlobalContext('test operation'),
             throwsStateError,
             reason:
                 'requireGlobalContext should throw StateError when not available');
@@ -206,7 +204,8 @@ void main() {
 
         // Before registering specific context, both should be the same
         expect(viewModel.context, equals(globalCtx),
-            reason: 'Before specific registration, context falls back to global');
+            reason:
+                'Before specific registration, context falls back to global');
 
         // Now register a specific context for the ViewModel
         BuildContext? specificContext;
@@ -229,7 +228,8 @@ void main() {
 
         // Regular context should now be the specific one
         expect(viewModel.context, equals(specificContext),
-            reason: 'Specific context should be used for regular context getter');
+            reason:
+                'Specific context should be used for regular context getter');
 
         // They should be different
         expect(viewModel.context, isNot(equals(viewModel.globalContext)),

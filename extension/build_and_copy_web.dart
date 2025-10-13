@@ -1,11 +1,12 @@
+import 'dart:developer';
 import 'dart:io';
 
 void main() async {
-  print('🚀 Building ReactiveNotifier DevTools Extension...');
+  log('🚀 Building ReactiveNotifier DevTools Extension...');
 
   final devtoolsDir = Directory('devtools');
   if (!devtoolsDir.existsSync()) {
-    print('❌ DevTools extension directory not found');
+    log('❌ DevTools extension directory not found');
     exit(1);
   }
 
@@ -15,39 +16,38 @@ void main() async {
 
   try {
     // Get dependencies first
-    print('📦 Getting dependencies...');
+    log('📦 Getting dependencies...');
     final pubResult = await Process.run('flutter', ['pub', 'get']);
 
     if (pubResult.exitCode != 0) {
-      print('❌ Pub get failed:');
-      print(pubResult.stderr);
+      log('❌ Pub get failed:');
+      log(pubResult.stderr);
       exit(1);
     }
 
     // Build the web extension
-    print('🏗️ Building web extension...');
+    log('🏗️ Building web extension...');
     final buildResult = await Process.run(
       'flutter',
       ['build', 'web', '--dart-define=Dart2jsOptimization=O0'],
     );
 
     if (buildResult.exitCode != 0) {
-      print('❌ Build failed:');
-      print(buildResult.stderr);
+      log('❌ Build failed:');
+      log(buildResult.stderr);
       exit(1);
     }
 
-    print('✅ Extension built successfully');
-    print(
-        '📁 Extension files available at: ${Directory('build/web').absolute.path}');
-    print('');
-    print('🎉 ReactiveNotifier DevTools extension ready!');
-    print('');
-    print('To use the extension:');
-    print('1. Run your Flutter app with ReactiveNotifier');
-    print('2. Open Flutter DevTools');
-    print('3. Look for the "ReactiveNotifier" tab');
-    print('4. Use example/devtools_extension_demo.dart to test');
+    log('✅ Extension built successfully');
+    log('📁 Extension files available at: ${Directory('build/web').absolute.path}');
+    log('');
+    log('🎉 ReactiveNotifier DevTools extension ready!');
+    log('');
+    log('To use the extension:');
+    log('1. Run your Flutter app with ReactiveNotifier');
+    log('2. Open Flutter DevTools');
+    log('3. Look for the "ReactiveNotifier" tab');
+    log('4. Use example/devtools_extension_demo.dart to test');
   } finally {
     Directory.current = originalDir;
   }
