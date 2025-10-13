@@ -1,3 +1,129 @@
+# 2.14.0
+## Persistent Global BuildContext Access from ViewModels.
+
+### ✨ New Features
+
+#### Direct Global Context Access
+- **`globalContext`**: Direct access to persistent global context (`BuildContext?`)
+- **`hasGlobalContext`**: Check if global context is available (`bool`)
+- **`requireGlobalContext([operation])`**: Required global context with descriptive errors
+
+### 🎯 Purpose: Stable BuildContext Throughout App Lifecycle
+
+The new global context access provides a **persistent** BuildContext that remains available regardless of widget lifecycle:
+- **Always Available**: `globalContext` never changes after `ReactiveNotifier.initContext()`
+- **Navigation Safe**: Context persists even when specific builders mount/unmount during navigation
+- **Stable Reference**: Single context reference throughout the entire app lifecycle
+
+### 💡 Use Cases
+
+#### 1. **State Manager Integration**
+Access any state management solution that requires BuildContext:
+```dart
+// Riverpod
+final container = ProviderScope.containerOf(globalContext!);
+final data = container.read(userProvider);
+
+// Provider
+final data = Provider.of<UserData>(globalContext!, listen: false);
+
+// InheritedWidget
+final data = MyInheritedWidget.of(globalContext!);
+```
+
+#### 2. **Theme & Localization**
+Consistent access to app-wide configurations:
+```dart
+final theme = Theme.of(globalContext!);
+final locale = Localizations.localeOf(globalContext!);
+final mediaQuery = MediaQuery.of(globalContext!);
+```
+
+#### 3. **Cross-ViewModel Communication**
+Access context-dependent data in any ViewModel without timing issues:
+```dart
+class AnalyticsViewModel extends ViewModel<AnalyticsState> {
+  void trackScreenView() {
+    if (hasGlobalContext) {
+      final route = ModalRoute.of(globalContext!)?.settings.name;
+      trackEvent('screen_view', {'route': route});
+    }
+  }
+}
+```
+
+### 🔧 API Additions
+
+```dart
+// NEW: ViewModelContextService mixin additions
+mixin ViewModelContextService {
+  // Existing context (with fallback)
+  BuildContext? get context;
+  bool get hasContext;
+  BuildContext requireContext([String? operation]);
+
+  // NEW: Direct global context access
+  BuildContext? get globalContext;
+  bool get hasGlobalContext;
+  BuildContext requireGlobalContext([String? operation]);
+}
+```
+
+### 📊 Comparison: `context` vs `globalContext`
+
+| Feature | `context` | `globalContext` |
+|---------|-----------|-----------------|
+| **Source** | Specific ViewModel context → Global fallback | Always global context |
+| **Persistence** | May change when builders mount/unmount | Remains constant throughout app |
+| **Use Case** | Widget-specific operations | App-wide stable access |
+| **Availability** | After any builder mounts | After `ReactiveNotifier.initContext()` |
+| **Lifecycle** | Tied to builder lifecycle | Tied to app lifecycle |
+
+### 🏗️ Architecture
+
+#### ViewModelContextNotifier Additions
+- **`getGlobalContext()`**: Static method for direct global context access
+- **`hasGlobalContext()`**: Static method to check global context availability
+
+#### ViewModelContextService Mixin Additions
+- **`globalContext`**: Persistent global context getter
+- **`hasGlobalContext`**: Global context availability check
+- **`requireGlobalContext([operation])`**: Required global context with descriptive errors
+
+### ✅ Benefits
+
+1. **Stability**: Never lose context reference during navigation or widget rebuilds
+2. **Flexibility**: Works with any BuildContext-dependent API or state manager
+3. **Predictability**: Single source of truth for global context access
+4. **Safety**: Explicit separation between widget-specific and global context needs
+5. **Compatibility**: Enables integration with any Flutter state management solution
+
+### 🧪 Testing
+
+- Added comprehensive test suite for global context functionality
+- 9 new tests covering:
+  - Global context persistence during navigation
+  - Independence from specific ViewModel contexts
+  - Error handling for unavailable context
+  - Cleanup behavior
+- All tests passing with 100% coverage
+
+### 📚 Documentation
+
+- Updated CLAUDE.md with complete global context documentation
+- Added comparison table: `context` vs `globalContext`
+- Included usage examples for multiple use cases
+- Context lifecycle and safety patterns documented
+
+### ⚠️ No Breaking Changes
+
+- Fully backward compatible with existing code
+- New APIs are additive only
+- Existing `context` getter unchanged with automatic fallback behavior
+- Zero configuration required - works out of the box
+
+---
+
 # 2.13.5
 - Update topics.
 

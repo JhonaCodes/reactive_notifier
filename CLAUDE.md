@@ -226,9 +226,64 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
 
 **Available methods in all ViewModels:**
 
-- **`context`**: Nullable BuildContext getter (`BuildContext?`)
-- **`hasContext`**: Boolean property to check availability (`bool`)
+- **`context`**: Nullable BuildContext getter (`BuildContext?`) - Falls back to global context
+- **`hasContext`**: Boolean property to check availability (`bool`) - Checks specific or global
 - **`requireContext([operation])`**: Required context with descriptive errors (`BuildContext`)
+
+**NEW: Direct Global Context Access (v2.13.0+)**
+
+For Riverpod/Provider migration where context stability is critical:
+
+- **`globalContext`**: Direct access to persistent global context (`BuildContext?`)
+- **`hasGlobalContext`**: Check if global context is available (`bool`)
+- **`requireGlobalContext([operation])`**: Required global context with descriptive errors (`BuildContext`)
+
+**When to use globalContext vs context:**
+
+```dart
+// ✅ Use globalContext for Riverpod/Provider migration
+class RiverpodMigrationViewModel extends ViewModel<UserState> {
+  @override
+  void init() {
+    if (hasGlobalContext) {
+      // Global context persists throughout app lifecycle
+      final container = ProviderScope.containerOf(globalContext!);
+      final userData = container.read(userProvider);
+      updateState(UserState.fromRiverpod(userData));
+    }
+  }
+
+  void refreshFromRiverpod() {
+    if (hasGlobalContext) {
+      // Always available, never loses reference
+      final container = ProviderScope.containerOf(globalContext!);
+      final userData = container.read(userProvider);
+      updateState(UserState.fromRiverpod(userData));
+    }
+  }
+}
+
+// ✅ Use context for normal widget-specific operations
+class WidgetViewModel extends ViewModel<WidgetState> {
+  @override
+  void init() {
+    if (hasContext) {
+      // Falls back to global if no specific context
+      final theme = Theme.of(context!);
+      updateState(WidgetState.themed(theme));
+    }
+  }
+}
+```
+
+**Key Differences:**
+
+| Feature | `context` | `globalContext` |
+|---------|-----------|-----------------|
+| **Source** | Specific ViewModel context → Global fallback | Always global context |
+| **Persistence** | May change when builders mount/unmount | Remains constant throughout app |
+| **Use Case** | General widget operations | Riverpod/Provider migration |
+| **Availability** | After any builder mounts | After `ReactiveNotifier.initContext()` |
 
 ### Migration Use Cases
 

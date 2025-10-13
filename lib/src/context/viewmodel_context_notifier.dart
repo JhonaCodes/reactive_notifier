@@ -125,6 +125,24 @@ Total contexts remaining: ${_contexts.length}
     return _contexts.containsKey(viewModel.hashCode) || _globalContext != null;
   }
 
+  /// Get global context directly (bypassing specific ViewModel context)
+  /// Useful for Riverpod/Provider migration where persistent context is needed
+  /// Returns the context initialized via ReactiveNotifier.initContext()
+  ///
+  /// Usage:
+  /// ```dart
+  /// if (ViewModelContextNotifier.hasGlobalContext()) {
+  ///   final ctx = ViewModelContextNotifier.getGlobalContext()!;
+  ///   final container = ProviderScope.containerOf(ctx);
+  /// }
+  /// ```
+  static BuildContext? getGlobalContext() => _globalContext;
+
+  /// Check if global context is available
+  /// Global context is set via ReactiveNotifier.initContext()
+  /// and remains available throughout the app lifecycle
+  static bool hasGlobalContext() => _globalContext != null;
+
   /// Get current BuildContext - for backward compatibility
   /// Returns the last registered context or global context
   static BuildContext? get currentContext =>
@@ -225,7 +243,7 @@ ViewModel: $runtimeType
 
 💡 Context is not available when:
   1. No ReactiveBuilder widgets are currently mounted
-  2. ViewModel.init() runs before any builder is active  
+  2. ViewModel.init() runs before any builder is active
   3. All builders have been disposed
 
 ✅ Solutions:
@@ -235,12 +253,84 @@ ViewModel: $runtimeType
 
 🔍 Context is automatically provided by:
   - ReactiveBuilder<T>
-  - ReactiveViewModelBuilder<VM,T> 
+  - ReactiveViewModelBuilder<VM,T>
   - ReactiveAsyncBuilder<VM,T>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''');
     }
     return currentContext;
+  }
+
+  /// Get global BuildContext directly (bypassing specific ViewModel context)
+  /// This context is persistent and remains available throughout app lifecycle
+  /// Ideal for Riverpod/Provider migration where context stability is needed
+  ///
+  /// Usage in ViewModel:
+  /// ```dart
+  /// @override
+  /// void init() {
+  ///   if (hasGlobalContext) {
+  ///     WidgetsBinding.instance.addPostFrameCallback((_) {
+  ///       final container = ProviderScope.containerOf(globalContext!);
+  ///       final data = container.read(userProvider);
+  ///       updateState(UserModel.fromRiverpod(data));
+  ///     });
+  ///   }
+  /// }
+  /// ```
+  BuildContext? get globalContext =>
+      ViewModelContextNotifier.getGlobalContext();
+
+  /// Check if global context is available
+  /// Global context is set via ReactiveNotifier.initContext()
+  /// and persists throughout the app lifecycle regardless of builder state
+  bool get hasGlobalContext => ViewModelContextNotifier.hasGlobalContext();
+
+  /// Get global context with descriptive error if unavailable
+  /// Use when global context is absolutely required (e.g., Riverpod migration)
+  ///
+  /// ```dart
+  /// @override
+  /// void init() {
+  ///   final container = ProviderScope.containerOf(
+  ///     requireGlobalContext('Riverpod migration')
+  ///   );
+  ///   final userData = container.read(userProvider);
+  ///   updateState(UserModel.fromRiverpod(userData));
+  /// }
+  /// ```
+  BuildContext requireGlobalContext([String? operation]) {
+    final ctx = globalContext;
+    if (ctx == null) {
+      throw StateError('''
+⚠️ Global BuildContext Not Available
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Operation: ${operation ?? 'ViewModel operation'}
+ViewModel: $runtimeType
+
+💡 Global context is not available because:
+  ReactiveNotifier.initContext(context) has not been called yet
+
+✅ Solution - Initialize global context in your app root:
+  class MyApp extends StatelessWidget {
+    @override
+    Widget build(BuildContext context) {
+      // Initialize global context for all ViewModels
+      ReactiveNotifier.initContext(context);
+
+      return MaterialApp(
+        home: HomePage(),
+      );
+    }
+  }
+
+🎯 Use Case - Perfect for Riverpod/Provider migration:
+  Global context remains available throughout app lifecycle,
+  even when specific builders mount/unmount during navigation.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''');
+    }
+    return ctx;
   }
 }
 

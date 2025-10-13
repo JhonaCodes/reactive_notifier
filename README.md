@@ -16,91 +16,47 @@
 
 ---
 
-## What's New in v2.13.xx
-
-### State Change Hooks
-- **onStateChanged(previous, next)** hooks for ViewModels
-- **onAsyncStateChanged(previous, next)** hooks for AsyncViewModels
-- **Internal state reaction** capabilities without external observers
-- **Integrated lifecycle** hooks in all state update methods
-
-### Improved Architecture
-- **Eliminated observer complexity** - Focus on explicit service communication
-- **Sandbox-based architecture** - Multiple instances per type supported
-- **Cross-sandbox communication** using existing listenVM API
-- **Simplified state management** without magic type lookup
-
-### Enhanced Documentation
-- **Professional documentation** with clear, direct examples
-- **Simplified code samples** focusing on practical usage
-- **Updated migration guides** for all major state management libraries
-- **Comprehensive testing** with improved test coverage
-
----
-
 ## Key Features
 
-- **Simple and intuitive API** - Clean, developer-friendly interface
-- **Enterprise MVVM architecture** - Built for scalable applications
-- **Independent lifecycle management** - ViewModels exist beyond UI lifecycle
+- **MVVM architecture** - ViewModels with independent lifecycle management
 - **Type-safe state management** - Full generics support with compile-time safety
-- **Built-in Async and Stream support** - Handle loading, success, error states effortlessly
-- **Smart related states system** - Automatic dependency management
-- **Repository/Service layer integration** - Clean separation of concerns
-- **High performance** with minimal rebuilds and widget preservation
-- **Memory leak prevention** - Comprehensive listener tracking and cleanup
-- **Automatic BuildContext access** - Zero-configuration context availability in ALL ViewModels
-- **Hybrid state management** - Use ReactiveNotifier + Riverpod/Provider simultaneously
-- **State change hooks** - React to internal state changes
-- **Cross-service communication** - Explicit sandbox-to-sandbox messaging
-- **DevTools integration** - Enhanced debugging and monitoring capabilities
-- **Comprehensive testing support** - Easy mocking and test utilities
-- **Migration support** - Gradual migration or hybrid usage with existing state managers
+- **Async/Stream operations** - Built-in AsyncState handling (loading, success, error)
+- **BuildContext access** - Persistent global context for Theme, MediaQuery, or external state managers
+- **Cross-service communication** - Explicit reactive messaging between ViewModels
+- **State change hooks** - Internal reactivity via onStateChanged/onAsyncStateChanged
+- **Widget preservation** - keep() function to prevent expensive rebuilds
+- **Memory management** - Automatic cleanup and leak prevention
+- **DevTools integration** - Real-time monitoring and debugging
+- **Testing utilities** - Simple mocking and state injection
 
 ---
 
 ## Installation
 
-Add this to your package's `pubspec.yaml` file:
-
 ```yaml
 dependencies:
-  reactive_notifier: ^2.13.5
+  reactive_notifier: ^latest_version
 ```
 
-### DevTools Extension (Automatic)
+### DevTools Extension
 
-ReactiveNotifier includes a **full DevTools extension** that appears as a dedicated tab in Flutter DevTools. The extension is automatically loaded when your app depends on this package.
+ReactiveNotifier includes a DevTools extension for debugging and monitoring. Access it through:
+- **In-app**: `showReactiveNotifierDevTool(context)`
+- **Floating FAB**: `ReactiveNotifierDevToolFAB()`
 
-**🔧 How to Access:**
-1. **Flutter DevTools** - Open DevTools and look for the "ReactiveNotifier" tab
-2. **In-App DevTool** - Use `showReactiveNotifierDevTool(context)` for quick debugging
-3. **Floating FAB** - Add `ReactiveNotifierDevToolFAB()` to any screen for instant access
-
-**📊 Features:**
-- **Real-time state monitoring** - See all active ReactiveNotifier instances
-- **ViewModel lifecycle tracking** - Monitor creation, updates, and disposal
-- **Memory usage analysis** - Detect potential memory leaks
-- **State change history** - View detailed state transition logs
-- **Performance metrics** - Track update counts and timing
-- **Interactive state inspection** - Drill down into individual state objects
-- **Auto-dispose monitoring** - Track widget-aware lifecycle management
+**Features:** Real-time state monitoring, lifecycle tracking, memory analysis, state history, performance metrics.
 
 ---
 
-## Core Philosophy: "Create Once, Reuse Always"
+## Architecture
 
-ReactiveNotifier follows a singleton pattern where each state is created once and reused throughout the application lifecycle.
+ReactiveNotifier follows a singleton pattern where each state is created once and reused throughout the application lifecycle:
 
-### Key Principles
-
-- **One instance per service** - Each ReactiveNotifier creates a single, reusable instance
-- **Automatic lifecycle** - No manual initialization or disposal needed
-- **Service-based organization** - Group related state in service mixins
-- **Explicit communication** - Services communicate through explicit API calls
-- **Memory efficient** - Automatic cleanup and leak prevention
+- **Service-based organization** - State grouped in service mixins
+- **Automatic lifecycle** - No manual initialization/disposal
+- **Explicit communication** - ViewModels communicate through explicit API calls
 - **Type safety** - Full compile-time type checking
-- **Independent of UI** - State exists beyond widget lifecycle
+- **UI-independent** - State exists beyond widget lifecycle
 
 ---
 
