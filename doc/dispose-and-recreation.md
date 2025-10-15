@@ -224,13 +224,13 @@ mixin DataService {
 ```dart
 // Check if an instance is disposed
 if (UserService.instance.notifier.isDisposed) {
-  print('ViewModel is disposed, consider recreating');
+  log('ViewModel is disposed, consider recreating');
   UserService.instance.recreate();
 }
 
 // Monitor memory
-print('Total instances: ${ReactiveNotifier.instanceCount}');
-print('User instances: ${ReactiveNotifier.instanceCountByType<UserViewModel>()}');
+log('Total instances: ${ReactiveNotifier.instanceCount}');
+log('User instances: ${ReactiveNotifier.instanceCountByType<UserViewModel>()}');
 ```
 
 ### Recreation Logs

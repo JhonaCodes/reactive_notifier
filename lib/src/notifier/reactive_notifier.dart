@@ -279,7 +279,7 @@ Location: $trace
   }
 
   @override
-  void transformState(T Function(T data) transform) {
+  void transformState(T Function(T data) data) {
     // Prevent circular update
     if (_updatingNotifiers.contains(this)) {
       return;
@@ -294,7 +294,7 @@ Location: $trace
 
     try {
       // Transform state and notify
-      super.transformState(transform);
+      super.transformState(data);
 
       // Debug service recording disabled to avoid VM service errors
       // if (kDebugMode) {

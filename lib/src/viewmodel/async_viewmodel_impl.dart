@@ -377,7 +377,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// void onAsyncStateChanged(AsyncState<UserModel> previous, AsyncState<UserModel> next) {
   ///   // Log state transitions
   ///   if (previous.isLoading && next.isSuccess) {
-  ///     print('User loaded successfully: ${next.data?.name}');
+  ///     log('User loaded successfully: ${next.data?.name}');
   ///   }
   ///
   ///   // Handle errors automatically
@@ -432,6 +432,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   }
 
   @protected
+  @visibleForTesting
   void loadingState() {
     final previous = _state;
     _state = AsyncState.loading();

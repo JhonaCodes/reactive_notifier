@@ -807,8 +807,8 @@ final isScheduled = UserService.userState.isScheduledForDispose;
 // Get active references
 final refs = UserService.userState.activeReferences;
 
-print('User state references: $refCount');
-print('Active refs: $refs');
+log('User state references: $refCount');
+log('Active refs: $refs');
 ```
 
 ### Benefits
@@ -830,7 +830,7 @@ class UserViewModel extends ViewModel<UserModel> {
   @override
   void onStateChanged(UserModel previous, UserModel next) {
     // React to any state change
-    print('User changed from ${previous.name} to ${next.name}');
+    log('User changed from ${previous.name} to ${next.name}');
     
     // Log specific changes
     if (previous.email != next.email) {

@@ -173,7 +173,7 @@ context.getByKey<UserModel>('UserService');
 try {
   final user = context.getByKey<UserModel>('nonexistent');
 } catch (e) {
-  print(e); // Shows available keys and suggestions
+  log(e); // Shows available keys and suggestions
 }
 ```
 
@@ -321,15 +321,15 @@ class DebugWidget extends StatelessWidget {
       children: [
         ElevatedButton(
           onPressed: () => context.debugReactiveContext(),
-          child: Text('Print Debug Info'),
+          child: Text('log Debug Info'),
         ),
         
         ElevatedButton(
           onPressed: () {
             final info = context.getReactiveDebugInfo();
-            print('Active notifiers: ${info['activeNotifiers']}');
-            print('Enhanced stats: ${info['enhancedContext']}');
-            print('Preservation stats: ${info['preservation']}');
+            log('Active notifiers: ${info['activeNotifiers']}');
+            log('Enhanced stats: ${info['enhancedContext']}');
+            log('Preservation stats: ${info['preservation']}');
           },
           child: Text('Get Debug Statistics'),
         ),
@@ -523,7 +523,7 @@ extension SafeContext on BuildContext {
     try {
       return getReactiveState(UserService.instance);
     } catch (e) {
-      debugPrint('Error accessing user: $e');
+      debuglog('Error accessing user: $e');
       return null;
     }
   }

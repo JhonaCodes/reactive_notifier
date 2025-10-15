@@ -12,7 +12,7 @@ class DoubleInitializationTestViewModel extends AsyncViewModelImpl<String> {
   @override
   Future<String> init() async {
     initCallCount++;
-    return 'Initialized ${initCallCount} times';
+    return 'Initialized $initCallCount times';
   }
 }
 

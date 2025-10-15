@@ -1,10 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
-import 'package:reactive_notifier/src/handler/async_state.dart';
 import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
 import 'package:reactive_notifier/src/viewmodel/viewmodel_impl.dart';
-import 'mocks/async_viewmodel_wait_context_mocks.dart';
 
 /// Tests for ReactiveNotifier.initContext() global context initialization
 ///
@@ -33,7 +31,7 @@ void main() {
             builder: (context) {
               // Initialize global context
               ReactiveNotifier.initContext(context);
-              return Scaffold(body: Text('Test'));
+              return const Scaffold(body: Text('Test'));
             },
           ),
         ));
@@ -72,7 +70,7 @@ void main() {
           home: Builder(
             builder: (context) {
               ReactiveNotifier.initContext(context);
-              return Scaffold(body: Text('Test'));
+              return const Scaffold(body: Text('Test'));
             },
           ),
         ));
@@ -91,7 +89,7 @@ void main() {
           home: Builder(
             builder: (context) {
               ReactiveNotifier.initContext(context);
-              return Scaffold(body: Text('Test'));
+              return const Scaffold(body: Text('Test'));
             },
           ),
         ));
@@ -101,7 +99,7 @@ void main() {
             reason: 'Global context should be available');
 
         // Navigate to a different screen (unmounting original builder)
-        await tester.pumpWidget(MaterialApp(
+        await tester.pumpWidget(const MaterialApp(
           home: Scaffold(body: Text('New Screen')),
         ));
 
@@ -129,7 +127,7 @@ void main() {
           home: Builder(
             builder: (context) {
               ReactiveNotifier.initContext(context);
-              return Scaffold(body: Text('Test'));
+              return const Scaffold(body: Text('Test'));
             },
           ),
         ));
@@ -150,7 +148,7 @@ void main() {
           home: Builder(
             builder: (context) {
               ReactiveNotifier.initContext(context);
-              return Scaffold(body: Text('Test'));
+              return const Scaffold(body: Text('Test'));
             },
           ),
         ));
@@ -191,7 +189,7 @@ void main() {
             builder: (context) {
               ReactiveNotifier.initContext(context);
               savedGlobalContext = context;
-              return Scaffold(body: Text('Test'));
+              return const Scaffold(body: Text('Test'));
             },
           ),
         ));
@@ -216,7 +214,7 @@ void main() {
                 specificContext = ctx;
                 ViewModelContextNotifier.registerContextForTesting(
                     ctx, 'TestBuilder', viewModel);
-                return Text('Test with specific context');
+                return const Text('Test with specific context');
               },
             ),
           ),
@@ -245,7 +243,7 @@ void main() {
           home: Builder(
             builder: (context) {
               ReactiveNotifier.initContext(context);
-              return Scaffold(body: Text('Test'));
+              return const Scaffold(body: Text('Test'));
             },
           ),
         ));

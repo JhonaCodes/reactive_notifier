@@ -81,7 +81,7 @@ class SimpleListWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 100),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -100,7 +100,7 @@ class SimpleListWidget extends StatelessWidget {
             'Items: ${items.length}',
             style: TextStyle(
               fontSize: 14,
-              color: color.withOpacity(0.7),
+              color: color.withValues(alpha: 700),
             ),
           ),
           const SizedBox(height: 16),
@@ -119,7 +119,7 @@ class SimpleListWidget extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: color.withOpacity(0.3)),
+                      border: Border.all(color: color.withValues(alpha: 300),),
                     ),
                     child: Row(
                       children: [
@@ -166,7 +166,7 @@ class SimpleCounterWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 100),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -223,7 +223,7 @@ class SimpleStateWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 100),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(

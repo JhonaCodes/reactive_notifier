@@ -11,6 +11,8 @@
 /// - Better debugging and logging
 library reactive_context_preservation;
 
+import 'dart:developer';
+
 import 'package:flutter/widgets.dart';
 
 /// Enhanced widget preservation registry with automatic key management
@@ -43,7 +45,7 @@ class _PreservationRegistry {
       _updateAccessTime(effectiveKey);
 
       assert(() {
-        debugPrint('[ReactiveContext] Using preserved widget: $effectiveKey');
+        log('[ReactiveContext] Using preserved widget: $effectiveKey');
         return true;
       }());
 
@@ -65,7 +67,7 @@ class _PreservationRegistry {
     _updateAccessTime(effectiveKey);
 
     assert(() {
-      debugPrint('[ReactiveContext] Created preserved widget: $effectiveKey');
+      log('[ReactiveContext] Created preserved widget: $effectiveKey');
       return true;
     }());
 
@@ -142,7 +144,7 @@ class _PreservationRegistry {
     }
 
     assert(() {
-      debugPrint(
+      log(
           '[ReactiveContext] Cleaned up preservation cache. Size: ${_preservedWidgets.length}');
       return true;
     }());
@@ -175,7 +177,7 @@ class _PreservationRegistry {
     _lastAccessed.clear();
 
     assert(() {
-      debugPrint('[ReactiveContext] Preservation registry cleaned up');
+      log('[ReactiveContext] Preservation registry cleaned up');
       return true;
     }());
   }
@@ -212,7 +214,7 @@ class _PreservedWidgetState extends State<_PreservedWidget> {
     _incrementBuildCount();
 
     assert(() {
-      debugPrint(
+      log(
           '[ReactiveContext] Preserved widget initialized: ${widget.key}');
       return true;
     }());
@@ -228,7 +230,7 @@ class _PreservedWidgetState extends State<_PreservedWidget> {
       _incrementBuildCount();
 
       assert(() {
-        debugPrint('[ReactiveContext] Preserved widget updated: ${widget.key}');
+        log('[ReactiveContext] Preserved widget updated: ${widget.key}');
         return true;
       }());
     }
@@ -237,7 +239,7 @@ class _PreservedWidgetState extends State<_PreservedWidget> {
   @override
   Widget build(BuildContext context) {
     assert(() {
-      debugPrint(
+      log(
           '[ReactiveContext] Building preserved widget: ${widget.key} (build #$_buildCount)');
       return true;
     }());

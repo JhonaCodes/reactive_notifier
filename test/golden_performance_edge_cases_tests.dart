@@ -386,12 +386,12 @@ void main() {
                               color: Colors.green[50],
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Row(
+                            child: const Row(
                               children: [
-                                const Icon(Icons.check_circle,
+                                Icon(Icons.check_circle,
                                     color: Colors.green),
-                                const SizedBox(width: 8),
-                                const Text(
+                                SizedBox(width: 8),
+                                Text(
                                   'Connection Successful',
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
@@ -463,11 +463,11 @@ void main() {
                               color: Colors.red[50],
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Row(
+                            child: const Row(
                               children: [
-                                const Icon(Icons.error, color: Colors.red),
-                                const SizedBox(width: 8),
-                                const Text(
+                                Icon(Icons.error, color: Colors.red),
+                                SizedBox(width: 8),
+                                Text(
                                   'Network Error',
                                   style: TextStyle(
                                       fontWeight: FontWeight.bold,
@@ -572,12 +572,12 @@ void main() {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Row(
+                                      const Row(
                                         children: [
-                                          const Icon(Icons.error_outline,
+                                          Icon(Icons.error_outline,
                                               color: Colors.red),
-                                          const SizedBox(width: 8),
-                                          const Text(
+                                          SizedBox(width: 8),
+                                          Text(
                                             'Error Occurred',
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
@@ -611,12 +611,12 @@ void main() {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Row(
+                                      const Row(
                                         children: [
-                                          const Icon(Icons.check_circle,
+                                          Icon(Icons.check_circle,
                                               color: Colors.green),
-                                          const SizedBox(width: 8),
-                                          const Text(
+                                          SizedBox(width: 8),
+                                          Text(
                                             'System Operational',
                                             style: TextStyle(
                                               fontWeight: FontWeight.bold,
@@ -842,20 +842,20 @@ void main() {
                                 color: Colors.blue[50],
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Column(
+                              child: const Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Null Safety Features:',
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold),
                                   ),
-                                  const SizedBox(height: 8),
-                                  const Text('✓ Nullable type support'),
-                                  const Text('✓ Safe null checks'),
-                                  const Text('✓ Null-aware operators'),
-                                  const Text('✓ Graceful null handling'),
-                                  const Text('✓ No null pointer exceptions'),
+                                  SizedBox(height: 8),
+                                  Text('✓ Nullable type support'),
+                                  Text('✓ Safe null checks'),
+                                  Text('✓ Null-aware operators'),
+                                  Text('✓ Graceful null handling'),
+                                  Text('✓ No null pointer exceptions'),
                                 ],
                               ),
                             ),

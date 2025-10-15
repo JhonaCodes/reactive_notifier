@@ -75,7 +75,7 @@ CounterService.count.updateState(5);
 
 // Listen to changes
 CounterService.count.listen((value) {
-  print('Counter: $value');
+  log('Counter: $value');
 });
 
 // Use in widgets
@@ -138,7 +138,7 @@ class UserViewModel extends ViewModel<UserModel> {
   void onStateChanged(UserModel previous, UserModel next) {
     // React to state changes
     if (previous.isActive != next.isActive) {
-      print('User activation changed: ${next.isActive}');
+      log('User activation changed: ${next.isActive}');
     }
   }
 
@@ -200,10 +200,10 @@ class TodoListViewModel extends AsyncViewModelImpl<List<Todo>> {
   void onAsyncStateChanged(AsyncState<List<Todo>> previous, AsyncState<List<Todo>> next) {
     // React to async state changes
     if (previous.isLoading && next.isSuccess) {
-      print('Successfully loaded ${next.data?.length ?? 0} todos');
+      log('Successfully loaded ${next.data?.length ?? 0} todos');
     }
     if (next.isError) {
-      print('Failed to load todos: ${next.error}');
+      log('Failed to load todos: ${next.error}');
     }
   }
 
@@ -566,7 +566,7 @@ class NotificationViewModel extends ViewModel<NotificationModel> {
   void onStateChanged(NotificationModel previous, NotificationModel next) {
     // React to notification changes
     if (next.unreadCount > previous.unreadCount) {
-      print('New notifications: ${next.unreadCount}');
+      log('New notifications: ${next.unreadCount}');
     }
   }
 

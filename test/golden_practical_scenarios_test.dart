@@ -147,7 +147,7 @@ class ProductCatalogWidget extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
+                        color: Colors.blue.withAlpha(100),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(category,
@@ -193,8 +193,8 @@ class ProductCatalogWidget extends StatelessWidget {
                         height: 50,
                         decoration: BoxDecoration(
                           color: product.isAvailable
-                              ? Colors.green.withOpacity(0.1)
-                              : Colors.red.withOpacity(0.1),
+                              ? Colors.green.withAlpha(100)
+                              : Colors.red.withAlpha(100),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
@@ -274,7 +274,7 @@ class ShoppingCartWidget extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withAlpha(100),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -345,7 +345,7 @@ class ShoppingCartWidget extends StatelessWidget {
                                 width: 50,
                                 height: 50,
                                 decoration: BoxDecoration(
-                                  color: Colors.blue.withOpacity(0.1),
+                                  color: Colors.blue.withAlpha(100),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(Icons.shopping_bag,
@@ -375,7 +375,7 @@ class ShoppingCartWidget extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withAlpha(100),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Column(
@@ -446,7 +446,7 @@ class UserProfileWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withAlpha(100),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -572,7 +572,7 @@ class OrderSummaryWidget extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withAlpha(100),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -590,7 +590,7 @@ class OrderSummaryWidget extends StatelessWidget {
                       margin: const EdgeInsets.only(bottom: 8),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withAlpha(100),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -1085,11 +1085,11 @@ void main() {
                             quantity: 1,
                           ),
                         ];
-                        final subtotal = 799.99;
-                        final discount = 0.0;
-                        final tax = subtotal * 0.08;
-                        final shipping = 9.99;
-                        final total = subtotal - discount + tax + shipping;
+                        const subtotal = 799.99;
+                        const discount = 0.0;
+                        const tax = subtotal * 0.08;
+                        const shipping = 9.99;
+                        const total = subtotal - discount + tax + shipping;
 
                         OrderService.currentOrder.updateSilently(OrderSummary(
                           items: items,
@@ -1136,11 +1136,11 @@ void main() {
                             quantity: 1,
                           ),
                         ];
-                        final subtotal = 2249.98;
-                        final discount = 224.99; // 10% discount
-                        final tax = (subtotal - discount) * 0.08;
-                        final shipping = 0.0; // Free shipping
-                        final total = subtotal - discount + tax + shipping;
+                        const subtotal = 2249.98;
+                        const discount = 224.99; // 10% discount
+                        const tax = (subtotal - discount) * 0.08;
+                        const shipping = 0.0; // Free shipping
+                        const total = subtotal - discount + tax + shipping;
 
                         OrderService.currentOrder.updateSilently(OrderSummary(
                           items: items,
@@ -1198,11 +1198,11 @@ void main() {
                             quantity: 4,
                           ),
                         ];
-                        final subtotal = 8998.92;
-                        final discount = 1349.84; // 15% discount
-                        final tax = (subtotal - discount) * 0.08;
-                        final shipping = 0.0; // Free shipping
-                        final total = subtotal - discount + tax + shipping;
+                        const subtotal = 8998.92;
+                        const discount = 1349.84; // 15% discount
+                        const tax = (subtotal - discount) * 0.08;
+                        const shipping = 0.0; // Free shipping
+                        const total = subtotal - discount + tax + shipping;
 
                         OrderService.currentOrder.updateSilently(OrderSummary(
                           items: items,

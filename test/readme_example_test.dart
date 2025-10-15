@@ -186,7 +186,7 @@ void main() {
         userVM.updatePoints(100);
 
         // Allow async communication to complete
-        await Future.delayed(Duration(milliseconds: 1));
+        await Future.delayed(const Duration(milliseconds: 1));
 
         // Check notification was created
         expect(notificationVM.data, isNotEmpty);

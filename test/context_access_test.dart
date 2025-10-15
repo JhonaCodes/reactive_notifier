@@ -22,8 +22,6 @@ class ContextTestViewModel extends ViewModel<String> {
     }
   }
 
-  @override
-  String _createEmptyState() => 'empty';
 }
 
 /// Test AsyncViewModel for context access testing
@@ -174,7 +172,7 @@ void main() {
           build: (state, viewmodel, keep) {
             // Capture context using requireContext
             capturedContext = viewmodel.requireContext('test operation');
-            return Text('Context captured');
+            return const Text('Context captured');
           },
         ),
       ));

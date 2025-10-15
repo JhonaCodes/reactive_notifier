@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
@@ -16,7 +15,7 @@ class ProductionAuthViewModel extends ViewModel<AuthState> {
     // In production scenarios, handle the case where context isn't available initially
     if (!hasContext) {
       // Initialize with a temporary state that indicates context is needed
-      updateSilently(AuthState(
+      updateSilently(const AuthState(
         isAuthenticated: false,
         userTheme: 'waiting_for_context',
         contextAvailable: false,
@@ -25,7 +24,7 @@ class ProductionAuthViewModel extends ViewModel<AuthState> {
     }
 
     // Initialize with basic state first
-    updateSilently(AuthState(
+    updateSilently(const AuthState(
       isAuthenticated: false,
       userTheme: 'initializing',
       contextAvailable: true,
@@ -46,7 +45,7 @@ class ProductionAuthViewModel extends ViewModel<AuthState> {
           ));
         } catch (e) {
           // In production, handle context access errors properly
-          updateState(AuthState(
+          updateState(const AuthState(
             isAuthenticated: false,
             userTheme: 'error',
             contextAvailable: false,
@@ -318,7 +317,7 @@ void main() {
         MaterialApp(
           home: ReactiveViewModelBuilder<ProductionAuthViewModel, AuthState>(
             viewmodel: ProductionAuthService.instance.notifier,
-            build: (state, viewModel, keep) => Text('Test'),
+            build: (state, viewModel, keep) => const Text('Test'),
           ),
         ),
       );

@@ -762,7 +762,7 @@ No breaking changes. Existing code will continue to work as expected. The new `.
 
 ### Improvements 🔧
 - Better performance in state updates
-- Reduced memory footprint
+- Reduced memory footlog
 - Improved type safety
 - Enhanced error handling
 - Better documentation

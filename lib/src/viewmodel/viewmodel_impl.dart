@@ -678,7 +678,7 @@ Remaining listeners: ${_listeners.length}
   /// void onStateChanged(UserModel previous, UserModel next) {
   ///   // Log important changes
   ///   if (previous.isLoggedIn != next.isLoggedIn) {
-  ///     print('User login status changed: ${next.isLoggedIn}');
+  ///     log('User login status changed: ${next.isLoggedIn}');
   ///   }
   ///
   ///   // Automatic validation

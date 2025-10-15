@@ -382,7 +382,7 @@ void main() {
 
         // Create and add multiple listeners
         for (int i = 0; i < 10; i++) {
-          final listener = () => totalCalls++;
+          int listener() => totalCalls++;
           listeners.add(listener);
           notify.addListener(listener);
         }
@@ -439,7 +439,22 @@ void main() {
 
         // Act: Update state (should complete normally despite listener exception)
         // Flutter's ChangeNotifier catches exceptions internally and logs them
-        notify.updateState(5);
+        // Suppress error output during this test for cleaner test logs
+        final originalOnError = FlutterError.onError;
+        FlutterError.onError = (details) {
+          // Suppress the expected exception from being logged
+          if (!details.exception
+              .toString()
+              .contains('Test exception from listener')) {
+            originalOnError?.call(details);
+          }
+        };
+
+        try {
+          notify.updateState(5);
+        } finally {
+          FlutterError.onError = originalOnError;
+        }
 
         // Assert: All listeners should be called despite the exception
         expect(normalListener1Calls, equals(1),

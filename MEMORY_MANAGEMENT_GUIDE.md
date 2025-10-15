@@ -28,7 +28,7 @@ class MyViewModel extends ViewModel<MyState> {
 }
 
 // Listener count tracking
-print('Active listeners: ${myViewModel.activeListenerCount}'); // 2
+log('Active listeners: ${myViewModel.activeListenerCount}'); // 2
 ```
 
 ### Automatic Cleanup on Disposal
@@ -154,7 +154,7 @@ class SettingsViewModel extends ViewModel<SettingsState> {
 class DebugViewModel extends ViewModel<DebugState> {
   void debugListenerStatus() {
     assert(() {
-      print('''
+      log('''
 🐛 ViewModel Memory Debug:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 Active listeners: $activeListenerCount
@@ -175,8 +175,8 @@ test('ViewModels clean up properly', () {
   final vm2 = OtherViewModel();
   
   // Set up cross-listening
-  vm1.listenVM((data) => print('VM1 listener'));
-  vm2.listenVM((data) => print('VM2 listener'));
+  vm1.listenVM((data) => log('VM1 listener'));
+  vm2.listenVM((data) => log('VM2 listener'));
   
   expect(vm1.activeListenerCount, greaterThan(0));
   expect(vm2.activeListenerCount, greaterThan(0));
@@ -225,15 +225,15 @@ extension ViewModelMemoryMonitoring on ViewModel {
 }
 
 // Usage
-print('Memory info: ${myViewModel.memoryInfo}');
+log('Memory info: ${myViewModel.memoryInfo}');
 ```
 
 ### Global Memory Stats
 ```dart
 class MemoryStats {
-  static void printGlobalStats() {
+  static void logGlobalStats() {
     final instances = ReactiveNotifier.getInstances;
-    print('''
+    log('''
 🔍 Global ReactiveNotifier Memory Stats:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Total instances: ${instances.length}
@@ -254,7 +254,7 @@ class BadViewModel extends ViewModel<BadState> {
   
   @override
   void init() {
-    _listener = () => print('listener');
+    _listener = () => log('listener');
     ExternalService.addListener(_listener); // Manual listener
   }
   
@@ -267,7 +267,7 @@ class GoodViewModel extends ViewModel<GoodState> {
   void init() {
     ExternalService.state.notifier.listenVM((data) {
       // Automatically cleaned up on dispose
-      print('listener: $data');
+      log('listener: $data');
     });
   }
 }

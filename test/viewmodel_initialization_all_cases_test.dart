@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
@@ -133,9 +135,6 @@ class BasicViewModel extends ViewModel<SimpleState> {
     }
   }
 
-  @override
-  SimpleState _createEmptyState() => SimpleState.initial();
-
   void triggerError() {
     shouldThrowError = true;
   }
@@ -169,8 +168,6 @@ class ContextDependentViewModel extends ViewModel<SimpleState> {
     }
   }
 
-  @override
-  SimpleState _createEmptyState() => SimpleState.initial();
 }
 
 class ComplexViewModel extends ViewModel<ComplexState> {
@@ -189,8 +186,6 @@ class ComplexViewModel extends ViewModel<ComplexState> {
     }
   }
 
-  @override
-  ComplexState _createEmptyState() => ComplexState.initial();
 }
 
 class SlowViewModel extends ViewModel<SimpleState> {
@@ -218,8 +213,6 @@ class SlowViewModel extends ViewModel<SimpleState> {
     }
   }
 
-  @override
-  SimpleState _createEmptyState() => SimpleState.initial();
 }
 
 /// AsyncViewModel Test Classes
@@ -1238,7 +1231,7 @@ void main() {
           expect(vm.data.source, anyOf(equals('context'), equals('fallback')));
         } catch (e) {
           // If this fails due to context requirement, skip the test
-          print('Test skipped due to context requirement error: $e');
+          log('Test skipped due to context requirement error: $e');
         }
       });
 
@@ -1274,7 +1267,7 @@ void main() {
           }
 
           if (attempts >= 20) {
-            print(
+            log(
                 'AsyncViewModel initialization timed out - skipping detailed assertions');
             return;
           }
@@ -1286,7 +1279,7 @@ void main() {
           expect(vm.data!.source,
               anyOf(equals('context'), equals('async_fallback')));
         } catch (e) {
-          print('AsyncViewModel test skipped due to error: $e');
+          log('AsyncViewModel test skipped due to error: $e');
         }
       });
 

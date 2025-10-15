@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:reactive_notifier/src/viewmodel/async_viewmodel_impl.dart';
 import 'package:reactive_notifier/src/handler/async_state.dart';
 
@@ -13,9 +12,6 @@ class TestWaitForContextViewModel extends AsyncViewModelImpl<String> {
   int removeListenersCallCount = 0;
   int onResumeCallCount = 0;
   String? lastOnResumeData;
-
-  // Mock context simulation
-  bool _mockHasContext = false;
 
   TestWaitForContextViewModel({
     required this.initialData,
@@ -57,15 +53,6 @@ class TestWaitForContextViewModel extends AsyncViewModelImpl<String> {
     await super.onResume(data);
   }
 
-  // Method to simulate context becoming available
-  void simulateContextAvailable() {
-    _mockHasContext = true;
-  }
-
-  // Method to simulate context becoming unavailable
-  void simulateContextUnavailable() {
-    _mockHasContext = false;
-  }
 
   // Test helpers to inspect state
   bool isInitial() => match<bool>(

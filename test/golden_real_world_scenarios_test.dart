@@ -298,7 +298,7 @@ class ShoppingCartWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withAlpha(100),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -435,7 +435,7 @@ class UserProfileWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withAlpha(100),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -538,7 +538,7 @@ class ThemePreviewWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withAlpha(100),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -568,7 +568,7 @@ class ThemePreviewWidget extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: theme.primaryColor.withOpacity(0.1),
+                  color: theme.primaryColor.withAlpha(100),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -651,7 +651,7 @@ class SettingsWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withAlpha(100),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -693,7 +693,7 @@ class SettingsWidget extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.1),
+                        color: Colors.orange.withAlpha(100),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
@@ -733,7 +733,7 @@ class SettingsWidget extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.purple.withOpacity(0.1),
+                        color: Colors.purple.withAlpha(100),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
@@ -785,7 +785,7 @@ class SettingsWidget extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withAlpha(100),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(

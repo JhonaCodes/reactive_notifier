@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
@@ -515,16 +517,16 @@ class MigrationViewModel extends ViewModel<MigrationState> {
 
     // Log specific changes
     if (previous.themeMode != next.themeMode) {
-      print('Theme changed from ${previous.themeMode} to ${next.themeMode}');
+      log('Theme changed from ${previous.themeMode} to ${next.themeMode}');
     }
 
     if (previous.hasContextData != next.hasContextData) {
-      print('Context data availability: ${next.hasContextData}');
+      log('Context data availability: ${next.hasContextData}');
     }
 
     // Trigger side effects based on state changes
     if (next.hasContextData && !previous.hasContextData) {
-      print('Context data now available - triggering analytics');
+      log('Context data now available - triggering analytics');
     }
   }
 

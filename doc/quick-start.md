@@ -49,7 +49,7 @@ class UserViewModel extends ViewModel<UserState> {
   
   @override
   void init() {
-    print('User ViewModel initialized');
+    log('User ViewModel initialized');
   }
   
   void login(String name) {

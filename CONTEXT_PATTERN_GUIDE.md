@@ -85,7 +85,7 @@ class ResponsiveViewModel extends ViewModel<ResponsiveState> {
           ));
         } catch (e) {
           // Handle context access errors gracefully
-          print('Context access failed: $e');
+          log('Context access failed: $e');
         }
       }
     });
@@ -302,7 +302,7 @@ class HybridViewModel extends ViewModel<HybridState> {
         updateState(HybridState.enhanced(legacyData));
       } catch (e) {
         // Continue with basic state if legacy access fails
-        print('Legacy data access failed: $e');
+        log('Legacy data access failed: $e');
       }
     }
   }
@@ -323,7 +323,7 @@ class DebugViewModel extends ViewModel<DebugState> {
   @override
   void init() {
     assert(() {
-      print('''
+      log('''
 🐛 DebugViewModel Context Info:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Has context: $hasContext

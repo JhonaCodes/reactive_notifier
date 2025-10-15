@@ -41,7 +41,7 @@ class CounterState {
         hasContextData: false,
       );
 
-  static CounterState fromContext(BuildContext context) => CounterState(
+  static CounterState fromContext(BuildContext context) => const CounterState(
         count: 100,
         source: 'context',
         hasContextData: true,
@@ -92,8 +92,6 @@ class TestViewModel extends ViewModel<CounterState> {
     }
   }
 
-  @override
-  CounterState _createEmptyState() => CounterState.initial();
 }
 
 class TestAsyncViewModel extends AsyncViewModelImpl<AsyncCounterState> {

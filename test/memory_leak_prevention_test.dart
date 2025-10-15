@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
@@ -64,7 +66,7 @@ class OrderViewModel extends ViewModel<TestOrderState> {
         });
       } catch (e) {
         // Handle case where UserService might be disposed
-        print('Cannot listen to UserService: $e');
+        log('Cannot listen to UserService: $e');
       }
     }
   }
@@ -147,9 +149,9 @@ void main() {
       final userVM = UserViewModel();
 
       // Add multiple listeners
-      userVM.listenVM((data) => print('Listener 1: ${data.name}'));
-      userVM.listenVM((data) => print('Listener 2: ${data.age}'));
-      userVM.listenVM((data) => print('Listener 3: ${data.name}-${data.age}'));
+      userVM.listenVM((data) => log('Listener 1: ${data.name}'));
+      userVM.listenVM((data) => log('Listener 2: ${data.age}'));
+      userVM.listenVM((data) => log('Listener 3: ${data.name}-${data.age}'));
 
       expect(userVM.activeListenerCount, equals(3));
 
@@ -163,8 +165,8 @@ void main() {
       final orderVM = OrderViewModel(shouldListenToUser: false);
 
       // Create listening relationships
-      userVM.listenVM((data) => print('User listener'));
-      orderVM.listenVM((data) => print('Order listener'));
+      userVM.listenVM((data) => log('User listener'));
+      orderVM.listenVM((data) => log('Order listener'));
 
       expect(userVM.activeListenerCount, greaterThan(0));
       expect(orderVM.activeListenerCount, greaterThan(0));
@@ -264,13 +266,13 @@ void main() {
       expect(vm.activeListenerCount, equals(0));
 
       // Add listeners one by one
-      vm.listenVM((data) => print('1'));
+      vm.listenVM((data) => log('1'));
       expect(vm.activeListenerCount, equals(1));
 
-      vm.listenVM((data) => print('2'));
+      vm.listenVM((data) => log('2'));
       expect(vm.activeListenerCount, equals(2));
 
-      vm.listenVM((data) => print('3'));
+      vm.listenVM((data) => log('3'));
       expect(vm.activeListenerCount, equals(3));
 
       // Remove all

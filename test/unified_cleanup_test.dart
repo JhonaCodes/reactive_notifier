@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
@@ -46,17 +48,17 @@ void main() {
       expect(asyncViewModel.activeListenerCount, equals(0));
 
       // Add multiple listeners to regular ViewModel
-      viewModel.listenVM((data) => print('VM Listener 1: ${data.value}'));
-      viewModel.listenVM((data) => print('VM Listener 2: ${data.value}'));
-      viewModel.listenVM((data) => print('VM Listener 3: ${data.value}'));
+      viewModel.listenVM((data) => log('VM Listener 1: ${data.value}'));
+      viewModel.listenVM((data) => log('VM Listener 2: ${data.value}'));
+      viewModel.listenVM((data) => log('VM Listener 3: ${data.value}'));
 
       expect(viewModel.activeListenerCount, equals(3));
 
       // Add multiple listeners to AsyncViewModel
       asyncViewModel
-          .listenVM((state) => print('Async Listener 1: ${state.runtimeType}'));
+          .listenVM((state) => log('Async Listener 1: ${state.runtimeType}'));
       asyncViewModel
-          .listenVM((state) => print('Async Listener 2: ${state.runtimeType}'));
+          .listenVM((state) => log('Async Listener 2: ${state.runtimeType}'));
 
       expect(asyncViewModel.activeListenerCount, equals(2));
 
@@ -73,8 +75,8 @@ void main() {
       final asyncViewModel = TestAsyncViewModel();
 
       // Add listeners
-      viewModel.listenVM((data) => print('VM: ${data.value}'));
-      asyncViewModel.listenVM((state) => print('Async: ${state.runtimeType}'));
+      viewModel.listenVM((data) => log('VM: ${data.value}'));
+      asyncViewModel.listenVM((state) => log('Async: ${state.runtimeType}'));
 
       expect(viewModel.activeListenerCount, equals(1));
       expect(asyncViewModel.activeListenerCount, equals(1));
@@ -92,10 +94,10 @@ void main() {
       final asyncViewModel = TestAsyncViewModel();
 
       // Set up listeners
-      viewModel.listenVM((data) => print('VM1'));
-      viewModel.listenVM((data) => print('VM2'));
-      asyncViewModel.listenVM((state) => print('Async1'));
-      asyncViewModel.listenVM((state) => print('Async2'));
+      viewModel.listenVM((data) => log('VM1'));
+      viewModel.listenVM((data) => log('VM2'));
+      asyncViewModel.listenVM((state) => log('Async1'));
+      asyncViewModel.listenVM((state) => log('Async2'));
 
       expect(viewModel.activeListenerCount, equals(2));
       expect(asyncViewModel.activeListenerCount, equals(2));
@@ -114,9 +116,9 @@ void main() {
       final asyncVM = TestAsyncViewModel();
 
       // Create cross-listening relationships
-      vm1.listenVM((data) => print('VM1 listens to itself'));
-      vm2.listenVM((data) => print('VM2 listens to itself'));
-      asyncVM.listenVM((state) => print('AsyncVM listens to itself'));
+      vm1.listenVM((data) => log('VM1 listens to itself'));
+      vm2.listenVM((data) => log('VM2 listens to itself'));
+      asyncVM.listenVM((state) => log('AsyncVM listens to itself'));
 
       // Each should track its own listeners
       expect(vm1.activeListenerCount, equals(1));
@@ -124,8 +126,8 @@ void main() {
       expect(asyncVM.activeListenerCount, equals(1));
 
       // Cross-ViewModel listening
-      vm1.listenVM((data) => print('VM1 -> VM2'));
-      asyncVM.listenVM((state) => print('AsyncVM -> itself again'));
+      vm1.listenVM((data) => log('VM1 -> VM2'));
+      asyncVM.listenVM((state) => log('AsyncVM -> itself again'));
 
       expect(vm1.activeListenerCount, equals(2)); // self + cross
       expect(asyncVM.activeListenerCount, equals(2)); // self + additional
@@ -145,8 +147,8 @@ void main() {
       final asyncViewModel = TestAsyncViewModel();
 
       // Add listeners to verify they're logged
-      viewModel.listenVM((data) => print('VM listener'));
-      asyncViewModel.listenVM((state) => print('Async listener'));
+      viewModel.listenVM((data) => log('VM listener'));
+      asyncViewModel.listenVM((state) => log('Async listener'));
 
       // Both should have active listeners
       expect(viewModel.activeListenerCount, greaterThan(0));

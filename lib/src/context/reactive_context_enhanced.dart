@@ -7,6 +7,8 @@
 /// - Automatic strategy detection
 library reactive_context_enhanced;
 
+import 'dart:developer';
+
 import 'package:flutter/widgets.dart';
 import 'package:reactive_notifier/src/context/reactive_inherited_context.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
@@ -38,7 +40,7 @@ class ReactiveContextEnhanced {
     final inheritedWidget = ReactiveInheritedContext.maybeOf<T>(context);
     if (inheritedWidget != null) {
       assert(() {
-        debugPrint(
+        log(
             '[ReactiveContext] Using InheritedWidget strategy for $T in ${context.widget.runtimeType}');
         return true;
       }());
@@ -47,7 +49,7 @@ class ReactiveContextEnhanced {
 
     // Strategy 2: Fallback to enhanced markNeedsBuild strategy
     assert(() {
-      debugPrint(
+      log(
           '[ReactiveContext] Using markNeedsBuild strategy for $T in ${context.widget.runtimeType}');
       return true;
     }());
@@ -83,7 +85,7 @@ class ReactiveContextEnhanced {
         final elementsForNotifier = _markNeedsBuildElements[notifier];
         if (elementsForNotifier != null) {
           assert(() {
-            debugPrint(
+            log(
                 '[ReactiveContext] Rebuilding ${elementsForNotifier.length} elements for notifier $notifier');
             return true;
           }());
@@ -116,7 +118,7 @@ class ReactiveContextEnhanced {
     ReactiveContextRegistry.cleanup();
 
     assert(() {
-      debugPrint('[ReactiveContext] Enhanced cleanup completed');
+      log('[ReactiveContext] Enhanced cleanup completed');
       return true;
     }());
   }
@@ -155,7 +157,7 @@ mixin ReactiveContextEnhancedMixin<T> {
       _registrationCache[T] = true;
 
       assert(() {
-        debugPrint(
+        log(
             '[ReactiveContext] Auto-registered enhanced notifier for $T');
         return true;
       }());

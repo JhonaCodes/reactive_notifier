@@ -579,7 +579,7 @@ void main() {
             body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
               notifier: viewModel,
               // ignore: deprecated_member_use
-              onSuccess: (data) => Text('Success: $data'),
+              onData: (data, vm, keep) => Text('Success: $data'),
             ),
           ),
         ));
@@ -603,8 +603,6 @@ void main() {
             body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
               notifier: viewModel,
               onData: (data, vm, keep) => Text('New: $data'),
-              // ignore: deprecated_member_use
-              onSuccess: (data) => Text('Old: $data'),
             ),
           ),
         ));

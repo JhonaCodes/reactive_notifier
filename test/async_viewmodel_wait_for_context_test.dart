@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
-import 'package:reactive_notifier/src/handler/async_state.dart';
 import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
 import 'mocks/async_viewmodel_wait_context_mocks.dart';
 
@@ -30,7 +29,7 @@ void main() {
         );
 
         // Wait a bit for async initialization
-        await Future.delayed(Duration(milliseconds: 10));
+        await Future.delayed(const Duration(milliseconds: 10));
 
         // Assert: Should have initialized immediately without waiting for context
         expect(viewModel.initCallCount, equals(1),
@@ -54,7 +53,7 @@ void main() {
         );
 
         // Wait for initialization
-        await Future.delayed(Duration(milliseconds: 10));
+        await Future.delayed(const Duration(milliseconds: 10));
 
         // Assert: Should work normally without context
         expect(viewModel.hasData, isTrue,
@@ -76,7 +75,7 @@ void main() {
         );
 
         // Wait a bit to ensure it doesn't initialize
-        await Future.delayed(Duration(milliseconds: 20));
+        await Future.delayed(const Duration(milliseconds: 20));
 
         // Assert: Should stay in initial state waiting for context
         expect(viewModel.isInitial(), isTrue,
@@ -107,7 +106,7 @@ void main() {
         );
 
         // Wait a bit
-        await Future.delayed(Duration(milliseconds: 20));
+        await Future.delayed(const Duration(milliseconds: 20));
 
         // Assert: Should not initialize because loadOnInit is false
         expect(viewModel.isInitial(), isTrue,
@@ -116,7 +115,7 @@ void main() {
             reason: 'init() should not be called when loadOnInit is false');
 
         // Even with context available, should still not auto-initialize
-        await Future.delayed(Duration(milliseconds: 20));
+        await Future.delayed(const Duration(milliseconds: 20));
 
         // Assert: Should still not initialize even with context when loadOnInit is false
         expect(viewModel.isInitial(), isTrue,

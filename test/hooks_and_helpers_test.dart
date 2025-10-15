@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
@@ -73,7 +72,7 @@ class TestAsyncViewModel extends AsyncViewModelImpl<TestAsyncModel> {
 
   @override
   Future<TestAsyncModel> init() async {
-    await Future.delayed(Duration(milliseconds: 10));
+    await Future.delayed( const Duration(milliseconds: 10));
     return const TestAsyncModel('test', 'initial');
   }
 
@@ -91,7 +90,7 @@ class TestAsyncViewModel extends AsyncViewModelImpl<TestAsyncModel> {
 
   void loadData(String id, String data) {
     loadingState();
-    Future.delayed(Duration(milliseconds: 5), () {
+    Future.delayed(const Duration(milliseconds: 5), () {
       updateState(TestAsyncModel(id, data));
     });
   }
@@ -218,10 +217,10 @@ void main() {
         asyncVM.loadData('test1', 'data1');
 
         // Wait for loading state
-        await Future.delayed(Duration(milliseconds: 1));
+        await Future.delayed(const Duration(milliseconds: 1));
 
         // Wait for success state
-        await Future.delayed(Duration(milliseconds: 10));
+        await Future.delayed(const Duration(milliseconds: 10));
 
         expect(asyncVM.asyncStateChanges, contains('initial → loading'));
         expect(asyncVM.asyncStateChanges, contains('loading → success(test1)'));
@@ -274,7 +273,7 @@ void main() {
         userVM.transformState((current) => current.copyWith(value: 150));
 
         // Give time for cross-sandbox communication to trigger
-        await Future.delayed(Duration(milliseconds: 1));
+        await Future.delayed(const Duration(milliseconds: 1));
 
         // NotificationService sandbox should have received the update
         expect(notificationVM.userChanges, ['User changed to: 150']);
@@ -317,7 +316,7 @@ void main() {
 
         // Test cross-sandbox communication
         userVM.transformState((current) => current.copyWith(value: 200));
-        await Future.delayed(Duration(milliseconds: 1));
+        await Future.delayed(const Duration(milliseconds: 1));
 
         expect(notificationVM.userChanges, ['User changed to: 200']);
 
