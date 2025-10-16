@@ -35,3 +35,7 @@ export 'package:reactive_notifier/src/context/reactive_context_enhanced.dart'
 /// ViewModelContextProvider mixin is already included in ViewModel and AsyncViewModelImpl
 export 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart'
     show ViewModelContextService;
+
+/// Export DevTools integration (automatically registers service extensions in debug mode)
+export 'package:reactive_notifier/src/devtools/reactive_notifier_devtools_service.dart'
+    show initializeReactiveNotifierDevTools;

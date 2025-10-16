@@ -1,3 +1,19 @@
+# 2.15.0
+## DevTools Extension - Fixed API & UI Improvements
+
+### Fixed
+- **DevTools Service**: Corrected API usage to use public getters (`isLoading`, `error`, `hasData`, `data`) instead of accessing private `_state` field
+- **DevTools Extension**: Updated to `devtools_extensions ^0.4.0` for compatibility with latest Flutter DevTools
+- **DevTools Extension**: Fixed service protocol integration to use `serviceManager.service.callServiceExtension()`
+
+### Improved
+- **DevTools UI**: Complete redesign with modern Material Design 3
+- **DevTools UI**: Real-time monitoring with auto-refresh every 2 seconds
+- **DevTools UI**: Enhanced instance cards with visual state badges (loading, error, success)
+- **DevTools UI**: Connection status indicator with troubleshooting tips
+- **DevTools UI**: Organized sections by type (Async ViewModels, ViewModels, Simple Notifiers)
+- **DevTools UI**: Summary dashboard with metrics
+
 # 2.14.0
 ## Persistent Global BuildContext Access from ViewModels.
 
