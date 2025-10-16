@@ -31,5 +31,4 @@ flutter:
   uses-material-design: true
 
 # DevTools extension configuration
-devtools_extensions:
-  - extension/devtools_extensions
+# Flutter automatically detects extensions in devtools_extensions/ directory
