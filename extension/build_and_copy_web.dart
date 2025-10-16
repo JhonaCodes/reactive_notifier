@@ -61,8 +61,8 @@ void main() async {
     final versionMatch = RegExp(r'version:\s*(\d+\.\d+\.\d+)').firstMatch(pubspecContent);
     final version = versionMatch?.group(1) ?? '2.13.0';
 
-    // Create target directory
-    final targetDir = Directory('extension/devtools_extensions/reactive_notifier_$version');
+    // Create target directory (root devtools_extensions/)
+    final targetDir = Directory('devtools_extensions/reactive_notifier_$version');
     if (targetDir.existsSync()) {
       log('🗑️  Cleaning existing extension directory...');
       await targetDir.delete(recursive: true);

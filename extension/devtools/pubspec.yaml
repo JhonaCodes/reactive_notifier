@@ -1,6 +1,6 @@
 name: reactive_notifier_devtools_extension
 description: DevTools extension for ReactiveNotifier state management library
-version: 2.13.0
+version: 2.15.0
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
