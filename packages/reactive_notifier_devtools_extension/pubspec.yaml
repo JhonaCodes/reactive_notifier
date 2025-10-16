@@ -1,0 +1,22 @@
+name: reactive_notifier_devtools_extension
+description: DevTools extension for ReactiveNotifier state management library
+version: 2.15.0
+publish_to: none
+
+environment:
+  sdk: ^3.5.4
+  flutter: ">=3.16.0"
+
+dependencies:
+  devtools_extensions: ^0.4.0
+  devtools_app_shared: ^0.4.0
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
