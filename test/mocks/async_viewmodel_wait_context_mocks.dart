@@ -53,7 +53,6 @@ class TestWaitForContextViewModel extends AsyncViewModelImpl<String> {
     await super.onResume(data);
   }
 
-
   // Test helpers to inspect state
   bool isInitial() => match<bool>(
         initial: () => true,

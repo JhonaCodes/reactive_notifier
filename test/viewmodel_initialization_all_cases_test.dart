@@ -167,7 +167,6 @@ class ContextDependentViewModel extends ViewModel<SimpleState> {
       ));
     }
   }
-
 }
 
 class ComplexViewModel extends ViewModel<ComplexState> {
@@ -185,7 +184,6 @@ class ComplexViewModel extends ViewModel<ComplexState> {
       updateSilently(ComplexState.initial());
     }
   }
-
 }
 
 class SlowViewModel extends ViewModel<SimpleState> {
@@ -212,7 +210,6 @@ class SlowViewModel extends ViewModel<SimpleState> {
       updateSilently(SimpleState.initial());
     }
   }
-
 }
 
 /// AsyncViewModel Test Classes
@@ -1267,8 +1264,7 @@ void main() {
           }
 
           if (attempts >= 20) {
-            log(
-                'AsyncViewModel initialization timed out - skipping detailed assertions');
+            log('AsyncViewModel initialization timed out - skipping detailed assertions');
             return;
           }
 

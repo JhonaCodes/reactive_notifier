@@ -72,7 +72,7 @@ class TestAsyncViewModel extends AsyncViewModelImpl<TestAsyncModel> {
 
   @override
   Future<TestAsyncModel> init() async {
-    await Future.delayed( const Duration(milliseconds: 10));
+    await Future.delayed(const Duration(milliseconds: 10));
     return const TestAsyncModel('test', 'initial');
   }
 

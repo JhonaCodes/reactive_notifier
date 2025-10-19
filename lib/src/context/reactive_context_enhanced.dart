@@ -40,8 +40,7 @@ class ReactiveContextEnhanced {
     final inheritedWidget = ReactiveInheritedContext.maybeOf<T>(context);
     if (inheritedWidget != null) {
       assert(() {
-        log(
-            '[ReactiveContext] Using InheritedWidget strategy for $T in ${context.widget.runtimeType}');
+        log('[ReactiveContext] Using InheritedWidget strategy for $T in ${context.widget.runtimeType}');
         return true;
       }());
       return inheritedWidget.notifier!.notifier;
@@ -49,8 +48,7 @@ class ReactiveContextEnhanced {
 
     // Strategy 2: Fallback to enhanced markNeedsBuild strategy
     assert(() {
-      log(
-          '[ReactiveContext] Using markNeedsBuild strategy for $T in ${context.widget.runtimeType}');
+      log('[ReactiveContext] Using markNeedsBuild strategy for $T in ${context.widget.runtimeType}');
       return true;
     }());
 
@@ -85,8 +83,7 @@ class ReactiveContextEnhanced {
         final elementsForNotifier = _markNeedsBuildElements[notifier];
         if (elementsForNotifier != null) {
           assert(() {
-            log(
-                '[ReactiveContext] Rebuilding ${elementsForNotifier.length} elements for notifier $notifier');
+            log('[ReactiveContext] Rebuilding ${elementsForNotifier.length} elements for notifier $notifier');
             return true;
           }());
 
@@ -157,8 +154,7 @@ mixin ReactiveContextEnhancedMixin<T> {
       _registrationCache[T] = true;
 
       assert(() {
-        log(
-            '[ReactiveContext] Auto-registered enhanced notifier for $T');
+        log('[ReactiveContext] Auto-registered enhanced notifier for $T');
         return true;
       }());
     }

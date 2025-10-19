@@ -388,8 +388,7 @@ void main() {
                             ),
                             child: const Row(
                               children: [
-                                Icon(Icons.check_circle,
-                                    color: Colors.green),
+                                Icon(Icons.check_circle, color: Colors.green),
                                 SizedBox(width: 8),
                                 Text(
                                   'Connection Successful',

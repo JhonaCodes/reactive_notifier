@@ -119,7 +119,9 @@ class SimpleListWidget extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: color.withValues(alpha: 300),),
+                      border: Border.all(
+                        color: color.withValues(alpha: 300),
+                      ),
                     ),
                     child: Row(
                       children: [

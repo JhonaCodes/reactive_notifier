@@ -817,7 +817,6 @@ log('Active refs: $refs');
 2. **Zero Breaking Changes**: Existing code works unchanged
 3. **Automatic**: No manual memory management needed
 4. **Configurable**: Custom timeouts and behavior per instance
-5. **DevTools Ready**: Full visibility into lifecycle events
 
 ## NEW in v2.13.0: State Change Hooks
 

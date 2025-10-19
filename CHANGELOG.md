@@ -1,18 +1,48 @@
 # 2.15.0
-## DevTools Extension - Fixed API & UI Improvements
+## Core Library Optimization & Cleanup
 
-### Fixed
-- **DevTools Service**: Corrected API usage to use public getters (`isLoading`, `error`, `hasData`, `data`) instead of accessing private `_state` field
-- **DevTools Extension**: Updated to `devtools_extensions ^0.4.0` for compatibility with latest Flutter DevTools
-- **DevTools Extension**: Fixed service protocol integration to use `serviceManager.service.callServiceExtension()`
+### 🧹 Major Cleanup
+- **Removed DevTools Integration**: Eliminated all DevTools-related code for a cleaner, more focused core library
+- **Reduced Dependencies**: Removed `devtools_extensions` dependency to minimize package size
+- **Simplified Architecture**: Removed debug panels, extensions, and monitoring infrastructure
 
-### Improved
-- **DevTools UI**: Complete redesign with modern Material Design 3
-- **DevTools UI**: Real-time monitoring with auto-refresh every 2 seconds
-- **DevTools UI**: Enhanced instance cards with visual state badges (loading, error, success)
-- **DevTools UI**: Connection status indicator with troubleshooting tips
-- **DevTools UI**: Organized sections by type (Async ViewModels, ViewModels, Simple Notifiers)
-- **DevTools UI**: Summary dashboard with metrics
+### 🎯 Focus on Core Features
+This release focuses on what ReactiveNotifier does best - reactive state management:
+- ✅ **Singleton state management** with automatic lifecycle
+- ✅ **MVVM architecture** with ViewModels
+- ✅ **Async/Stream operations** with AsyncState handling
+- ✅ **BuildContext access** for Theme, MediaQuery, and external state managers
+- ✅ **Cross-service communication** between ViewModels
+- ✅ **Memory management** with auto-dispose capabilities
+
+### 📦 What Was Removed
+- **DevTools Extension**: Removed built-in DevTools integration
+- **Debug Panel**: Removed real-time monitoring web UI
+- **DevTools Service**: Removed service protocol integration
+- **Extension Config**: Removed all extension configuration files
+
+### ✨ Benefits
+1. **Smaller Package**: Reduced package size by eliminating debug infrastructure
+2. **Faster Build Times**: No DevTools compilation overhead
+3. **Simpler API**: Cleaner public API surface focused on core state management
+4. **Better Performance**: Removed debug hooks from production code paths
+5. **Clear Focus**: Library now focuses exclusively on reactive state management
+
+### 🔄 Migration from 2.14.0
+No breaking changes! Simply update your dependency:
+```yaml
+dependencies:
+  reactive_notifier: ^2.15.0
+```
+
+If you were using DevTools features:
+- Remove any `ReactiveNotifierDebugPanel.start()` calls
+- Remove `showReactiveNotifierDevTool(context)` references
+- Remove `ReactiveNotifierDevToolFAB()` widgets
+
+All core state management features remain unchanged and fully functional.
+
+---
 
 # 2.14.0
 ## Persistent Global BuildContext Access from ViewModels.
@@ -334,7 +364,7 @@ class MyViewModel extends ViewModel<MyState> {
 ---
 
 # 2.12.0
-## 🎯 BuildContext Access for ViewModels - Seamless Migration Support + Auto DevTools Integration
+## 🎯 BuildContext Access for ViewModels - Seamless Migration Support
 
 ### ✨ New Features
 - **Automatic BuildContext Access**: ViewModels can now access Flutter's BuildContext during initialization
@@ -342,7 +372,6 @@ class MyViewModel extends ViewModel<MyState> {
 - **Seamless Migration Support**: Enables gradual migration from Riverpod using `ProviderScope.containerOf(context)`
 - **Automatic Context Registration**: Builders automatically provide context to ViewModels - no setup required
 - **Context Lifecycle Management**: Context is automatically managed and cleaned up with builders
-- **🛠️ Built-in DevTools Extension**: Auto-integrated debugging extension with zero configuration required
 
 ### 🔧 API Additions
 - **`context`**: Nullable BuildContext getter for safe access
@@ -394,20 +423,10 @@ class ResponsiveViewModel extends ViewModel<ResponsiveState> {
 - **Multiple Builder Support**: Context remains available while any builder is active
 - **Dispose Safety**: Context access blocked after ViewModel disposal
 
-### 🛠️ DevTools Extension Features
-- **📊 Real-time State Monitoring**: Live visualization of all ReactiveNotifier instances
-- **🔍 Interactive State Inspector**: View, edit, and debug state changes in real-time
-- **📈 Performance Analytics**: Memory usage tracking and rebuild performance analysis
-- **🐛 Memory Leak Detection**: Automatic detection and reporting of potential memory leaks
-- **📝 State Change History**: Complete timeline of state changes with rollback capabilities
-- **⚡ Zero Configuration**: Automatically activates when importing reactive_notifier
-
 ### ⚠️ Important Notes
 - **Context timing**: Available after first builder mounts, cleared when last builder disposes
 - **Migration support**: Primary use case is gradual migration from Provider/Riverpod
-- **DevTools access**: Extension appears as "ReactiveNotifier" tab in Flutter DevTools (debug mode only)
 - **No breaking changes**: Fully backward compatible - existing code unchanged
-- **Automatic operation**: Zero configuration required - works out of the box
 
 ### 🔗 Builder Integration
 All builders now provide context automatically:

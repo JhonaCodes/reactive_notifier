@@ -91,7 +91,6 @@ class TestViewModel extends ViewModel<CounterState> {
       updateSilently(CounterState.initial());
     }
   }
-
 }
 
 class TestAsyncViewModel extends AsyncViewModelImpl<AsyncCounterState> {

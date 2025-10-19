@@ -26,7 +26,6 @@
 - **State change hooks** - Internal reactivity via onStateChanged/onAsyncStateChanged
 - **Widget preservation** - keep() function to prevent expensive rebuilds
 - **Memory management** - Automatic cleanup and leak prevention
-- **DevTools integration** - Real-time monitoring and debugging
 - **Testing utilities** - Simple mocking and state injection
 
 ---
@@ -37,14 +36,6 @@
 dependencies:
   reactive_notifier: ^latest_version
 ```
-
-### DevTools Extension
-
-ReactiveNotifier includes a DevTools extension for debugging and monitoring. Access it through:
-- **In-app**: `showReactiveNotifierDevTool(context)`
-- **Floating FAB**: `ReactiveNotifierDevToolFAB()`
-
-**Features:** Real-time state monitoring, lifecycle tracking, memory analysis, state history, performance metrics.
 
 ---
 

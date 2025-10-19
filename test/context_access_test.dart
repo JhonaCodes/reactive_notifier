@@ -21,7 +21,6 @@ class ContextTestViewModel extends ViewModel<String> {
       updateSilently('initialized without context');
     }
   }
-
 }
 
 /// Test AsyncViewModel for context access testing

@@ -144,8 +144,7 @@ class _PreservationRegistry {
     }
 
     assert(() {
-      log(
-          '[ReactiveContext] Cleaned up preservation cache. Size: ${_preservedWidgets.length}');
+      log('[ReactiveContext] Cleaned up preservation cache. Size: ${_preservedWidgets.length}');
       return true;
     }());
   }
@@ -214,8 +213,7 @@ class _PreservedWidgetState extends State<_PreservedWidget> {
     _incrementBuildCount();
 
     assert(() {
-      log(
-          '[ReactiveContext] Preserved widget initialized: ${widget.key}');
+      log('[ReactiveContext] Preserved widget initialized: ${widget.key}');
       return true;
     }());
   }
@@ -239,8 +237,7 @@ class _PreservedWidgetState extends State<_PreservedWidget> {
   @override
   Widget build(BuildContext context) {
     assert(() {
-      log(
-          '[ReactiveContext] Building preserved widget: ${widget.key} (build #$_buildCount)');
+      log('[ReactiveContext] Building preserved widget: ${widget.key} (build #$_buildCount)');
       return true;
     }());
 

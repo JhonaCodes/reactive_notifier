@@ -38,4 +38,3 @@ build/
 /test_fixes.md
 /test/failures/
 /.flutter-plugins-dependencies
-/extension/devtools_extensions/

@@ -25,10 +25,6 @@ dev_dependencies:
   lints: ^4.0.0
   test: ^1.24.0
   alchemist: ^0.12.1
-  devtools_extensions: ^0.4.0
 
 flutter:
   uses-material-design: true
-
-# DevTools extension configuration
-# Flutter automatically detects extensions in devtools_extensions/ directory
