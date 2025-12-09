@@ -45,9 +45,16 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   static final Map<Key, ReactiveNotifier> _instanceRegistry =
       <Key, ReactiveNotifier>{};
 
+  // Factory function storage for recreate() functionality
+  final T Function() _createFunction;
+
+  // Recreation guard to prevent infinite loops during ViewModel initialization
+  bool _isRecreating = false;
+
   ReactiveNotifier._(
       T Function() create, this.related, this.keyNotifier, this.autoDispose)
-      : super(create()) {
+      : _createFunction = create,
+        super(create()) {
     if (related != null) {
       assert(() {
         log('''
@@ -1268,36 +1275,194 @@ Count: $removedCount
   static ReactiveNotifier<T> getInstanceByKey<T>(Key key) =>
       _instances[key]! as ReactiveNotifier<T>;
 
-  // TODO: Implement recreate() method
-  // Currently causes infinite loops during ViewModel initialization
-  // Need to investigate the interaction between _createFunction() and ViewModel.init()
-  //
-  // /// Recreates the notifier instance with a fresh ViewModel/state
-  // ///
-  // /// This method:
-  // /// 1. Creates a new instance using the original factory function
-  // /// 2. Maintains the same key and related states configuration
-  // /// 3. Notifies all current listeners with the new state
-  // ///
-  // /// Use cases:
-  // /// - After logout to create fresh user state
-  // /// - Reset application state to initial values
-  // /// - Testing scenarios where clean state is needed
-  // /// - Recovery from corrupted or invalid state
-  // ///
-  // /// Example:
-  // /// ```dart
-  // /// mixin UserService {
-  // ///   static final instance = ReactiveNotifier<UserViewModel>(() => UserViewModel());
-  // ///
-  // ///   static void logout() {
-  // ///     instance.recreate(); // Fresh UserViewModel with clean state
-  // ///   }
-  // /// }
-  // /// ```
-  // void recreate() {
-  //   // Implementation pending - needs to handle ViewModel initialization properly
-  // }
+  /// Recreates the notifier instance with a fresh state using the original factory function.
+  ///
+  /// This method:
+  /// 1. Disposes the current ViewModel/state properly (if applicable)
+  /// 2. Creates a new instance using the original factory function
+  /// 3. Maintains the same key and related states configuration
+  /// 4. Notifies all current listeners with the new state
+  ///
+  /// The method includes protection against infinite loops during ViewModel
+  /// initialization by using a recreation guard flag.
+  ///
+  /// Use cases:
+  /// - After logout to create fresh user state
+  /// - Reset application state to initial values
+  /// - Testing scenarios where clean state is needed
+  /// - Recovery from corrupted or invalid state
+  ///
+  /// Returns the newly created state instance.
+  ///
+  /// Example:
+  /// ```dart
+  /// mixin UserService {
+  ///   static final instance = ReactiveNotifier<UserViewModel>(() => UserViewModel());
+  ///
+  ///   static void logout() {
+  ///     instance.recreate(); // Fresh UserViewModel with clean state
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// Throws [StateError] if:
+  /// - Called during an ongoing recreation (prevents infinite loops)
+  /// - Called on a disposed ReactiveNotifier
+  T recreate() {
+    // Guard against infinite loops during recreation
+    if (_isRecreating) {
+      assert(() {
+        log('''
+⚠️ Recursive recreate() call detected and blocked
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type: $T
+Key: $keyNotifier
+This usually indicates that init() or a listener is calling recreate(),
+which would cause an infinite loop.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 100);
+        return true;
+      }());
+      throw StateError('''
+Cannot call recreate() during an ongoing recreation.
+This usually indicates that init() or a listener is calling recreate(),
+which would cause an infinite loop.
+Type: $T
+Key: $keyNotifier
+''');
+    }
+
+    // Check if disposed
+    if (_disposed) {
+      throw StateError('''
+Cannot call recreate() on a disposed ReactiveNotifier.
+Type: $T
+Key: $keyNotifier
+Use reinitializeInstance() to create a fresh instance after disposal.
+''');
+    }
+
+    assert(() {
+      log('''
+🔄 Starting recreate() for ReactiveNotifier<$T>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Key: $keyNotifier
+Current state hash: ${notifier.hashCode}
+Current references: $_referenceCount
+Has listeners: $hasListeners
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+      return true;
+    }());
+
+    // Set recreation guard
+    _isRecreating = true;
+
+    try {
+      // Step 1: Dispose the old ViewModel/AsyncViewModel properly
+      final oldNotifier = notifier;
+      _disposeOldNotifier(oldNotifier);
+
+      // Step 2: Create fresh state using the original factory function
+      // The factory function will create a new ViewModel instance with fresh init()
+      final newState = _createFunction();
+
+      // Step 3: Replace the internal state
+      // Use updateSilently first to avoid double notification
+      replaceNotifier(newState);
+
+      // Step 4: Reset lifecycle flags
+      _disposed = false;
+      _disposeTimer?.cancel();
+      _disposeTimer = null;
+      _isScheduledForDispose = false;
+
+      // Step 5: Notify all listeners of the new state
+      notifyListeners();
+
+      // Step 6: Notify related parent states if they exist
+      if (_parents.isNotEmpty) {
+        assert(() {
+          log('📤 Notifying parent states after recreate for $T', level: 10);
+          return true;
+        }());
+
+        for (var parent in _parents) {
+          parent.notifyListeners();
+        }
+      }
+
+      assert(() {
+        log('''
+✅ recreate() completed for ReactiveNotifier<$T>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Key: $keyNotifier
+New state hash: ${newState.hashCode}
+Old state disposed: ✓
+Listeners notified: ✓
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+        return true;
+      }());
+
+      return newState;
+    } catch (e, stackTrace) {
+      assert(() {
+        log('''
+⚠️ Error during recreate() for ReactiveNotifier<$T>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Key: $keyNotifier
+Error: $e
+Stack trace:
+$stackTrace
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 100);
+        return true;
+      }());
+      rethrow;
+    } finally {
+      // Always clear the recreation guard
+      _isRecreating = false;
+    }
+  }
+
+  /// Internal helper to dispose the old notifier properly
+  void _disposeOldNotifier(T oldNotifier) {
+    try {
+      if (oldNotifier is ViewModel && !oldNotifier.isDisposed) {
+        // Remove listeners first to prevent callbacks during disposal
+        oldNotifier.stopListeningVM();
+        oldNotifier.removeListeners();
+        // Note: We don't call dispose() on the old ViewModel because it would
+        // try to clean up the ReactiveNotifier from the registry via
+        // _notifyReactiveNotifierDisposal(), which we don't want during recreate.
+        // The ViewModel will be garbage collected when no longer referenced.
+      } else if (oldNotifier is AsyncViewModelImpl && !oldNotifier.isDisposed) {
+        // Remove listeners first to prevent callbacks during disposal
+        oldNotifier.stopListeningVM();
+        oldNotifier.removeListeners();
+        // Same as above - don't call dispose() to avoid registry cleanup
+      }
+    } catch (e) {
+      assert(() {
+        log('''
+⚠️ Warning during old notifier cleanup in recreate()
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type: $T
+Error: $e
+Continuing with recreation...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 50);
+        return true;
+      }());
+    }
+  }
+
+  /// Check if recreate() is currently in progress
+  ///
+  /// This can be useful for ViewModels that need to check whether
+  /// they are being created as part of a recreation process.
+  bool get isRecreating => _isRecreating;
 
   @override
   void dispose() {

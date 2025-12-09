@@ -15,7 +15,7 @@
 ### ReactiveNotifier<T>
 **Purpose**: Single instance state holder with automatic lifecycle
 **When to use**: Simple state values, settings, flags, counters
-**Key methods**: `updateState()`, `updateSilently()`, `transformState()`, `transformStateSilently()`, `listen()`, `from<T>()`
+**Key methods**: `updateState()`, `updateSilently()`, `transformState()`, `transformStateSilently()`, `listen()`, `from<T>()`, `recreate()`
 
 ```dart
 // Basic pattern
@@ -684,12 +684,52 @@ class ResponsiveViewModel extends ViewModel<ResponsiveState> {
 }
 ```
 
+### State Recreation (Fresh State Reset)
+The `recreate()` method allows you to reset a ReactiveNotifier to a fresh state using the original factory function. This is useful for logout scenarios, state corruption recovery, or testing.
+
+```dart
+mixin UserService {
+  static final ReactiveNotifier<UserViewModel> userState =
+    ReactiveNotifier<UserViewModel>(() => UserViewModel());
+
+  /// Call this on logout to reset to fresh state
+  static void logout() {
+    // Creates fresh UserViewModel with clean init() execution
+    userState.recreate();
+  }
+
+  /// Alternative: Use reinitializeInstance for more control
+  static void logoutWithCustomState() {
+    ReactiveNotifier.reinitializeInstance<UserViewModel>(
+      userState.keyNotifier,
+      () => UserViewModel(), // Can use different factory if needed
+    );
+  }
+}
+```
+
+**recreate() vs reinitializeInstance:**
+| Feature | `recreate()` | `reinitializeInstance()` |
+|---------|--------------|--------------------------|
+| **Scope** | Instance method | Static method |
+| **Factory** | Uses original factory | Can use different factory |
+| **When to use** | Simple reset to initial state | Custom factory or disposed instance |
+| **Loop protection** | Built-in guard | No guard needed |
+
+**recreate() Behavior:**
+- Disposes old ViewModel/state properly (cleans up listeners)
+- Calls the original factory function to create fresh state
+- Notifies all ReactiveNotifier listeners
+- Notifies parent related states
+- Resets auto-dispose scheduling
+- Protected against infinite loops (throws if called during recreation)
+
 ### Cross-ViewModel Communication
 ```dart
 // Shopping cart communicates with sales ViewModel automatically
 class SalesViewModel extends AsyncViewModelImpl<SaleModel> {
   CartModel? currentCart;
-  
+
   @override
   void init() {
     // Reactive communication - set up listener
