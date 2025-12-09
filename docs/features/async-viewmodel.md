@@ -133,7 +133,17 @@ ReactiveAsyncBuilder<ProductsViewModel, List<Product>>(
 
 ### Context Access
 
-See [Context Access](context-access.md) for `context`, `globalContext`, `requireContext()`, etc.
+| Property/Method | Description | Details |
+|-----------------|-------------|---------|
+| `context` | Nullable BuildContext | [View details](context/context.md) |
+| `hasContext` | Context availability | [View details](context/has-context.md) |
+| `requireContext()` | Required context | [View details](context/require-context.md) |
+| `globalContext` | Global context | [View details](context/global-context.md) |
+| `hasGlobalContext` | Global context availability | [View details](context/has-global-context.md) |
+| `requireGlobalContext()` | Required global context | [View details](context/require-global-context.md) |
+| `waitForContext` | Wait for context before init() | [View details](context/wait-for-context.md) |
+
+See [Context Access Overview](context-access.md) for complete context system documentation.
 
 ## Lifecycle Diagram
 

@@ -120,12 +120,12 @@ ReactiveViewModelBuilder<UserViewModel, UserModel>(
 
 | Property/Method | Description | Details |
 |-----------------|-------------|---------|
-| `context` | Nullable BuildContext | [View details](context-access.md) |
-| `hasContext` | Context availability | [View details](context-access.md) |
-| `requireContext()` | Required context | [View details](context-access.md) |
-| `globalContext` | Global context | [View details](context-access.md) |
-| `hasGlobalContext` | Global context availability | [View details](context-access.md) |
-| `requireGlobalContext()` | Required global context | [View details](context-access.md) |
+| `context` | Nullable BuildContext | [View details](context/context.md) |
+| `hasContext` | Context availability | [View details](context/has-context.md) |
+| `requireContext()` | Required context | [View details](context/require-context.md) |
+| `globalContext` | Global context | [View details](context/global-context.md) |
+| `hasGlobalContext` | Global context availability | [View details](context/has-global-context.md) |
+| `requireGlobalContext()` | Required global context | [View details](context/require-global-context.md) |
 
 ## Lifecycle Diagram
 

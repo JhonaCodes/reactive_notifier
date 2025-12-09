@@ -1,18 +1,22 @@
-# 🎯 ReactiveNotifier Context Pattern Guide
+# Context Pattern Guide
+
+Comprehensive guide for using BuildContext in ReactiveNotifier ViewModels, including migration patterns from Riverpod and Provider.
 
 ## Overview
 
-ReactiveNotifier v2.12.0+ includes automatic BuildContext access for ViewModels, enabling seamless migration from other state management solutions like Riverpod and Provider while maintaining the core philosophy of independent ViewModel lifecycle.
+ReactiveNotifier v2.12.0+ includes automatic BuildContext access for ViewModels, enabling seamless migration from other state management solutions while maintaining the core philosophy of independent ViewModel lifecycle.
 
-## 🏗️ Architecture
+## Architecture
 
 ### Context Per ViewModel Instance
-- Each ViewModel gets its own isolated BuildContext
-- No shared global context between ViewModels
+
+- Each ViewModel gets its own isolated BuildContext (when using builders)
+- Global context available for all ViewModels (via `initContext()`)
 - Automatic registration/cleanup by reactive builders
 - Context available when any builder is mounted
 
 ### Automatic Lifecycle Management
+
 ```dart
 ReactiveViewModelBuilder<MyViewModel, MyState>(
   viewmodel: MyService.instance.notifier,
@@ -25,50 +29,71 @@ ReactiveViewModelBuilder<MyViewModel, MyState>(
 // Context automatically cleaned up when builder disposes
 ```
 
-## 🎨 Usage Patterns
+## Usage Patterns
 
-### 1. **Migration from Riverpod**
+### 1. Global Context Setup (Recommended)
+
+```dart
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Initialize global context for all ViewModels
+    ReactiveNotifier.initContext(context);
+
+    return MaterialApp(
+      title: 'My App',
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      home: HomePage(),
+    );
+  }
+}
+```
+
+### 2. Migration from Riverpod
+
 ```dart
 class MigrationViewModel extends ViewModel<UserState> {
   MigrationViewModel() : super(UserState.initial());
-  
+
   @override
   void init() {
     // Check if context is available for gradual migration
-    if (hasContext) {
+    if (hasGlobalContext) {
       try {
         // Access Riverpod container for gradual migration
-        final container = ProviderScope.containerOf(context!);
+        final container = ProviderScope.containerOf(globalContext!);
         final userData = container.read(userProvider);
-        updateState(UserState.fromRiverpod(userData));
+        updateSilently(UserState.fromRiverpod(userData));
       } catch (e) {
         // Fallback if Riverpod access fails
-        updateState(UserState.fallback());
+        updateSilently(UserState.fallback());
       }
     } else {
       // Pure ReactiveNotifier initialization
-      updateState(UserState.empty());
+      updateSilently(UserState.empty());
     }
   }
 }
 ```
 
-### 2. **Theme and MediaQuery Access**
+### 3. Theme and MediaQuery Access
+
 ```dart
 class ResponsiveViewModel extends ViewModel<ResponsiveState> {
   ResponsiveViewModel() : super(ResponsiveState.initial());
-  
+
   @override
   void init() {
     // Initialize with basic state first
     updateSilently(ResponsiveState.initial());
-    
+
     // Use context if available
     if (hasContext) {
       _updateFromContext();
     }
   }
-  
+
   void _updateFromContext() {
     // Use postFrameCallback for safe MediaQuery access
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -76,7 +101,7 @@ class ResponsiveViewModel extends ViewModel<ResponsiveState> {
         try {
           final mediaQuery = MediaQuery.of(requireContext('responsive design'));
           final theme = Theme.of(requireContext('theme access'));
-          
+
           updateState(ResponsiveState(
             screenWidth: mediaQuery.size.width,
             screenHeight: mediaQuery.size.height,
@@ -85,7 +110,6 @@ class ResponsiveViewModel extends ViewModel<ResponsiveState> {
           ));
         } catch (e) {
           // Handle context access errors gracefully
-          log('Context access failed: $e');
         }
       }
     });
@@ -93,11 +117,12 @@ class ResponsiveViewModel extends ViewModel<ResponsiveState> {
 }
 ```
 
-### 3. **Navigation from ViewModels**
+### 4. Navigation from ViewModels
+
 ```dart
 class NavigationViewModel extends ViewModel<NavigationState> {
   NavigationViewModel() : super(NavigationState.initial());
-  
+
   void navigateToDetails(String itemId) {
     if (hasContext) {
       try {
@@ -118,47 +143,27 @@ class NavigationViewModel extends ViewModel<NavigationState> {
 }
 ```
 
-### 4. **Safe Async Context Access**
+### 5. AsyncViewModel with waitForContext
+
 ```dart
 class AsyncContextViewModel extends AsyncViewModelImpl<UserData> {
-  AsyncContextViewModel() : super(AsyncState.initial());
-  
+  AsyncContextViewModel() : super(
+    AsyncState.initial(),
+    waitForContext: true,  // Wait for context before init()
+  );
+
   @override
   Future<UserData> init() async {
-    if (!hasContext) {
-      // Return fallback data when context not available
-      return UserData.fallback();
-    }
-    
-    // Use postFrameCallback for safe context access in async operations
-    final completer = Completer<UserData>();
-    
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      try {
-        if (!isDisposed && hasContext) {
-          final theme = Theme.of(requireContext('user data'));
-          final mediaQuery = MediaQuery.of(requireContext('screen info'));
-          
-          // Simulate API call with context-derived data
-          final userData = await _fetchUserData(
-            isDarkMode: theme.brightness == Brightness.dark,
-            screenSize: mediaQuery.size,
-          );
-          
-          if (!completer.isCompleted) {
-            completer.complete(userData);
-          }
-        }
-      } catch (e) {
-        if (!completer.isCompleted) {
-          completer.completeError(e);
-        }
-      }
-    });
-    
-    return completer.future;
+    // Context guaranteed to be available
+    final theme = Theme.of(requireContext('user data'));
+    final mediaQuery = MediaQuery.of(requireContext('screen info'));
+
+    return await _fetchUserData(
+      isDarkMode: theme.brightness == Brightness.dark,
+      screenSize: mediaQuery.size,
+    );
   }
-  
+
   Future<UserData> _fetchUserData({
     required bool isDarkMode,
     required Size screenSize,
@@ -173,25 +178,32 @@ class AsyncContextViewModel extends AsyncViewModelImpl<UserData> {
 }
 ```
 
-## 🔧 API Reference
+## API Reference
 
 ### Context Access Methods
+
 ```dart
 // Available in all ViewModels through ViewModelContextService mixin
-BuildContext? get context;           // Nullable context getter
-bool get hasContext;                 // Check if context is available
-BuildContext requireContext(String operation); // Required context with errors
+BuildContext? get context;           // Nullable (falls back to global)
+bool get hasContext;                 // Check any context available
+BuildContext requireContext(String operation); // Required with errors
+
+// Global context access
+BuildContext? get globalContext;     // Direct global access
+bool get hasGlobalContext;           // Check global context available
+BuildContext requireGlobalContext(String operation); // Required global
 ```
 
 ### Context Safety Patterns
+
 ```dart
-// ✅ SAFE: Always check availability first
+// SAFE: Always check availability first
 if (hasContext) {
   final theme = Theme.of(context!);
   // Use context-dependent logic
 }
 
-// ✅ SAFE: Use requireContext with operation description
+// SAFE: Use requireContext with operation description
 try {
   final mediaQuery = MediaQuery.of(requireContext('responsive layout'));
   // Use mediaQuery
@@ -199,17 +211,18 @@ try {
   // Handle context unavailable error
 }
 
-// ❌ UNSAFE: Direct context access without checking
+// UNSAFE: Direct context access without checking
 final theme = Theme.of(context!); // May throw if context is null
 ```
 
 ### Timing Considerations
+
 ```dart
-// ✅ RECOMMENDED: Use postFrameCallback for MediaQuery/Theme in init()
+// RECOMMENDED: Use postFrameCallback for MediaQuery/Theme in init()
 @override
 void init() {
   updateSilently(MyState.initial());
-  
+
   if (hasContext) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!isDisposed && hasContext) {
@@ -219,17 +232,19 @@ void init() {
   }
 }
 
-// ❌ AVOID: Direct Theme/MediaQuery access in init()
-@override  
+// AVOID: Direct Theme/MediaQuery access in init()
+@override
 void init() {
   final theme = Theme.of(context!); // May not be ready yet
 }
 ```
 
-## 🎯 Best Practices
+## Best Practices
 
-### 1. **Graceful Degradation**
+### 1. Graceful Degradation
+
 Always provide fallback behavior when context is not available:
+
 ```dart
 @override
 void init() {
@@ -242,23 +257,52 @@ void init() {
 
 void _initializeWithContext() {
   final theme = Theme.of(context!);
-  updateState(MyState.fromTheme(theme));
+  updateSilently(MyState.fromTheme(theme));
 }
 
 void _initializeWithoutContext() {
-  updateState(MyState.default());
+  updateSilently(MyState.defaults());
 }
 ```
 
-### 2. **Context Isolation**
-Each ViewModel has its own context. Don't share context between ViewModels:
+### 2. Use globalContext for Migration
+
 ```dart
-// ✅ CORRECT: Each ViewModel uses its own context
+// For Riverpod/Provider migration - use globalContext
+if (hasGlobalContext) {
+  final container = ProviderScope.containerOf(globalContext!);
+  // Read from existing providers...
+}
+
+// For general widget operations - use context
+if (hasContext) {
+  final theme = Theme.of(context!);
+  // Use theme...
+}
+```
+
+### 3. Error Handling with Descriptive Messages
+
+```dart
+// GOOD: Descriptive error messages
+final mediaQuery = MediaQuery.of(requireContext('responsive calculations'));
+final theme = Theme.of(requireContext('color scheme detection'));
+final navigator = Navigator.of(requireContext('details navigation'));
+
+// POOR: Generic error messages
+final mediaQuery = MediaQuery.of(requireContext('operation'));
+```
+
+### 4. Context Isolation
+
+Each ViewModel has its own context. Don't share context between ViewModels:
+
+```dart
+// CORRECT: Each ViewModel uses its own context
 class UserViewModel extends ViewModel<UserState> {
   void updateTheme() {
     if (hasContext) {
       final theme = Theme.of(context!); // This ViewModel's context
-      // Update based on theme
     }
   }
 }
@@ -267,183 +311,128 @@ class SettingsViewModel extends ViewModel<SettingsState> {
   void updateTheme() {
     if (hasContext) {
       final theme = Theme.of(context!); // Different context instance
-      // Update based on theme
     }
   }
 }
 ```
 
-### 3. **Error Handling**
-Use descriptive operation names with requireContext:
-```dart
-// ✅ GOOD: Descriptive error messages
-final mediaQuery = MediaQuery.of(requireContext('responsive calculations'));
-final theme = Theme.of(requireContext('color scheme detection'));
-final navigator = Navigator.of(requireContext('details navigation'));
+## Migration Strategy
 
-// ❌ POOR: Generic error messages  
-final mediaQuery = MediaQuery.of(requireContext('operation'));
-```
+### Complete Riverpod Migration Setup
 
-### 4. **Migration Strategy**
-For gradual migration from other state managers:
 ```dart
-class HybridViewModel extends ViewModel<HybridState> {
+// Step 1: App setup with both systems
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ProviderScope(
+      child: Builder(
+        builder: (innerContext) {
+          // Initialize with context that has ProviderScope access
+          ReactiveNotifier.initContext(innerContext);
+          return MaterialApp(home: HomePage());
+        },
+      ),
+    );
+  }
+}
+
+// Step 2: Create hybrid ViewModels
+class HybridViewModel extends ViewModel<UserState> {
   @override
   void init() {
-    // Phase 1: Basic ReactiveNotifier state
-    updateSilently(HybridState.basic());
-    
-    // Phase 2: Enhance with context if available
-    if (hasContext) {
-      try {
-        // Access legacy Riverpod/Provider data
-        final legacyData = _getLegacyData(context!);
-        updateState(HybridState.enhanced(legacyData));
-      } catch (e) {
-        // Continue with basic state if legacy access fails
-        log('Legacy data access failed: $e');
-      }
+    if (hasGlobalContext) {
+      // Read initial data from Riverpod
+      final container = ProviderScope.containerOf(globalContext!);
+      final riverpodUser = container.read(userProvider);
+      updateSilently(UserState.fromRiverpod(riverpodUser));
+    } else {
+      // Pure ReactiveNotifier initialization
+      updateSilently(UserState.empty());
     }
   }
-  
-  LegacyData _getLegacyData(BuildContext context) {
-    // Gradually migrate data from Riverpod/Provider
-    final container = ProviderScope.containerOf(context);
-    return container.read(legacyProvider);
-  }
 }
-```
 
-## 🔍 Debugging
-
-### Context Availability Debugging
-```dart
-class DebugViewModel extends ViewModel<DebugState> {
+// Step 3: Eventually remove Riverpod dependency
+class FinalViewModel extends ViewModel<UserState> {
   @override
   void init() {
-    assert(() {
-      log('''
-🐛 DebugViewModel Context Info:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Has context: $hasContext
-Context: ${context?.toString() ?? 'null'}
-Widget: ${context?.widget.runtimeType ?? 'N/A'}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-''');
-      return true;
-    }());
-    
-    updateSilently(DebugState(contextAvailable: hasContext));
+    // No more Riverpod access needed
+    updateSilently(UserState.empty());
   }
 }
 ```
 
-### Common Issues and Solutions
+### Migration Phases
 
-#### Issue: "BuildContext Required But Not Available"
-```dart
-// Problem: Accessing context before any builder is mounted
-final vm = MyService.instance.notifier;
-vm.doSomethingWithContext(); // ❌ No builder mounted yet
+1. **Phase 1: Setup**
+   - Add `ReactiveNotifier.initContext()` in app root
+   - Keep existing Riverpod/Provider setup
 
-// Solution: Use context only within or after builder mounting
-ReactiveViewModelBuilder<MyViewModel, MyState>(
-  viewmodel: MyService.instance.notifier,
-  build: (state, viewModel, keep) {
-    // ✅ Context is now available
-    viewModel.doSomethingWithContext();
-    return MyWidget();
-  },
-)
-```
+2. **Phase 2: Hybrid ViewModels**
+   - Create ViewModels that read from existing providers
+   - Use `globalContext` for provider access
 
-#### Issue: MediaQuery not ready in init()
-```dart
-// Problem: MediaQuery accessed too early
-@override
-void init() {
-  final size = MediaQuery.of(context!).size; // ❌ May not be ready
-}
+3. **Phase 3: Gradual Migration**
+   - Move logic from providers to ViewModels
+   - Use `listenVM` for cross-ViewModel communication
 
-// Solution: Use postFrameCallback
-@override
-void init() {
-  updateSilently(MyState.initial());
-  
-  if (hasContext) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!isDisposed && hasContext) {
-        final size = MediaQuery.of(context!).size; // ✅ Ready now
-        updateState(MyState.withSize(size));
-      }
-    });
-  }
-}
-```
+4. **Phase 4: Cleanup**
+   - Remove provider dependencies
+   - Remove `globalContext` usage
+   - Use pure ReactiveNotifier patterns
 
-## 🚀 Advanced Use Cases
+## Troubleshooting
 
-### 1. **Dynamic Theme Switching**
-```dart
-class ThemeViewModel extends ViewModel<ThemeState> {
-  ThemeViewModel() : super(ThemeState.system());
-  
-  void toggleTheme() {
-    if (hasContext) {
-      final currentTheme = Theme.of(context!);
-      final newBrightness = currentTheme.brightness == Brightness.dark
-          ? Brightness.light
-          : Brightness.dark;
-      
-      updateState(ThemeState.custom(newBrightness));
-    }
-  }
-  
-  void resetToSystemTheme() {
-    if (hasContext) {
-      final platformBrightness = MediaQuery.of(context!).platformBrightness;
-      updateState(ThemeState.system(platformBrightness));
-    }
-  }
-}
-```
+### Context Not Available
 
-### 2. **Localization with Context**
-```dart
-class LocalizationViewModel extends ViewModel<LocalizationState> {
-  LocalizationViewModel() : super(LocalizationState.initial());
-  
-  @override
-  void init() {
-    if (hasContext) {
-      final locale = Localizations.of(context!);
-      updateState(LocalizationState(
-        locale: locale.locale,
-        isRTL: locale.locale.languageCode == 'ar' || 
-               locale.locale.languageCode == 'he',
-      ));
-    }
-  }
-  
-  void changeLanguage(String languageCode) {
-    updateState(LocalizationState(
-      locale: Locale(languageCode),
-      isRTL: languageCode == 'ar' || languageCode == 'he',
-    ));
-  }
-}
-```
+**Symptom**: `hasContext` returns `false` when expected to be `true`
 
-## 📚 Summary
+**Solutions**:
+1. Ensure `ReactiveNotifier.initContext(context)` is called in app root
+2. Verify the builder widget is mounted before accessing context
+3. Use `waitForContext: true` for AsyncViewModels that need context in `init()`
+
+### requireContext Throws StateError
+
+**Symptom**: `requireContext()` throws with "BuildContext Required But Not Available"
+
+**Solutions**:
+1. Check `hasContext` before calling `requireContext()`
+2. Move context-dependent logic to `onResume()` instead of `init()`
+3. Use `postFrameCallback` for context access during widget build
+
+### Theme/MediaQuery Access Fails
+
+**Symptom**: `Theme.of(context!)` or `MediaQuery.of(context!)` throws
+
+**Solutions**:
+1. Wrap access in `postFrameCallback`:
+   ```dart
+   WidgetsBinding.instance.addPostFrameCallback((_) {
+     if (hasContext) {
+       final theme = Theme.of(context!);
+     }
+   });
+   ```
+2. Ensure the context has access to MaterialApp ancestors
+
+## Summary
 
 The ReactiveNotifier Context Pattern provides:
 
-- ✅ **Automatic Context Management**: No manual setup required
-- ✅ **Isolated Context Per ViewModel**: No shared state between ViewModels  
-- ✅ **Migration Support**: Seamless transition from Riverpod/Provider
-- ✅ **Safe Access Patterns**: Built-in error handling and validation
-- ✅ **Backward Compatibility**: Existing code works unchanged
-- ✅ **Memory Leak Prevention**: Automatic cleanup on disposal
+- **Automatic Context Management**: No manual setup required
+- **Isolated Context Per ViewModel**: No shared state between ViewModels
+- **Migration Support**: Seamless transition from Riverpod/Provider
+- **Safe Access Patterns**: Built-in error handling and validation
+- **Backward Compatibility**: Existing code works unchanged
+- **Memory Leak Prevention**: Automatic cleanup on disposal
 
-This pattern enables powerful context-dependent features while maintaining ReactiveNotifier's core philosophy of independent ViewModel lifecycle and reactive communication.
+## Related Documentation
+
+- [Context Access Reference](../features/context-access.md) - API reference
+- [context](../features/context/context.md) - context getter
+- [globalContext](../features/context/global-context.md) - Global context access
+- [initContext](../features/context/init-context.md) - Global initialization
+- [waitForContext](../features/context/wait-for-context.md) - AsyncViewModel parameter
+- [ReactiveContextBuilder](../features/builders/reactive-context-builder.md) - Context builder widget
