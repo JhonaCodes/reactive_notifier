@@ -1,3 +1,117 @@
+# 2.16.0
+## State Recreation, Code Organization & Ecosystem Expansion
+
+### New Features
+
+#### `recreate()` Method
+Reset ReactiveNotifier to fresh state using original factory function:
+```dart
+mixin UserService {
+  static final user = ReactiveNotifier<UserViewModel>(() => UserViewModel());
+
+  static void logout() {
+    user.recreate(); // Fresh UserViewModel with clean init()
+  }
+}
+```
+
+**Key behaviors:**
+- Properly disposes old ViewModel/state (cleans up listeners)
+- Calls original factory function for fresh state
+- Notifies all ReactiveNotifier listeners
+- Notifies parent related states
+- Resets auto-dispose scheduling
+- Protected against infinite loops (throws if called during recreation)
+
+#### `createFunction` Getter
+New `@protected` getter exposing the factory function for extension packages:
+```dart
+@protected
+T Function() get createFunction => _createFunction;
+```
+
+### Code Organization & Improvements
+
+#### Folder Restructuring
+- Reorganized source files for better maintainability
+- Cleaner separation between core components and utilities
+- Improved module boundaries
+
+#### Logic Improvements
+- Enhanced state update flow in ViewModels
+- Better error handling in async operations
+- Optimized listener notification patterns
+- Improved memory management in auto-dispose
+
+#### Code Quality
+- Removed unused variables and dead code
+- Standardized naming conventions
+- Enhanced type safety across components
+- Better null safety patterns
+
+### Documentation
+
+#### Comprehensive Updates
+- Restructured documentation with modular architecture
+- New `docs/` folder with feature-specific documentation
+- Updated CLAUDE.md with complete API reference
+- Enhanced code examples throughout
+
+#### New Documentation Structure
+```
+docs/
+├── architecture/
+│   └── overview.md
+├── features/
+│   ├── reactive-notifier.md
+│   ├── viewmodel.md
+│   ├── async-viewmodel.md
+│   └── context-management.md
+├── guides/
+│   ├── getting-started.md
+│   ├── best-practices.md
+│   └── migration.md
+└── api-reference.md
+```
+
+### Ecosystem Expansion
+
+Two new companion packages extending ReactiveNotifier capabilities:
+
+#### reactive_notifier_replay (v2.16.0)
+Undo/Redo functionality for state history:
+- `ReplayReactiveNotifier` - Wrapper with history tracking
+- `ReplayViewModel` - ViewModel with automatic history
+- `ReplayAsyncViewModelImpl` - Async ViewModel (tracks success states only)
+- `ReplayHistoryMixin` - Shared mixin for custom implementations
+- Configurable history limit, debounce, and availability callbacks
+
+#### reactive_notifier_hydrated (v2.16.0)
+Automatic state persistence:
+- `HydratedReactiveNotifier` - Wrapper with persistence
+- `HydratedViewModel` - ViewModel with automatic persistence
+- `HydratedAsyncViewModelImpl` - Async ViewModel with caching (stale-while-revalidate)
+- `HydratedMixin` - Shared mixin for custom implementations
+- Support for SharedPreferences, Hive, SQLite, and custom storage backends
+- Version migration support
+
+### Migration from 2.15.0
+
+No breaking changes. Simply update your dependency:
+```yaml
+dependencies:
+  reactive_notifier: ^2.16.0
+```
+
+**New optional packages:**
+```yaml
+dependencies:
+  reactive_notifier_replay: ^2.16.0   # For undo/redo
+  reactive_notifier_hydrated: ^2.16.0 # For persistence
+```
+
+---
+
 # 2.15.0
 ## Core Library Optimization & Cleanup
 
