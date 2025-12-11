@@ -250,6 +250,389 @@ class AdvancedWidget extends StatelessWidget {
 | `context.preserveReactive(widget, notifier, key)` | Preserve with reactive dependency | `context.preserveReactive(w, n, 'key')` |
 | `context.preserveReactiveBuilder(notifier, builder, key)` | Preserve with builder pattern | `context.preserveReactiveBuilder(n, (s) => w, 'key')` |
 
+## ReactiveContextBuilder Widget
+
+### Problem: Memory Issues with Direct Context Usage
+
+When using context extensions like `context.lang` or `context.user` directly without `ReactiveContextBuilder`, the system uses a **markNeedsBuild strategy** as a fallback. While functional, this approach has important implications:
+
+**What happens internally:**
+
+1. When you call `context.lang.name`, the system first checks for an `InheritedWidget` in the widget tree
+2. If no `InheritedWidget` is found, it falls back to the **markNeedsBuild strategy**
+3. The markNeedsBuild strategy tracks elements in a static Map and calls `element.markNeedsBuild()` when state changes
+
+**Potential issues with markNeedsBuild strategy:**
+
+```dart
+// Without ReactiveContextBuilder - uses markNeedsBuild fallback
+class MyWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Each widget using context.lang gets registered in a static Map
+    // These elements are tracked globally and rebuilt via markNeedsBuild()
+    return Text('Language: ${context.lang.name}');
+  }
+}
+```
+
+- **Memory overhead**: Elements are stored in static Maps (`_markNeedsBuildElements`)
+- **Cleanup dependency**: Relies on checking `element.mounted` during rebuilds
+- **No dependency tracking**: Flutter's built-in dependency system is bypassed
+- **Manual rebuild triggering**: Uses `markNeedsBuild()` instead of Flutter's optimized `InheritedWidget` notification
+
+**InheritedWidget strategy (preferred):**
+
+- Uses Flutter's native dependency tracking via `dependOnInheritedWidgetOfExactType`
+- Automatic cleanup when widgets unmount
+- Optimized rebuild scheduling through Flutter's framework
+- Better integration with Flutter's build system
+
+### Solution: ReactiveContextBuilder
+
+`ReactiveContextBuilder` is a widget that explicitly creates `InheritedWidget` wrappers for specified notifiers, ensuring the optimal InheritedWidget strategy is used instead of the markNeedsBuild fallback.
+
+**How it works:**
+
+```dart
+// Source: lib/src/context/reactive_context_enhanced.dart
+class ReactiveContextBuilder extends StatelessWidget {
+  final Widget child;
+  final List<ReactiveNotifier> forceInheritedFor;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget current = child;
+
+    // Creates InheritedWidgets for all specified notifiers
+    for (final notifier in forceInheritedFor.reversed) {
+      current = _createInheritedWidget(notifier, current);
+    }
+
+    return current;
+  }
+}
+```
+
+**Constructor parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `child` | `Widget` | The widget subtree that will have access to the reactive state |
+| `forceInheritedFor` | `List<ReactiveNotifier>` | List of notifiers to create InheritedWidgets for |
+
+**Internal behavior:**
+
+For each notifier in `forceInheritedFor`, the builder creates a `ReactiveInheritedContext` widget that:
+- Extends `InheritedNotifier<ReactiveNotifier<T>>`
+- Provides state through Flutter's standard `dependOnInheritedWidgetOfExactType`
+- Automatically notifies dependents when the notifier changes
+
+### Usage Example
+
+```dart
+import 'package:reactive_notifier/reactive_notifier.dart';
+
+// Define your services
+mixin UserService {
+  static final ReactiveNotifier<UserModel> userState =
+    ReactiveNotifier<UserModel>(() => UserModel.guest());
+}
+
+mixin SettingsService {
+  static final ReactiveNotifier<SettingsModel> settingsState =
+    ReactiveNotifier<SettingsModel>(() => SettingsModel.defaults());
+}
+
+mixin ThemeService {
+  static final ReactiveNotifier<ThemeModel> themeState =
+    ReactiveNotifier<ThemeModel>(() => ThemeModel.light());
+}
+
+// Define context extensions
+extension UserContext on BuildContext {
+  UserModel get user => getReactiveState(UserService.userState);
+}
+
+extension SettingsContext on BuildContext {
+  SettingsModel get settings => getReactiveState(SettingsService.settingsState);
+}
+
+extension ThemeContext on BuildContext {
+  ThemeModel get appTheme => getReactiveState(ThemeService.themeState);
+}
+
+// Wrap your app with ReactiveContextBuilder
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ReactiveContextBuilder(
+      forceInheritedFor: [
+        UserService.userState,
+        SettingsService.settingsState,
+        ThemeService.themeState,
+      ],
+      child: MaterialApp(
+        home: HomePage(),
+      ),
+    );
+  }
+}
+
+// Now all descendant widgets use InheritedWidget strategy
+class HomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // These use Flutter's optimized InheritedWidget mechanism
+    return Column(
+      children: [
+        Text('Welcome ${context.user.name}'),
+        Text('Theme: ${context.appTheme.isDark ? "Dark" : "Light"}'),
+        Text('Language: ${context.settings.languageCode}'),
+      ],
+    );
+  }
+}
+```
+
+### When to Use ReactiveContextBuilder
+
+**Use ReactiveContextBuilder when:**
+
+1. **App-wide global state**: Language, theme, user session, app configuration
+2. **Frequently accessed state**: State used by many widgets across the app
+3. **Performance-critical applications**: Apps where rebuild optimization matters
+4. **Large widget trees**: When many widgets depend on the same state
+5. **Production applications**: For optimal memory and performance characteristics
+
+**Scenarios requiring ReactiveContextBuilder:**
+
+```dart
+// Scenario 1: Multiple widgets accessing same state
+// Without ReactiveContextBuilder, each widget registration adds to static Map
+class Header extends StatelessWidget {
+  Widget build(BuildContext context) => Text(context.user.name);
+}
+class Sidebar extends StatelessWidget {
+  Widget build(BuildContext context) => Text(context.user.email);
+}
+class Footer extends StatelessWidget {
+  Widget build(BuildContext context) => Text(context.user.role);
+}
+
+// Scenario 2: Nested widgets accessing state
+// Without ReactiveContextBuilder, nested elements all tracked in global Map
+class ParentWidget extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return Container(
+      color: context.appTheme.backgroundColor,
+      child: ChildWidget(), // Also uses context.appTheme
+    );
+  }
+}
+
+// Solution: Wrap with ReactiveContextBuilder
+ReactiveContextBuilder(
+  forceInheritedFor: [UserService.userState, ThemeService.themeState],
+  child: Scaffold(
+    appBar: Header(),
+    drawer: Sidebar(),
+    body: ParentWidget(),
+    bottomNavigationBar: Footer(),
+  ),
+)
+```
+
+### Performance Benefits
+
+1. **Native Flutter optimization**: Uses `InheritedNotifier` which is highly optimized
+2. **Automatic dependency tracking**: Flutter tracks which widgets depend on which state
+3. **Efficient rebuilds**: Only widgets that actually depend on changed state rebuild
+4. **Memory efficiency**: No static Maps holding Element references
+5. **Proper cleanup**: Widget tree disposal is handled by Flutter framework
+
+### Memory Optimization
+
+**Without ReactiveContextBuilder:**
+```
+Static Map (_markNeedsBuildElements):
+  NotifierA -> {Element1, Element2, Element3, ...}
+  NotifierB -> {Element4, Element5, ...}
+
+- Elements held in memory until explicitly cleaned
+- Cleanup happens during rebuild cycles
+- Global listener per notifier type
+```
+
+**With ReactiveContextBuilder:**
+```
+Widget Tree:
+  ReactiveInheritedContext<UserModel>
+    ReactiveInheritedContext<ThemeModel>
+      MaterialApp
+        ... your widgets ...
+
+- Dependencies tracked by Flutter framework
+- Automatic cleanup on widget disposal
+- Uses Flutter's optimized notification system
+```
+
+### Best Practices
+
+#### 1. Place High in Widget Tree
+
+```dart
+// Correct: Place at app root or near top
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ReactiveContextBuilder(
+      forceInheritedFor: [
+        UserService.userState,
+        ThemeService.themeState,
+        LanguageService.languageState,
+      ],
+      child: MaterialApp(...),
+    );
+  }
+}
+```
+
+#### 2. Register All Frequently Accessed Notifiers
+
+```dart
+// Include all notifiers that will be accessed via context extensions
+ReactiveContextBuilder(
+  forceInheritedFor: [
+    // Global app state
+    UserService.userState,
+    AuthService.authState,
+
+    // UI configuration
+    ThemeService.themeState,
+    LanguageService.languageState,
+
+    // App-wide features
+    NotificationService.notificationState,
+    SettingsService.settingsState,
+  ],
+  child: MyApp(),
+)
+```
+
+#### 3. Do Not Include Rarely Used State
+
+```dart
+// Correct: Only frequently accessed state
+ReactiveContextBuilder(
+  forceInheritedFor: [
+    UserService.userState,      // Used across app
+    ThemeService.themeState,    // Used across app
+    // CartService.cartState,   // Only used in checkout - use ReactiveBuilder instead
+  ],
+  child: MyApp(),
+)
+
+// For rarely used state, use ReactiveBuilder directly
+class CheckoutPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ReactiveBuilder<CartModel>(
+      notifier: CartService.cartState,
+      build: (cart, notifier, keep) => CartWidget(cart: cart),
+    );
+  }
+}
+```
+
+#### 4. Combine with ReactiveBuilder for Complex Cases
+
+```dart
+// Global state via context, component state via ReactiveBuilder
+class ProductPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Global user from context (uses InheritedWidget via ReactiveContextBuilder)
+    final user = context.user;
+
+    // Component-specific state via ReactiveBuilder (granular control)
+    return ReactiveBuilder<ProductViewModel>(
+      notifier: ProductService.currentProduct,
+      build: (product, notifier, keep) {
+        return ProductDetails(
+          product: product,
+          userId: user.id,
+          canEdit: user.isAdmin,
+        );
+      },
+    );
+  }
+}
+```
+
+### Comparison: With vs Without ReactiveContextBuilder
+
+| Aspect | Without ReactiveContextBuilder | With ReactiveContextBuilder |
+|--------|--------------------------------|----------------------------|
+| **Strategy** | markNeedsBuild fallback | InheritedWidget native |
+| **Memory** | Static Map holding Elements | Flutter-managed tree |
+| **Cleanup** | Manual via mounted checks | Automatic on disposal |
+| **Dependencies** | Custom tracking | Flutter native tracking |
+| **Performance** | Good | Optimal |
+| **Debug support** | Custom logging | Flutter DevTools integration |
+
+### Troubleshooting
+
+**Problem: State not updating with ReactiveContextBuilder**
+
+```dart
+// Ensure the notifier is included in forceInheritedFor
+ReactiveContextBuilder(
+  forceInheritedFor: [
+    MyService.myState, // Make sure this is included
+  ],
+  child: MyApp(),
+)
+```
+
+**Problem: Type mismatch errors**
+
+```dart
+// Ensure extension returns correct type
+extension MyContext on BuildContext {
+  // Correct: Type matches service notifier
+  MyModel get myData => getReactiveState(MyService.myState);
+
+  // Wrong: Type mismatch
+  // OtherModel get myData => getReactiveState(MyService.myState);
+}
+```
+
+**Problem: Nested ReactiveContextBuilder**
+
+```dart
+// Avoid nesting - place once at top level
+// Wrong:
+ReactiveContextBuilder(
+  forceInheritedFor: [UserService.userState],
+  child: ReactiveContextBuilder(  // Unnecessary nesting
+    forceInheritedFor: [ThemeService.themeState],
+    child: MyApp(),
+  ),
+)
+
+// Correct: Single builder with all notifiers
+ReactiveContextBuilder(
+  forceInheritedFor: [
+    UserService.userState,
+    ThemeService.themeState,
+  ],
+  child: MyApp(),
+)
+```
+
+---
+
 ## Performance Optimization
 
 ### Type-Specific Rebuilds
@@ -278,23 +661,23 @@ class PerformanceDemo extends StatelessWidget {
 
 This prevents the common "cross-rebuilds" problem where changing one piece of state causes unrelated widgets to rebuild.
 
-### ReactiveOptimizer Widget
+### ReactiveContextBuilder for Optimal Performance
 
-For maximum performance, use `ReactiveOptimizer` to force the InheritedWidget strategy:
+For maximum performance, use `ReactiveContextBuilder` to force the InheritedWidget strategy (see the dedicated [ReactiveContextBuilder Widget](#reactivecontextbuilder-widget) section for full details):
 
 ```dart
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: ReactiveOptimizer(
-        // Force InheritedWidget strategy for optimal performance
-        forceInheritedFor: [
-          LanguageService.instance,
-          ThemeService.instance,
-          UserService.instance,
-        ],
-        child: MyHomePage(),
+    return ReactiveContextBuilder(
+      // Force InheritedWidget strategy for optimal performance
+      forceInheritedFor: [
+        LanguageService.instance,
+        ThemeService.instance,
+        UserService.instance,
+      ],
+      child: MaterialApp(
+        home: MyHomePage(),
       ),
     );
   }
@@ -304,7 +687,7 @@ class MyApp extends StatelessWidget {
 ### Performance Best Practices
 
 1. **Use Extension Methods**: They provide the cleanest API and best performance
-2. **Leverage ReactiveOptimizer**: For frequently accessed state
+2. **Leverage ReactiveContextBuilder**: For frequently accessed state
 3. **Preserve Expensive Widgets**: Use `.keep()` for widgets that don't need updates
 4. **Monitor Performance**: Use debug methods to track rebuild counts
 5. **Group Related States**: Use related states system for dependent data
@@ -474,8 +857,8 @@ extension SafeContext on BuildContext {
 ### 4. Performance Optimization
 
 ```dart
-// Use ReactiveOptimizer for frequently accessed state
-ReactiveOptimizer(
+// Use ReactiveContextBuilder for frequently accessed state
+ReactiveContextBuilder(
   forceInheritedFor: [
     // Include frequently accessed notifiers
     UserService.instance,

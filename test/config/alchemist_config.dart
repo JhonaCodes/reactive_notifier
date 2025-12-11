@@ -7,12 +7,15 @@ import 'package:flutter/material.dart';
 /// across all platforms and test scenarios.
 class ReactiveNotifierAlchemistConfig {
   /// Standard configuration for ReactiveNotifier golden tests
-  static const AlchemistConfig standard = AlchemistConfig(
+  static final AlchemistConfig standard = AlchemistConfig(
     // Don't force update golden files by default
     forceUpdateGoldenFiles: false,
+    theme: ThemeData(
+      fontFamily: 'Ahem',
+    ),
 
     // Configure platform-specific golden test settings
-    platformGoldensConfig: PlatformGoldensConfig(
+    platformGoldensConfig: const PlatformGoldensConfig(
       enabled: true,
       renderShadows: true,
       obscureText: false,
@@ -20,9 +23,12 @@ class ReactiveNotifierAlchemistConfig {
   );
 
   /// Configuration for wide layout tests
-  static const AlchemistConfig wideLayout = AlchemistConfig(
+  static final AlchemistConfig wideLayout = AlchemistConfig(
     forceUpdateGoldenFiles: false,
-    platformGoldensConfig: PlatformGoldensConfig(
+    theme: ThemeData(
+      fontFamily: 'Ahem',
+    ),
+    platformGoldensConfig: const PlatformGoldensConfig(
       enabled: true,
       renderShadows: true,
       obscureText: false,
