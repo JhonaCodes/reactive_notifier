@@ -5,6 +5,7 @@ Complex state management with synchronous initialization, extending ChangeNotifi
 ## Overview
 
 `ViewModel<T>` is designed for complex state that requires:
+
 - Synchronous initialization
 - Business logic encapsulation
 - Cross-ViewModel communication
@@ -52,8 +53,8 @@ class UserViewModel extends ViewModel<UserModel> {
 
 // 3. Organize in service mixin
 mixin UserService {
-  static final ReactiveNotifier<UserViewModel> userState =
-    ReactiveNotifier<UserViewModel>(() => UserViewModel());
+  static final ReactiveNotifierViewModel<UserViewModel, UserModel> userState = 
+    ReactiveNotifierViewModel<UserViewModel, UserModel>(() => UserViewModel());
 }
 
 // 4. Use in UI

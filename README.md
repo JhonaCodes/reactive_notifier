@@ -144,8 +144,8 @@ class UserViewModel extends ViewModel<UserModel> {
 
 // Define service
 mixin UserService {
-  static final ReactiveNotifier<UserViewModel> userState = 
-    ReactiveNotifier<UserViewModel>(() => UserViewModel());
+  static final ReactiveNotifierViewModel<UserViewModel, UserModel> userState = 
+    ReactiveNotifierViewModel<UserViewModel, UserModel>(() => UserViewModel());
 }
 
 // Use in widget
@@ -273,8 +273,8 @@ class ChatViewModel extends ViewModel<ChatState> {
 
 // Service with ViewModel
 mixin ChatService {
-  static final ReactiveNotifier<ChatViewModel> chat = 
-    ReactiveNotifier<ChatViewModel>(() => ChatViewModel());
+  static final ReactiveNotifierViewModel<ChatViewModel, ChatState> chat = 
+    ReactiveNotifierViewModel<ChatViewModel, ChatState>(() => ChatViewModel());
 }
 
 // Or: ReactiveNotifier holding a stream directly
@@ -332,8 +332,9 @@ class ChatWidget extends StatelessWidget {
 ```
 
 **Stream Usage Patterns:**
+
 - **ViewModel with internal stream** - Stream managed inside ViewModel lifecycle
-- **ReactiveNotifier<Stream<T>>** - Direct stream exposure for ReactiveStreamBuilder
+- `ReactiveNotifier<Stream<T>>` - Direct stream exposure for ReactiveStreamBuilder
 - **Hybrid approach** - Stream data transformed to ViewModel state
 
 ### Manual Listener Management
@@ -376,6 +377,7 @@ class NotificationViewModel extends ViewModel<List<String>> {
 ```
 
 **Key Points:**
+
 - `setupListeners` is called automatically after `init()`
 - `removeListeners` is called automatically on `dispose()`
 - Always call `super.setupListeners()` and `super.removeListeners()`
@@ -451,8 +453,8 @@ class DataViewModel extends AsyncViewModelImpl<List<Item>> {
 // ✅ Hybrid usage - ReactiveNotifier + Riverpod simultaneously
 class HybridService {
   // ReactiveNotifier state
-  static final ReactiveNotifier<HybridViewModel> state = 
-    ReactiveNotifier<HybridViewModel>(() => HybridViewModel());
+  static final ReactiveNotifierViewModel<HybridViewModel, HybridState> state = 
+    ReactiveNotifierViewModel<HybridViewModel, HybridState>(() => HybridViewModel());
 }
 
 class HybridViewModel extends ViewModel<HybridState> {
@@ -476,11 +478,13 @@ class HybridViewModel extends ViewModel<HybridState> {
 ```
 
 **Context API:**
+
 - **`context`** - Nullable BuildContext getter (`BuildContext?`)
-- **`hasContext`** - Check if context is available (`bool`) 
+- **`hasContext`** - Check if context is available (`bool`)
 - **`requireContext([operation])`** - Required context with descriptive errors
 
 **Context Lifecycle:**
+
 - Context automatically registered when any `ReactiveBuilder` mounts
 - Context remains available while any builder is active
 - Context cleared when last builder disposes
@@ -531,14 +535,14 @@ ReactiveNotifier supports explicit communication between different services usin
 ```dart
 // User Service
 mixin UserService {
-  static final ReactiveNotifier<UserViewModel> currentUser = 
-    ReactiveNotifier<UserViewModel>(() => UserViewModel());
+  static final ReactiveNotifierViewModel<UserViewModel, UserModel> currentUser = 
+    ReactiveNotifierViewModel<UserViewModel, UserModel>(() => UserViewModel());
 }
 
 // Notification Service  
 mixin NotificationService {
-  static final ReactiveNotifier<NotificationViewModel> notifications = 
-    ReactiveNotifier<NotificationViewModel>(() => NotificationViewModel());
+  static final ReactiveNotifierViewModel<NotificationViewModel, NotificationModel> notifications = 
+    ReactiveNotifierViewModel<NotificationViewModel, NotificationModel>(() => NotificationViewModel());
 }
 
 // Notification ViewModel listens to User changes
@@ -584,15 +588,15 @@ class NotificationViewModel extends ViewModel<NotificationModel> {
 ```dart
 // Multiple instances of the same type in different services
 mixin UserService {
-  static final ReactiveNotifier<UserViewModel> mainUser = 
-    ReactiveNotifier<UserViewModel>(() => UserViewModel());
-  static final ReactiveNotifier<UserViewModel> guestUser = 
-    ReactiveNotifier<UserViewModel>(() => UserViewModel());
+  static final ReactiveNotifierViewModel<UserViewModel, UserState> mainUser = 
+    ReactiveNotifierViewModel<UserViewModel, UserState>(() => UserViewModel());
+  static final ReactiveNotifierViewModel<UserViewModel, UserState> guestUser = 
+    ReactiveNotifierViewModel<UserViewModel, UserState>(() => UserViewModel());
 }
 
 mixin AdminService {
-  static final ReactiveNotifier<UserViewModel> adminUser = 
-    ReactiveNotifier<UserViewModel>(() => UserViewModel());
+  static final ReactiveNotifierViewModel<UserViewModel, UserState> adminUser = 
+    ReactiveNotifierViewModel<UserViewModel, UserState>(() => UserViewModel());
 }
 
 // Explicit service access
@@ -654,13 +658,13 @@ class CounterViewModel extends ViewModel<CounterModel> {
 
 // Services for cross-communication testing
 mixin UserService {
-  static final ReactiveNotifier<UserViewModel> user = 
-    ReactiveNotifier<UserViewModel>(() => UserViewModel());
+  static final ReactiveNotifierViewModel<UserViewModel, CounterModel> user = 
+    ReactiveNotifierViewModel<UserViewModel, CounterModel>(() => UserViewModel());
 }
 
 mixin NotificationService {
-  static final ReactiveNotifier<NotificationViewModel> notifications = 
-    ReactiveNotifier<NotificationViewModel>(() => NotificationViewModel());
+  static final ReactiveNotifierViewModel<NotificationViewModel, NotificationModel> notifications = 
+    ReactiveNotifierViewModel<NotificationViewModel, NotificationModel>(() => NotificationViewModel());
 }
 
 void main() {
@@ -794,12 +798,14 @@ class HomePage extends StatelessWidget {
 ```
 
 **Performance Benefits:**
+
 - **InheritedWidget efficiency** - Flutter's fastest rebuild mechanism
 - **Zero listener overhead** - Uses Flutter's native dependency system
 - **Automatic cleanup** - InheritedWidget handles lifecycle automatically
 - **Cross-widget optimization** - Multiple widgets share same InheritedWidget
 
 **When to Use ReactiveContextBuilder:**
+
 - Apps with 10+ reactive dependencies
 - Performance-critical applications
 - Many widgets accessing same state
@@ -809,13 +815,15 @@ class HomePage extends StatelessWidget {
 
 ## When to Use Each Component
 
-### ReactiveNotifier<T>
+### `ReactiveNotifier<T>`
+
 - Simple state values (int, bool, String)
 - Settings and configuration
 - State that doesn't require initialization
 - No complex business logic needed
 
-### ViewModel<T>
+### `ViewModel<T>`
+
 - Complex state objects  
 - State requires synchronous initialization
 - Business logic is involved
@@ -823,7 +831,8 @@ class HomePage extends StatelessWidget {
 - Cross-service reactive communication needed
 - **✅ BuildContext access** for migration/hybrid usage
 
-### AsyncViewModelImpl<T>
+### `AsyncViewModelImpl<T>`
+
 - Loading data from external sources
 - Need loading/error state handling
 - API calls or database operations
@@ -831,7 +840,8 @@ class HomePage extends StatelessWidget {
 - Async initialization required
 - **✅ BuildContext access** for migration/hybrid usage
 
-### ReactiveStreamBuilder<VM, T>
+### `ReactiveStreamBuilder<VM, T>`
+
 - **Real-time data streams** (WebSocket, Server-Sent Events)
 - **Database change streams** (Firestore, PostgreSQL LISTEN/NOTIFY)
 - **File system watchers** and live data feeds
@@ -840,6 +850,7 @@ class HomePage extends StatelessWidget {
 - **IoT sensor data** and real-time analytics
 
 ### Reactive Context Extensions
+
 - **Hybrid apps** migrating from Provider/Riverpod
 - **Mixed architecture** with existing StatelessWidget/StatefulWidget
 - **Legacy code integration** without full ReactiveBuilder adoption
@@ -847,6 +858,7 @@ class HomePage extends StatelessWidget {
 - **Direct state access** without builder pattern
 
 ### ReactiveContextBuilder
+
 - **High-performance apps** with many reactive dependencies
 - **Enterprise applications** requiring maximum efficiency
 - **Apps with complex state trees** (10+ reactive services)
@@ -878,6 +890,7 @@ void dispose() {
 ReactiveNotifier provides multiple strategies for preventing expensive widget rebuilds:
 
 #### 1. keep() Function in Builders
+
 ```dart
 ReactiveBuilder<UserModel>(
   notifier: UserService.userState,
@@ -894,6 +907,7 @@ ReactiveBuilder<UserModel>(
 ```
 
 #### 2. Widget Extensions for Preservation
+
 ```dart
 class MyWidget extends StatelessWidget {
   @override
@@ -911,6 +925,7 @@ class MyWidget extends StatelessWidget {
 ```
 
 #### 3. Context-Based Preservation
+
 ```dart
 class MyWidget extends StatelessWidget {
   @override
@@ -933,6 +948,7 @@ class MyWidget extends StatelessWidget {
 ```
 
 #### 4. Advanced Preservation Strategies
+
 ```dart
 // Automatic cleanup and intelligent caching
 ReactiveContextPreservationWrapper(
@@ -949,6 +965,7 @@ final preservedWidgets = preserveWidgets([
 ```
 
 **Performance Benefits:**
+
 - **Automatic key management** - No manual key tracking needed
 - **LRU cache cleanup** - Prevents memory leaks with intelligent cleanup
 - **Batch operations** - Optimize multiple widget preservation
@@ -961,12 +978,15 @@ final preservedWidgets = preserveWidgets([
 We welcome contributions to ReactiveNotifier! Here's how you can help:
 
 ### Bug Reports
+
 Please use the GitHub issue tracker to report bugs. Include a minimal reproduction case.
 
 ### Feature Requests  
+
 Suggest new features through GitHub issues. Provide use cases and examples.
 
 ### Documentation
+
 Help improve documentation by submitting PRs with clarifications and examples.
 
 ### Development Setup
@@ -1015,6 +1035,6 @@ If ReactiveNotifier has been helpful for your projects, consider:
 
 ---
 
-**Made with ❤️ by [@jhonacode](https://github.com/jhonacode)**
+Made with ❤️ by [@jhonacode](https://github.com/jhonacode)
 
 *ReactiveNotifier - State Management for Flutter*
