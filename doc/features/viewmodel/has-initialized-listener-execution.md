@@ -172,6 +172,6 @@ hasInitializedListenerExecution = true (safe for listener operations)
 
 ## Related
 
-- [setupListeners()](/docs/features/viewmodel/methods/setup-listeners.md) - Register external listeners
-- [removeListeners()](/docs/features/viewmodel/methods/remove-listeners.md) - Cleanup listeners
-- [listenVM()](/docs/features/viewmodel/methods/listen-vm.md) - Built-in listener with init control
+- [setupListeners()](/doc/features/viewmodel/methods/setup-listeners.md) - Register external listeners
+- [removeListeners()](/doc/features/viewmodel/methods/remove-listeners.md) - Cleanup listeners
+- [listenVM()](/doc/features/viewmodel/methods/listen-vm.md) - Built-in listener with init control

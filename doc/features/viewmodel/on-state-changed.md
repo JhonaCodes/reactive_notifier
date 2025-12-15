@@ -266,6 +266,6 @@ void onStateChanged(OrderModel previous, OrderModel next) {
 
 ## Related
 
-- [onAsyncStateChanged()](/docs/features/async-viewmodel/on-async-state-changed.md) - Hook for AsyncViewModelImpl
-- [updateState()](/docs/features/viewmodel/methods/update-state.md) - State update with notification
-- [listenVM()](/docs/features/viewmodel/methods/listen-vm.md) - Cross-ViewModel communication
+- [onAsyncStateChanged()](/doc/features/async-viewmodel/on-async-state-changed.md) - Hook for AsyncViewModelImpl
+- [updateState()](/doc/features/viewmodel/methods/update-state.md) - State update with notification
+- [listenVM()](/doc/features/viewmodel/methods/listen-vm.md) - Cross-ViewModel communication

@@ -133,6 +133,6 @@ The `isDisposed` flag tracks this lifecycle and is used internally by `_checkDis
 
 ## Related
 
-- [dispose()](/docs/features/viewmodel/methods/dispose.md) - Dispose lifecycle method
-- [cleanState()](/docs/features/viewmodel/methods/clean-state.md) - Clean state without disposing
-- [data](/docs/features/viewmodel/data.md) - Data getter with auto-reinitialization
+- [dispose()](/doc/features/viewmodel/methods/dispose.md) - Dispose lifecycle method
+- [cleanState()](/doc/features/viewmodel/methods/clean-state.md) - Clean state without disposing
+- [data](/doc/features/viewmodel/data.md) - Data getter with auto-reinitialization

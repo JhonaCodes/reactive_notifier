@@ -230,5 +230,5 @@ This helps with debugging during development.
 
 ## Related
 
-- [data](/docs/features/viewmodel/data.md) - Access current state
-- [cleanState()](/docs/features/viewmodel/methods/clean-state.md) - Reset to empty state
+- [data](/doc/features/viewmodel/data.md) - Access current state
+- [cleanState()](/doc/features/viewmodel/methods/clean-state.md) - Reset to empty state

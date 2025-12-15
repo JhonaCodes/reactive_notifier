@@ -93,6 +93,6 @@ final currentName = UserService.userState.notifier.data.name;
 
 ## Related
 
-- [updateState()](/docs/features/viewmodel/methods/update-state.md) - Update state with notification
-- [updateSilently()](/docs/features/viewmodel/methods/update-silently.md) - Update state without notification
-- [transformState()](/docs/features/viewmodel/methods/transform-state.md) - Transform current state
+- [updateState()](/doc/features/viewmodel/methods/update-state.md) - Update state with notification
+- [updateSilently()](/doc/features/viewmodel/methods/update-silently.md) - Update state without notification
+- [transformState()](/doc/features/viewmodel/methods/transform-state.md) - Transform current state

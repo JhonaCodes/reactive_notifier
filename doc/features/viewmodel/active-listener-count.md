@@ -157,6 +157,6 @@ void debugViewModelState() {
 
 ## Related
 
-- [listenVM()](/docs/features/viewmodel/methods/listen-vm.md) - Register reactive listeners
-- [stopListeningVM()](/docs/features/viewmodel/methods/stop-listening-vm.md) - Remove all listeners
-- [stopSpecificListener()](/docs/features/viewmodel/methods/stop-specific-listener.md) - Remove specific listener
+- [listenVM()](/doc/features/viewmodel/methods/listen-vm.md) - Register reactive listeners
+- [stopListeningVM()](/doc/features/viewmodel/methods/stop-listening-vm.md) - Remove all listeners
+- [stopSpecificListener()](/doc/features/viewmodel/methods/stop-specific-listener.md) - Remove specific listener
