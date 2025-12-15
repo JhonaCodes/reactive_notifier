@@ -59,8 +59,8 @@ class UserViewModel extends ViewModel<UserState> {
 
 // Service
 mixin UserService {
-  static final ReactiveNotifier<UserViewModel> userState = 
-    ReactiveNotifier<UserViewModel>(() => UserViewModel());
+  static final ReactiveNotifierViewModel<UserViewModel, UserState> userState = 
+    ReactiveNotifierViewModel<UserViewModel, UserState>(() => UserViewModel());
 }
 
 // Use in UI

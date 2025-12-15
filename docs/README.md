@@ -6,27 +6,50 @@ ReactiveNotifier is a lightweight, singleton-based state management solution for
 
 **Current Version**: 2.13.0
 
+## Core Components
+
+ReactiveNotifier offers three core components for different use cases:
+
+- **`ReactiveNotifier<T>`** - Simple state values (primitives, settings, flags)
+- **`ViewModel<T>`** - Complex state with synchronous initialization and business logic
+- **`AsyncViewModelImpl<T>`** - Async operations with loading/success/error states
+
+### When to Use Which Component
+
+| Component | Purpose | Use Cases |
+|-----------|---------|-----------|
+| `ReactiveNotifier<T>` | Simple primitive state | Counters, flags, settings, theme toggles |
+| `ViewModel<T>` | Complex synchronous state  | Form validation, business logic, cross-VM communication |
+| `AsyncViewModelImpl<T>` | Async operations | API calls, database queries, file I/O |
+
+For detailed guidance on choosing the right component, see the [Quick Reference](#quick-reference) section below.
+
 ## Documentation Index
 
 ### Getting Started
+
 - [Quick Start Guide](getting-started/quick-start.md) - Get up and running in minutes
 
 ### Architecture
+
 - [Architecture Overview](architecture/overview.md) - Complete system architecture with diagrams and design decisions
 
 ### Core Features
 
 #### State Management
+
 - [ReactiveNotifier<T>](features/reactive-notifier.md) - Core state holder class
 - [ViewModel<T>](features/viewmodel.md) - Complex state with synchronous initialization
 - [AsyncViewModelImpl<T>](features/async-viewmodel.md) - Async operations with loading/success/error states
 - [State Types](features/state-types.md) - AsyncState and StreamState reference
 
 #### Builder Widgets
+
 - [Builder Widgets Overview](features/builders.md) - All builders reference
 - [ReactiveContextBuilder](features/builders/reactive-context-builder.md) - Force InheritedWidget strategy
 
 #### Context Access System
+
 - [Context Access Overview](features/context-access.md) - BuildContext access in ViewModels
   - [context](features/context/context.md) - Nullable context getter
   - [hasContext](features/context/has-context.md) - Check context availability
@@ -38,15 +61,18 @@ ReactiveNotifier is a lightweight, singleton-based state management solution for
   - [waitForContext](features/context/wait-for-context.md) - AsyncViewModel context parameter
 
 ### Advanced Features
+
 - [Related States](features/related-states.md) - Parent-child state relationships with automatic propagation
 - [Auto-Dispose](features/auto-dispose.md) - Widget-aware lifecycle with automatic memory cleanup
 - [Communication](features/communication.md) - Cross-service communication with listen/listenVM
 - [Hooks](features/hooks.md) - State change hooks (onStateChanged, onAsyncStateChanged)
 
 ### Testing
+
 - [Testing Guide](features/testing.md) - Complete testing patterns and utilities
 
 ### Guides
+
 - [Context Pattern Guide](guides/context-pattern.md) - BuildContext migration patterns and best practices
 - [Reactive Context](guides/reactive-context.md) - Reactive context management
 - [Memory Management](guides/memory-management.md) - Listener tracking and leak prevention
