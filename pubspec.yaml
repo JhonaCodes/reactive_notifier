@@ -1,7 +1,7 @@
 name: reactive_notifier
 description: Flutter state management with MVVM-inspired ViewModels & Notifiers. Offers fine-grained control.
 
-version: 2.16.0
+version: 2.16.1
 homepage: https://github.com/JhonaCodes/reactive_notifier.git
 topics:
   - reactive-notifier
@@ -11,7 +11,7 @@ topics:
   - state
 
 environment:
-  sdk: ^3.5.4
+  sdk: ^3.10.0
   flutter: ">=1.17.0"
 
 dependencies:

@@ -2,15 +2,17 @@
 
 ## Overview
 
-State Change Hooks are callback methods that execute automatically after every state change in your ViewModels. Introduced in ReactiveNotifier v2.13.0, hooks provide a clean way to react to state transitions without cluttering your business logic methods.
+State Change Hooks are callback methods that execute automatically after every state change in your ViewModels. Introduced in ReactiveNotifier v2.16.0, hooks provide a clean way to react to state transitions without cluttering your business logic methods.
 
 **Key Benefits:**
+
 - Centralized state change handling
 - Automatic execution on all state updates (including silent updates)
 - Access to both previous and current state
 - Perfect for logging, analytics, side effects, and validation
 
 There are two types of hooks:
+
 1. **`onStateChanged`** - For synchronous `ViewModel<T>`
 2. **`onAsyncStateChanged`** - For asynchronous `AsyncViewModelImpl<T>`
 
@@ -24,6 +26,7 @@ void onStateChanged(T previous, T next)
 ```
 
 **Parameters:**
+
 - `previous` - The state value before the update (`T`)
 - `next` - The state value after the update (`T`)
 
@@ -285,6 +288,7 @@ void onAsyncStateChanged(AsyncState<T> previous, AsyncState<T> next)
 ```
 
 **Parameters:**
+
 - `previous` - The async state before the update (`AsyncState<T>`)
 - `next` - The async state after the update (`AsyncState<T>`)
 
@@ -1089,6 +1093,7 @@ State Change Hooks provide a powerful mechanism for reacting to state changes in
 | Silent updates | Triggers hook | Does not trigger hook |
 
 **Key Takeaways:**
+
 - Hooks centralize state change handling
 - They execute after state is updated
 - Use them for logging, analytics, side effects, and validation

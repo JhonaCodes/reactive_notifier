@@ -2,7 +2,7 @@
 
 ## Overview
 
-Auto-Dispose is a feature introduced in ReactiveNotifier v2.13.0 that provides automatic memory management based on widget usage. It solves the fundamental challenge of singleton state management: **how to maintain the "create once, reuse always" philosophy while still allowing proper memory cleanup when state is no longer needed**.
+Auto-Dispose is a feature introduced in ReactiveNotifier v2.16.0 that provides automatic memory management based on widget usage. It solves the fundamental challenge of singleton state management: **how to maintain the "create once, reuse always" philosophy while still allowing proper memory cleanup when state is no longer needed**.
 
 ### The Problem It Solves
 
@@ -12,6 +12,7 @@ In traditional singleton-based state management, state instances live for the en
 2. **Stale State**: Previously used state persists when navigating back to screens
 
 Auto-Dispose addresses both issues by:
+
 - Tracking which widgets are actively using a ReactiveNotifier instance
 - Automatically disposing instances when no widgets reference them (after a configurable timeout)
 - Recreating fresh instances when widgets need the state again
@@ -132,6 +133,7 @@ int get referenceCount => _referenceCount;
 ```
 
 **Usage:**
+
 ```dart
 // Check how many widgets are using this state
 final count = UserService.userState.referenceCount;
@@ -147,6 +149,7 @@ bool get isScheduledForDispose => _isScheduledForDispose;
 ```
 
 **Usage:**
+
 ```dart
 if (UserService.userState.isScheduledForDispose) {
   log('User state will be disposed soon - consider cancelling if needed');
@@ -162,6 +165,7 @@ Set<String> get activeReferences => Set.from(_activeReferences);
 ```
 
 **Usage:**
+
 ```dart
 // Debug which widgets are currently using this state
 final refs = UserService.userState.activeReferences;
@@ -191,11 +195,13 @@ void addReference(String referenceId) {
 ```
 
 **Key Behaviors:**
+
 - Duplicate reference IDs are ignored (no double-counting)
 - Cancels any pending auto-dispose when a new reference is added
 - Automatically called by ReactiveBuilder widgets
 
 **Usage (typically internal):**
+
 ```dart
 // Called automatically by builders, but can be used manually:
 UserService.userState.addReference('my_custom_widget_${hashCode}');
@@ -220,11 +226,13 @@ void removeReference(String referenceId) {
 ```
 
 **Key Behaviors:**
+
 - Only decrements if the reference ID was actually registered
 - Triggers auto-dispose scheduling when count reaches zero
 - Automatically called by ReactiveBuilder widgets on dispose
 
 **Usage (typically internal):**
+
 ```dart
 // Called automatically by builders, but can be used manually:
 UserService.userState.removeReference('my_custom_widget_${hashCode}');
@@ -321,6 +329,7 @@ static T reinitializeInstance<T>(Key key, T Function() creator) {
 ```
 
 **Usage:**
+
 ```dart
 mixin UserService {
   static final ReactiveNotifier<UserViewModel> userState =
@@ -352,6 +361,7 @@ static bool isInstanceActive<T>(Key key) {
 ```
 
 **Usage:**
+
 ```dart
 mixin UserService {
   static bool get isUserActive =>
@@ -374,6 +384,7 @@ mixin UserService {
 In debug mode, auto-dispose provides detailed logging:
 
 **Reference Added:**
+
 ```
 +++ Reference added to ReactiveNotifier<UserViewModel>
 ----------------------------------------------------
@@ -384,6 +395,7 @@ Auto-dispose enabled: true
 ```
 
 **Reference Removed:**
+
 ```
 --- Reference removed from ReactiveNotifier<UserViewModel>
 ----------------------------------------------------
@@ -394,6 +406,7 @@ Auto-dispose enabled: true
 ```
 
 **Auto-Dispose Scheduled:**
+
 ```
 Timer: Auto-dispose scheduled for ReactiveNotifier<UserViewModel>
 ----------------------------------------------------
@@ -404,6 +417,7 @@ Will dispose if no references are added
 ```
 
 **Auto-Dispose Cancelled:**
+
 ```
 Refresh: Auto-dispose cancelled for ReactiveNotifier<UserViewModel>
 ----------------------------------------------------
@@ -414,6 +428,7 @@ Reason: New widget started using this notifier
 ```
 
 **Auto-Dispose Executed:**
+
 ```
 Trash: Auto-disposing ReactiveNotifier<UserViewModel>
 ----------------------------------------------------
@@ -728,7 +743,7 @@ class DebugOverlay extends StatelessWidget {
 
 ## When to Use vs When Not to Use
 
-### Use Auto-Dispose When:
+### Use Auto-Dispose When
 
 | Scenario | Reason |
 |----------|--------|
@@ -738,7 +753,7 @@ class DebugOverlay extends StatelessWidget {
 | Detail view state | Fresh data when returning |
 | Cache with short lifetime | Automatic cache invalidation |
 
-### Do NOT Use Auto-Dispose When:
+### Do NOT Use Auto-Dispose When
 
 | Scenario | Reason |
 |----------|--------|
@@ -775,6 +790,7 @@ autoDispose: false    Is the state used across many screens?
 ### From Manual Cleanup
 
 **Before (manual cleanup):**
+
 ```dart
 mixin DataService {
   static final ReactiveNotifier<DataViewModel> data =
@@ -795,6 +811,7 @@ void dispose() {
 ```
 
 **After (auto-dispose):**
+
 ```dart
 mixin DataService {
   static final ReactiveNotifier<DataViewModel> data =

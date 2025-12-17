@@ -15,6 +15,29 @@
 
 ---
 
+> **Important Note on ViewModel Usage**
+>
+> This document shows simplified patterns using `ReactiveNotifier<ViewModel>` in diagrams for clarity.
+> For ViewModels, the **recommended pattern** is to use `ReactiveNotifierViewModel<VM, T>`:
+>
+> ```dart
+> // Recommended pattern for ViewModels
+> mixin UserService {
+>   static final ReactiveNotifierViewModel<UserViewModel, UserModel> userState =
+>     ReactiveNotifierViewModel<UserViewModel, UserModel>(() => UserViewModel());
+> }
+>
+> // For simple state (int, String, bool, etc.)
+> mixin CounterService {
+>   static final ReactiveNotifier<int> count = ReactiveNotifier<int>(() => 0);
+> }
+> ```
+>
+> `ReactiveNotifierViewModel` provides convenient `.notifier` and `.state` accessors.
+> See [ViewModel documentation](../features/viewmodel.md) for detailed examples.
+
+---
+
 ## 1. Core Philosophy
 
 ### "Create Once, Reuse Always"

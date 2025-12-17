@@ -1,3 +1,19 @@
+# 2.16.1
+## Version Sync & Documentation
+
+### Updates
+- Updated Dart SDK requirement to ^3.10.0
+- Fixed GitHub username references in documentation (@JhonaCodes)
+- Synchronized ecosystem version (reactive_notifier_replay, reactive_notifier_hydrated)
+
+### Documentation
+- Added important note about `ReactiveNotifierViewModel` pattern in architecture overview
+- Updated CLAUDE.md Mandatory Patterns section with recommended ViewModel usage
+- Updated README badge to reflect Dart SDK 3.10.0
+- Enhanced code examples throughout documentation
+
+---
+
 # 2.16.0
 ## State Recreation, Code Organization & Ecosystem Expansion
 

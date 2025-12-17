@@ -1,18 +1,20 @@
 # ReactiveNotifier - AI/Development Context Guide
 
 ## Quick Context
-- **Version**: 2.13.0
+
+- **Version**: 2.16.1
 - **Pattern**: Singleton state management with "create once, reuse always" philosophy
 - **Architecture**: MVVM with reactive ViewModels and independent lifecycle management
 - **Core Concept**: ViewModel lifecycle separated from UI lifecycle
 - **Inspiration**: Android's LiveData and ViewModel architecture patterns
-- **NEW v2.13.0**: State change hooks (onStateChanged, onAsyncStateChanged)
-- **NEW v2.13.0**: Cross-service communication with explicit sandbox architecture  
+- **NEW v2.16.0**: State change hooks (onStateChanged, onAsyncStateChanged)
+- **NEW v2.16.0**: Cross-service communication with explicit sandbox architecture  
 - **Legacy v2.12.0**: Automatic BuildContext access in ViewModels for migration support
 
 ## Core Components
 
 ### ReactiveNotifier<T>
+
 **Purpose**: Single instance state holder with automatic lifecycle
 **When to use**: Simple state values, settings, flags, counters
 **Key methods**: `updateState()`, `updateSilently()`, `transformState()`, `transformStateSilently()`, `listen()`, `from<T>()`, `recreate()`
@@ -25,6 +27,7 @@ mixin ServiceName {
 ```
 
 ### ViewModel<T> (extends ChangeNotifier)
+
 **Purpose**: Complex state with business logic and synchronous initialization
 **When to use**: State that requires validation, complex operations, or synchronous initialization
 **Key methods**: `init()`, `transformState()`, `transformStateSilently()`, `updateState()`, `updateSilently()`, `listenVM()`, `cleanState()`
@@ -41,6 +44,7 @@ class MyViewModel extends ViewModel<MyModel> {
 ```
 
 ### AsyncViewModelImpl<T> (extends ChangeNotifier)
+
 **Purpose**: Async operations with loading, success, error states
 **When to use**: API calls, database operations, file I/O
 **Key methods**: `init()`, `reload()`, `setupListeners()`, `removeListeners()`, `transformDataState()`, `transformDataStateSilently()`, `loadingState()`, `errorState()`
@@ -48,6 +52,7 @@ class MyViewModel extends ViewModel<MyModel> {
 **Constructor Parameters**: `loadOnInit` (default: true), `waitForContext` (default: false)
 
 #### Basic Usage
+
 ```dart
 class DataViewModel extends AsyncViewModelImpl<List<Item>> {
   DataViewModel() : super(AsyncState.initial(), loadOnInit: true);
@@ -60,7 +65,8 @@ class DataViewModel extends AsyncViewModelImpl<List<Item>> {
 }
 ```
 
-#### NEW: waitForContext Parameter (v2.13.0+)
+#### NEW: waitForContext Parameter (v2.16.0+)
+
 When `waitForContext: true`, the AsyncViewModel waits for BuildContext availability before initializing:
 
 ```dart
@@ -80,12 +86,14 @@ class ThemeAwareViewModel extends AsyncViewModelImpl<ThemeData> {
 ```
 
 **waitForContext Benefits:**
+
 - ViewModel stays in `AsyncState.initial()` until context is ready
 - Automatic initialization once BuildContext becomes available
 - Perfect for ViewModels needing MediaQuery, Theme, or Localizations
 - No manual context management required
 
-#### NEW: Global Context Initialization (v2.13.0+)
+#### NEW: Global Context Initialization (v2.16.0+)
+
 Initialize BuildContext globally for all ViewModels from app startup:
 
 ```dart
@@ -103,6 +111,7 @@ class MyApp extends StatelessWidget {
 ```
 
 **Global Context Benefits:**
+
 - All ViewModels have immediate access to BuildContext
 - No need for `waitForContext: true` on individual ViewModels  
 - Theme, MediaQuery, Localizations available in all init() methods
@@ -110,6 +119,7 @@ class MyApp extends StatelessWidget {
 - Single setup for entire app
 
 **Usage Pattern Comparison:**
+
 ```dart
 // Option 1: Global initialization (recommended)
 void main() => runApp(MyApp());
@@ -130,7 +140,9 @@ class MyViewModel extends AsyncViewModelImpl<Data> {
 ## Builder Components (CURRENT API)
 
 ### ReactiveBuilder<T>
+
 **Use case**: Simple state values
+
 ```dart
 ReactiveBuilder<int>(
   notifier: CounterService.count,
@@ -139,7 +151,9 @@ ReactiveBuilder<int>(
 ```
 
 ### ReactiveViewModelBuilder<VM, T>
+
 **Use case**: Custom ViewModels with complex state
+
 ```dart
 ReactiveViewModelBuilder<UserViewModel, UserModel>(
   viewmodel: UserService.userState.notifier,
@@ -148,7 +162,9 @@ ReactiveViewModelBuilder<UserViewModel, UserModel>(
 ```
 
 ### ReactiveAsyncBuilder<VM, T>
+
 **Use case**: AsyncViewModelImpl with loading/error states
+
 ```dart
 ReactiveAsyncBuilder<MyViewModel, List<Item>>(
   notifier: DataService.items.notifier,
@@ -161,6 +177,7 @@ ReactiveAsyncBuilder<MyViewModel, List<Item>>(
 ## ViewModel Lifecycle Management
 
 ### Core Lifecycle Pattern
+
 ReactiveNotifier provides **independent ViewModel lifecycle** separated from UI:
 
 1. **init()** - Initialization (synchronous for ViewModel, async for AsyncViewModelImpl)
@@ -170,6 +187,7 @@ ReactiveNotifier provides **independent ViewModel lifecycle** separated from UI:
 5. **dispose()** - Cleanup
 
 ### Reactive Communication Between ViewModels
+
 **Key Pattern**: Use instance variables + listenVM for cross-ViewModel communication
 
 ```dart
@@ -230,7 +248,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
 - **`hasContext`**: Boolean property to check availability (`bool`) - Checks specific or global
 - **`requireContext([operation])`**: Required context with descriptive errors (`BuildContext`)
 
-**NEW: Direct Global Context Access (v2.13.0+)**
+**NEW: Direct Global Context Access (v2.16.0+)**
 
 For Riverpod/Provider migration where context stability is critical:
 
@@ -288,6 +306,7 @@ class WidgetViewModel extends ViewModel<WidgetState> {
 ### Migration Use Cases
 
 #### Riverpod Migration Pattern
+
 ```dart
 class MigrationViewModel extends ViewModel<MigrationState> {
   MigrationViewModel() : super(MigrationState.initial());
@@ -307,6 +326,7 @@ class MigrationViewModel extends ViewModel<MigrationState> {
 ```
 
 #### Theme/MediaQuery Access Pattern
+
 ```dart
 class ResponsiveViewModel extends ViewModel<ResponsiveState> {
   ResponsiveViewModel() : super(ResponsiveState.initial());
@@ -388,20 +408,23 @@ class SafeContextViewModel extends ViewModel<SafeState> {
 
 ## Decision Tree
 
-### Choose ReactiveNotifier<T> when:
+### Choose ReactiveNotifier<T> when
+
 - Simple state values (int, bool, String)
 - Settings or configuration
 - State doesn't require initialization
 - No complex business logic needed
 
-### Choose ViewModel<T> when:
+### Choose ViewModel<T> when
+
 - Complex state objects
 - State requires synchronous initialization
 - Business logic is involved
 - State validation needed
 - Cross-ViewModel reactive communication needed
 
-### Choose AsyncViewModelImpl<T> when:
+### Choose AsyncViewModelImpl<T> when
+
 - Loading data from external sources
 - Need loading/error state handling
 - API calls or database operations
@@ -412,10 +435,22 @@ class SafeContextViewModel extends ViewModel<SafeState> {
 ## Mandatory Patterns
 
 ### 1. Mixin Organization
+
 ```dart
-// ✅ ALWAYS use mixins
+// ✅ RECOMMENDED: Use ReactiveNotifierViewModel for ViewModels
 mixin UserService {
-  static final ReactiveNotifier<UserViewModel> userState = 
+  static final ReactiveNotifierViewModel<UserViewModel, UserModel> userState =
+    ReactiveNotifierViewModel<UserViewModel, UserModel>(() => UserViewModel());
+}
+
+// ✅ Use ReactiveNotifier for simple state (int, String, bool, etc.)
+mixin CounterService {
+  static final ReactiveNotifier<int> count = ReactiveNotifier<int>(() => 0);
+}
+
+// ✅ ALTERNATIVE: ReactiveNotifier<ViewModel> also works
+mixin AlternativeService {
+  static final ReactiveNotifier<UserViewModel> userState =
     ReactiveNotifier<UserViewModel>(() => UserViewModel());
 }
 
@@ -423,7 +458,11 @@ mixin UserService {
 final userState = ReactiveNotifier<UserViewModel>(() => UserViewModel());
 ```
 
+> **Note**: `ReactiveNotifierViewModel<VM, T>` provides convenient `.notifier` (ViewModel) and `.state` (data) accessors.
+> Both `ReactiveNotifierViewModel` and `ReactiveNotifier<ViewModel>` are valid, but `ReactiveNotifierViewModel` is recommended for ViewModels.
+
 ### 2. State Updates (All Available Methods)
+
 ```dart
 // For ReactiveNotifier<T>
 state.updateState(newValue);                    // Update with notification
@@ -449,6 +488,7 @@ asyncVM.errorState('Error message');            // Set error state
 ```
 
 ### 3. Reactive Communication Pattern
+
 ```dart
 class SalesViewModel extends AsyncViewModelImpl<SaleModel> {
   SalesViewModel() : super(AsyncState.initial(), loadOnInit: false);
@@ -475,6 +515,7 @@ class SalesViewModel extends AsyncViewModelImpl<SaleModel> {
 ```
 
 ### 4. Listener Management (AsyncViewModelImpl only)
+
 ```dart
 class MyViewModel extends AsyncViewModelImpl<DataType> {
   // Store listeners as class properties
@@ -499,6 +540,7 @@ class MyViewModel extends AsyncViewModelImpl<DataType> {
 ```
 
 ### 5. Related States System
+
 ```dart
 mixin ShopService {
   static final ReactiveNotifier<UserState> userState = 
@@ -521,6 +563,7 @@ mixin ShopService {
 ```
 
 ### 6. Testing Pattern
+
 ```dart
 setUp(() {
   ReactiveNotifier.cleanup(); // Clear all states
@@ -533,6 +576,7 @@ setUp(() {
 ## Anti-Patterns (Never Do)
 
 ### 1. Creating instances in widgets
+
 ```dart
 // ❌ NEVER
 class MyWidget extends StatelessWidget {
@@ -545,6 +589,7 @@ class MyWidget extends StatelessWidget {
 ```
 
 ### 2. Using old builder API
+
 ```dart
 // ❌ OLD API - Don't use
 ReactiveBuilder<int>(
@@ -560,6 +605,7 @@ ReactiveBuilder<int>(
 ```
 
 ### 3. Accessing .data outside builders
+
 ```dart
 // ❌ NOT RECOMMENDED - Won't receive updates
 final userData = UserService.userState.notifier.data;
@@ -581,6 +627,7 @@ UserService.userState.notifier.listenVM((userData) {
 ```
 
 ### 4. Complex logic in builders
+
 ```dart
 // ❌ NEVER put business logic in builders
 ReactiveBuilder<UserModel>(
@@ -603,6 +650,7 @@ class UserViewModel extends ViewModel<UserModel> {
 ## Performance Optimization
 
 ### Use keep() for expensive widgets
+
 ```dart
 ReactiveBuilder<UserModel>(
   notifier: UserService.userState,
@@ -619,6 +667,7 @@ ReactiveBuilder<UserModel>(
 ```
 
 ### Silent updates for background operations
+
 ```dart
 // Update data without triggering rebuilds
 dataState.updateSilently(backgroundData);
@@ -630,15 +679,18 @@ dataState.updateState(dataState.notifier);
 ## Critical Recommendations
 
 ### Data Access Patterns
+
 **⚠️ IMPORTANT**: Always access data inside ReactiveBuilder when possible. Using `.data` outside builders won't notify of changes.
 
 ### Reactive Communication Benefits
+
 - **No Widget Coupling**: ViewModels communicate directly
 - **Automatic Data Flow**: Changes propagate instantly between modules
 - **Independent Lifecycle**: ViewModel lifecycle separate from UI
 - **Real-time Synchronization**: State changes trigger automatic updates
 
 ### Testing Strategy
+
 - Use `ReactiveNotifier.cleanup()` in setUp
 - Update state directly with `updateSilently()` for test data
 - Test actual service methods and ViewModels
@@ -647,6 +699,7 @@ dataState.updateState(dataState.notifier);
 ## Common Use Cases
 
 ### Global Context Setup
+
 ```dart
 // main.dart - Single setup for entire app
 class MyApp extends StatelessWidget {
@@ -685,6 +738,7 @@ class ResponsiveViewModel extends ViewModel<ResponsiveState> {
 ```
 
 ### State Recreation (Fresh State Reset)
+
 The `recreate()` method allows you to reset a ReactiveNotifier to a fresh state using the original factory function. This is useful for logout scenarios, state corruption recovery, or testing.
 
 ```dart
@@ -709,6 +763,7 @@ mixin UserService {
 ```
 
 **recreate() vs reinitializeInstance:**
+
 | Feature | `recreate()` | `reinitializeInstance()` |
 |---------|--------------|--------------------------|
 | **Scope** | Instance method | Static method |
@@ -717,6 +772,7 @@ mixin UserService {
 | **Loop protection** | Built-in guard | No guard needed |
 
 **recreate() Behavior:**
+
 - Disposes old ViewModel/state properly (cleans up listeners)
 - Calls the original factory function to create fresh state
 - Notifies all ReactiveNotifier listeners
@@ -725,6 +781,7 @@ mixin UserService {
 - Protected against infinite loops (throws if called during recreation)
 
 ### Cross-ViewModel Communication
+
 ```dart
 // Shopping cart communicates with sales ViewModel automatically
 class SalesViewModel extends AsyncViewModelImpl<SaleModel> {
@@ -744,6 +801,7 @@ class SalesViewModel extends AsyncViewModelImpl<SaleModel> {
 ```
 
 ### Multi-Source Reactive Dependencies
+
 ```dart
 class ComplexViewModel extends AsyncViewModelImpl<ComplexData> {
   UserModel? currentUser;
@@ -765,7 +823,7 @@ class ComplexViewModel extends AsyncViewModelImpl<ComplexData> {
 }
 ```
 
-## NEW: Widget-Aware Lifecycle Management (v2.13.0)
+## NEW: Widget-Aware Lifecycle Management (v2.16.0)
 
 ### Automatic Dispose & Reinitialize
 
@@ -858,7 +916,7 @@ log('Active refs: $refs');
 3. **Automatic**: No manual memory management needed
 4. **Configurable**: Custom timeouts and behavior per instance
 
-## NEW in v2.13.0: State Change Hooks
+## NEW in v2.16.0: State Change Hooks
 
 ### ViewModel Hooks
 
@@ -915,6 +973,7 @@ class DataViewModel extends AsyncViewModelImpl<List<Item>> {
 ### Hook Integration
 
 Hooks are automatically called in all state update methods:
+
 - `updateState()` - Triggers hooks with notifications
 - `updateSilently()` - Triggers hooks without notifications  
 - `transformState()` - Triggers hooks with notifications
@@ -922,7 +981,7 @@ Hooks are automatically called in all state update methods:
 
 ## Cross-Service Communication (Explicit Architecture)
 
-ReactiveNotifier v2.13.0 supports explicit communication between services using `listenVM`:
+ReactiveNotifier v2.16.0 supports explicit communication between services using `listenVM`:
 
 ```dart
 // User Service (Sandbox 1)
@@ -980,4 +1039,4 @@ class DashboardViewModel extends ViewModel<DashboardModel> {
 }
 ```
 
-This guide covers the current API and reactive patterns of ReactiveNotifier v2.13.0. The new hooks system provides internal reactivity while maintaining the explicit, sandbox-based architecture for cross-service communication.
+This guide covers the current API and reactive patterns of ReactiveNotifier v2.16.0. The new hooks system provides internal reactivity while maintaining the explicit, sandbox-based architecture for cross-service communication.

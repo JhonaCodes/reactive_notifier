@@ -4,7 +4,7 @@
 
 ![reactive_notifier](https://github.com/user-attachments/assets/ca97c7e6-a254-4b19-b58d-fd07206ff6ee)
 
-[![Dart SDK Version](https://img.shields.io/badge/Dart-SDK%20%3E%3D%203.5.4-0175C2?logo=dart)](https://dart.dev)
+[![Dart SDK Version](https://img.shields.io/badge/Dart-SDK%20%3E%3D%203.10.0-0175C2?logo=dart)](https://dart.dev)
 [![Flutter Platform](https://img.shields.io/badge/Platform-Flutter-02569B?logo=flutter)](https://flutter.dev)
 [![pub package](https://img.shields.io/pub/v/reactive_notifier.svg)](https://pub.dev/packages/reactive_notifier)
 [![likes](https://img.shields.io/pub/likes/reactive_notifier?logo=dart)](https://pub.dev/packages/reactive_notifier/score)
@@ -12,7 +12,7 @@
 [![popularity](https://img.shields.io/pub/popularity/reactive_notifier?logo=dart)](https://pub.dev/packages/reactive_notifier/score)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![CI](https://github.com/jhonacodes/reactive_notifier/workflows/ci/badge.svg)](https://github.com/jhonacodes/reactive_notifier/actions)
+[![CI](https://github.com/JhonaCodes/reactive_notifier/workflows/ci/badge.svg)](https://github.com/JhonaCodes/reactive_notifier/actions)
 
 ---
 
@@ -993,7 +993,7 @@ Help improve documentation by submitting PRs with clarifications and examples.
 
 ```bash
 # Clone the repository
-git clone https://github.com/jhonacode/reactive_notifier.git
+git clone https://github.com/JhonaCodes/reactive_notifier.git
 
 # Install dependencies
 flutter pub get
@@ -1035,6 +1035,6 @@ If ReactiveNotifier has been helpful for your projects, consider:
 
 ---
 
-Made with ❤️ by [@jhonacode](https://github.com/jhonacode)
+Made with ❤️ by [@JhonaCodes](https://github.com/JhonaCodes)
 
 *ReactiveNotifier - State Management for Flutter*
