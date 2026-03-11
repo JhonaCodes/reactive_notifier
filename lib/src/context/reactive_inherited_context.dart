@@ -66,6 +66,7 @@ class ReactiveContextRegistry {
     _notifierRegistry[T] = notifier;
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔧 ReactiveContextRegistry: Registered notifier for type $T
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -88,6 +89,7 @@ Total registered types: ${_notifierRegistry.length}
     final notifier = _notifierRegistry[T] as ReactiveNotifier<T>?;
     if (notifier == null) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 ⚠️ ReactiveContextRegistry: No notifier registered for type $T
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -109,6 +111,7 @@ Context type requested: $contextType
     );
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ✅ ReactiveContextRegistry: Created new context for type $T
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -141,6 +144,7 @@ Notifier: ${notifier.runtimeType}
       return false;
     } catch (e) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 ⚠️ ReactiveContextRegistry: Failed to inject context for type $T
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -160,6 +164,7 @@ Falling back to markNeedsBuild approach
     _contextAwaitingInjection.clear();
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🧹 ReactiveContextRegistry: Cleaned up all contexts
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -82,15 +82,8 @@ class _ReactiveAsyncBuilderState<VM, T>
   /// Find and add reference to the parent ReactiveNotifier that contains this AsyncViewModel
   void _addReferenceToParentNotifier() {
     try {
-      // Look for a ReactiveNotifier that contains this AsyncViewModel
-      final instances = ReactiveNotifier.getInstances;
-      for (final instance in instances) {
-        if (instance.notifier == widget.notifier) {
-          // Found the ReactiveNotifier containing this AsyncViewModel
-          instance.addReference('ReactiveAsyncBuilder_$hashCode');
-          break;
-        }
-      }
+      final instance = ReactiveNotifier.findByNotifier(widget.notifier);
+      instance?.addReference('ReactiveAsyncBuilder_$hashCode');
     } catch (e) {
       // If we can't find the parent ReactiveNotifier, that's okay
       // This AsyncViewModel might be used directly without ReactiveNotifier wrapper
@@ -115,15 +108,8 @@ class _ReactiveAsyncBuilderState<VM, T>
   /// Find and remove reference from the parent ReactiveNotifier that contains this AsyncViewModel
   void _removeReferenceFromParentNotifier(dynamic asyncViewModel) {
     try {
-      // Look for a ReactiveNotifier that contains this AsyncViewModel
-      final instances = ReactiveNotifier.getInstances;
-      for (final instance in instances) {
-        if (instance.notifier == asyncViewModel) {
-          // Found the ReactiveNotifier containing this AsyncViewModel
-          instance.removeReference('ReactiveAsyncBuilder_$hashCode');
-          break;
-        }
-      }
+      final instance = ReactiveNotifier.findByNotifier(asyncViewModel);
+      instance?.removeReference('ReactiveAsyncBuilder_$hashCode');
     } catch (e) {
       // If we can't find the parent ReactiveNotifier, that's okay
       // This AsyncViewModel might be used directly without ReactiveNotifier wrapper

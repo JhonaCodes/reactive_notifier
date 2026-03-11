@@ -48,6 +48,7 @@ abstract class ViewModel<T> extends ChangeNotifier
     }
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ViewModel<${T.toString()}> created
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -92,6 +93,7 @@ Initial state hash: ${_data.hashCode}
       {List<String> currentListeners = const []}) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         logRemove<T>(listeners: currentListeners);
         return true;
       }());
@@ -106,6 +108,7 @@ Initial state hash: ${_data.hashCode}
       {List<String> currentListeners = const []}) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         logSetup<T>(listeners: currentListeners);
         return true;
       }());
@@ -136,6 +139,7 @@ Initial state hash: ${_data.hashCode}
   void reinitializeWithContext() {
     if (_initializedWithoutContext && hasContext && !_disposed) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 🔄 ViewModel<${T.toString()}> re-initializing with context
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -215,12 +219,13 @@ Check the init() implementation at: ${_getCreationLocation()}
       unawaited(setupListeners());
     } catch (e, stack) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 ⚠️ Error during ViewModel<${T.toString()}> initialization
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ID: $_instanceId
 Error: $e
-Stack trace: 
+Stack trace:
 $stack
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 100);
@@ -234,6 +239,7 @@ $stack
   void _reinitializeIfNeeded() {
     if (_disposed) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 🔄 Reinitializing disposed ViewModel<${T.toString()}>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -270,6 +276,7 @@ Was disposed for: ${DateTime.now().difference(_disposeTime!).inMilliseconds}ms
     onStateChanged(previous, newState);
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 📝 ViewModel<${T.toString()}> updated
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -297,6 +304,7 @@ New state hash: ${_data.hashCode}
     onStateChanged(previous, newState);
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔄 ViewModel<${T.toString()}> transformed
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -323,6 +331,7 @@ New state hash: ${_data.hashCode}
     onStateChanged(previous, newState);
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔄 ViewModel<${T.toString()}> transformed silently
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -346,6 +355,7 @@ New state hash: ${_data.hashCode}
     onStateChanged(previous, newState);
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🤫 ViewModel<${T.toString()}> updated silently
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -365,13 +375,13 @@ New state hash: ${_data.hashCode}
     if (_disposed) return;
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🗑️ Starting ViewModel<${T.toString()}> disposal
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ID: $_instanceId
 Current updates: $_updateCount
 Active listeners: ${_listeners.length}
-Listening to: ${_listeningTo.length} ViewModels
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 10);
       return true;
@@ -383,14 +393,15 @@ Listening to: ${_listeningTo.length} ViewModels
     // 2. Stop internal listenVM() connections to other ViewModels
     stopListeningVM();
 
-    // 3. Notify ReactiveNotifier to remove this ViewModel from global registry
-    _notifyReactiveNotifierDisposal();
-
-    // 4. Mark as disposed and record timing
+    // 3. Mark as disposed BEFORE notifying ReactiveNotifier to prevent double disposal
     _disposed = true;
     _disposeTime = DateTime.now();
 
+    // 4. Notify ReactiveNotifier to remove this ViewModel from global registry
+    _notifyReactiveNotifierDisposal();
+
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       final lifespan = _initTime != null
           ? _disposeTime!.difference(_initTime!).inMilliseconds
           : 'unknown';
@@ -415,19 +426,15 @@ ReactiveNotifier cleanup: Requested
   /// This allows ReactiveNotifier to clean itself from the global registry
   void _notifyReactiveNotifierDisposal() {
     // Find any ReactiveNotifier that contains this ViewModel instance
-    // and request cleanup from global registry
+    // and request cleanup from global registry (O(1) lookup)
     try {
-      final instances = ReactiveNotifier.getInstances;
-      for (final instance in instances) {
-        if (instance.notifier == this) {
-          // Found the ReactiveNotifier containing this ViewModel
-          // Use cleanCurrentNotifier with forceCleanup since ViewModel is disposing
-          instance.cleanCurrentNotifier(forceCleanup: true);
-          break;
-        }
+      final instance = ReactiveNotifier.findByNotifier(this);
+      if (instance != null) {
+        instance.cleanCurrentNotifier(forceCleanup: true);
       }
     } catch (e) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 ⚠️ Warning: Could not notify ReactiveNotifier of ViewModel disposal
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -498,6 +505,7 @@ Consider calling ReactiveNotifier.cleanup() manually when appropriate.
   ///         sequential asynchronous operations if needed
   Future<void> loadNotifier() async {
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔍 loadNotifier() called for ViewModel<${T.toString()}>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -523,6 +531,7 @@ Is disposed: $_disposed
     updateState(emptyState);
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🧹 ViewModel<${T.toString()}> state cleaned
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -544,23 +553,30 @@ New empty state hash: ${_data.hashCode}
       await setupListeners();
       await onResume(_data);
     } catch (error, stackTrace) {
-      log(error.toString());
-      log(stackTrace.toString());
+      assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
+        log(error.toString());
+        log(stackTrace.toString());
+        return true;
+      }());
       try {
         await setupListeners();
       } catch (listenerError) {
-        log('Error on restart listeners: $listenerError');
+        assert(() {
+          if (!ReactiveNotifier.debugLogging) return true;
+          log('Error on restart listeners: $listenerError');
+          return true;
+        }());
       }
     }
   }
 
+  /// Atomic counter for unique listener keys (avoids microsecond collisions)
+  static int _listenerCounter = 0;
+
   /// Holds the currently active listener callbacks.
   /// Maps listener keys to their callback functions for better tracking.
   final Map<String, VoidCallback> _listeners = {};
-
-  /// Tracks which ViewModels this ViewModel is listening to
-  /// Format: 'ListenerVM_hashCode' -> 'ListenedToVM_hashCode'
-  final Map<String, int> _listeningTo = {};
 
   /// Starts listening for changes in the ViewModel.
   ///
@@ -574,10 +590,10 @@ New empty state hash: ${_data.hashCode}
   /// Returns the current value of [_data].
   T listenVM(void Function(T data) value, {bool callOnInit = false}) {
     // Create unique key for this listener
-    final listenerKey =
-        'vm_${hashCode}_${DateTime.now().microsecondsSinceEpoch}';
+    final listenerKey = 'vm_${hashCode}_${++_listenerCounter}';
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔗 ViewModel<${T.toString()}> adding listener
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -593,9 +609,6 @@ Current listeners: ${_listeners.length}
 
     // Store listener
     _listeners[listenerKey] = callback;
-
-    // Track relationship (this ViewModel is listening to current ViewModel)
-    _listeningTo[listenerKey] = hashCode;
 
     // Call on init if requested
     if (callOnInit) {
@@ -616,11 +629,11 @@ Current listeners: ${_listeners.length}
     final listenerCount = _listeners.length;
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔌 ViewModel<${T.toString()}> stopping listeners
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Removing listeners: $listenerCount
-Listening relationships: ${_listeningTo.length}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 5);
       return true;
@@ -631,9 +644,8 @@ Listening relationships: ${_listeningTo.length}
       removeListener(callback);
     }
 
-    // Clear tracking maps
+    // Clear tracking map
     _listeners.clear();
-    _listeningTo.clear();
   }
 
   /// Stops a specific listener by key
@@ -643,9 +655,9 @@ Listening relationships: ${_listeningTo.length}
     if (callback != null) {
       removeListener(callback);
       _listeners.remove(listenerKey);
-      _listeningTo.remove(listenerKey);
 
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 🔌 ViewModel<${T.toString()}> stopped specific listener
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -714,7 +726,5 @@ Remaining listeners: ${_listeners.length}
   /// Example:
   ///
   @protected
-  FutureOr<void> onResume(T data) async {
-    log("Application was initialized and onResume was executed");
-  }
+  FutureOr<void> onResume(T data) async {}
 }

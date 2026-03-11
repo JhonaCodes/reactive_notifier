@@ -8,8 +8,15 @@ class ReactiveNotifierViewModel<VM extends ViewModel<T>, T> {
 
   /// Constructor that initializes the `ReactiveNotifier` container with a factory function
   /// that creates the `ViewModel`. Optionally, you can enable auto-disposal.
-  ReactiveNotifierViewModel(VM Function() create, {this.autoDispose = false})
-      : _container = ReactiveNotifier<VM>(create);
+  ReactiveNotifierViewModel(
+    VM Function() create, {
+    this.autoDispose = false,
+    Duration? autoDisposeTimeout,
+  }) : _container = ReactiveNotifier<VM>(create, autoDispose: autoDispose) {
+    if (autoDispose && autoDisposeTimeout != null) {
+      _container.enableAutoDispose(timeout: autoDisposeTimeout);
+    }
+  }
 
   /// Returns the `notifier` of the `ViewModel`, which is used to manage state and notify listeners of changes.
   /// This allows you to interact with the `ViewModel` directly.

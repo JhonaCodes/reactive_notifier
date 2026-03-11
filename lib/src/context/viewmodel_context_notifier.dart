@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/widgets.dart';
+import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 /// Context notifier for ViewModels - provides automatic BuildContext access
 /// Enables seamless migration from other state managers like Riverpod
@@ -28,6 +29,7 @@ class ViewModelContextNotifier {
       _globalContext = context;
       _lastRegisteredContext = context;
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 🌍 ViewModelContextNotifier: Global context registered
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -50,6 +52,7 @@ Global context now available for all ViewModels
     _viewModelBuilders[vmKey]!.add(builderType);
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 📱 ViewModelContextNotifier: Context registered
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -74,6 +77,7 @@ Context available: ✓
     _viewModelBuilders[vmKey]?.remove(builderType);
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🗑️ ViewModelContextNotifier: Builder unregistered
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -96,6 +100,7 @@ Remaining builders for VM: ${_viewModelBuilders[vmKey]?.length ?? 0}
       }
 
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 🔄 ViewModelContextNotifier: Context cleared for ViewModel
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -180,6 +185,7 @@ Total contexts remaining: ${_contexts.length}
     _globalContext = null;
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🧹 ViewModelContextNotifier: Global cleanup completed
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

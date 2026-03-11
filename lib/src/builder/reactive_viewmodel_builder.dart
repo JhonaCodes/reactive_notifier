@@ -89,15 +89,8 @@ class _ReactiveBuilderStateViewModel<VM, T>
   /// Find and add reference to the parent ReactiveNotifier that contains this ViewModel
   void _addReferenceToParentNotifier() {
     try {
-      // Look for a ReactiveNotifier that contains this ViewModel
-      final instances = ReactiveNotifier.getInstances;
-      for (final instance in instances) {
-        if (instance.notifier == widget.viewmodel) {
-          // Found the ReactiveNotifier containing this ViewModel
-          instance.addReference('ReactiveViewModelBuilder_$hashCode');
-          break;
-        }
-      }
+      final instance = ReactiveNotifier.findByNotifier(widget.viewmodel);
+      instance?.addReference('ReactiveViewModelBuilder_$hashCode');
     } catch (e) {
       // If we can't find the parent ReactiveNotifier, that's okay
       // This ViewModel might be used directly without ReactiveNotifier wrapper
@@ -123,15 +116,8 @@ class _ReactiveBuilderStateViewModel<VM, T>
   /// Find and remove reference from the parent ReactiveNotifier that contains this ViewModel
   void _removeReferenceFromParentNotifier(dynamic viewmodel) {
     try {
-      // Look for a ReactiveNotifier that contains this ViewModel
-      final instances = ReactiveNotifier.getInstances;
-      for (final instance in instances) {
-        if (instance.notifier == viewmodel) {
-          // Found the ReactiveNotifier containing this ViewModel
-          instance.removeReference('ReactiveViewModelBuilder_$hashCode');
-          break;
-        }
-      }
+      final instance = ReactiveNotifier.findByNotifier(viewmodel);
+      instance?.removeReference('ReactiveViewModelBuilder_$hashCode');
     } catch (e) {
       // If we can't find the parent ReactiveNotifier, that's okay
       // This ViewModel might be used directly without ReactiveNotifier wrapper

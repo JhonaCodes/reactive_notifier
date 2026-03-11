@@ -27,6 +27,7 @@ class ReactiveContextEnhanced {
   /// Notifier-specific element tracking prevents cross-rebuilds
   static final Map<ReactiveNotifier, Set<Element>> _markNeedsBuildElements = {};
   static final Map<ReactiveNotifier, bool> _globalListenersSetup = {};
+  static final Map<ReactiveNotifier, VoidCallback> _globalListenerCallbacks = {};
 
   /// Enhanced getState with type-specific rebuild strategy
   static T getReactiveState<T>(
@@ -40,6 +41,7 @@ class ReactiveContextEnhanced {
     final inheritedWidget = ReactiveInheritedContext.maybeOf<T>(context);
     if (inheritedWidget != null) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('[ReactiveContext] Using InheritedWidget strategy for $T in ${context.widget.runtimeType}');
         return true;
       }());
@@ -48,6 +50,7 @@ class ReactiveContextEnhanced {
 
     // Strategy 2: Fallback to enhanced markNeedsBuild strategy
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('[ReactiveContext] Using markNeedsBuild strategy for $T in ${context.widget.runtimeType}');
       return true;
     }());
@@ -75,7 +78,7 @@ class ReactiveContextEnhanced {
 
     // Setup global listener once per notifier
     if (!_globalListenersSetup.containsKey(notifier)) {
-      notifier.listen((newValue) {
+      void callback() {
         // Clean up disposed elements of this specific notifier
         _markNeedsBuildElements[notifier]?.removeWhere((e) => !e.mounted);
 
@@ -83,6 +86,7 @@ class ReactiveContextEnhanced {
         final elementsForNotifier = _markNeedsBuildElements[notifier];
         if (elementsForNotifier != null) {
           assert(() {
+            if (!ReactiveNotifier.debugLogging) return true;
             log('[ReactiveContext] Rebuilding ${elementsForNotifier.length} elements for notifier $notifier');
             return true;
           }());
@@ -93,7 +97,10 @@ class ReactiveContextEnhanced {
             }
           }
         }
-      });
+      }
+
+      notifier.addListener(callback);
+      _globalListenerCallbacks[notifier] = callback;
       _globalListenersSetup[notifier] = true;
     }
 
@@ -110,11 +117,21 @@ class ReactiveContextEnhanced {
   /// Enhanced cleanup with type-specific clearing
 
   static void cleanup() {
+    for (final entry in _globalListenerCallbacks.entries) {
+      try {
+        entry.key.removeListener(entry.value);
+      } catch (_) {
+        // Ignore if already disposed or listener missing
+      }
+    }
+
+    _globalListenerCallbacks.clear();
     _markNeedsBuildElements.clear();
     _globalListenersSetup.clear();
     ReactiveContextRegistry.cleanup();
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('[ReactiveContext] Enhanced cleanup completed');
       return true;
     }());
@@ -154,6 +171,7 @@ mixin ReactiveContextEnhancedMixin<T> {
       _registrationCache[T] = true;
 
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('[ReactiveContext] Auto-registered enhanced notifier for $T');
         return true;
       }());

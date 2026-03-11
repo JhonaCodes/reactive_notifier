@@ -63,6 +63,17 @@ class _ReactiveStreamBuilderState<VM, T>
   }
 
   @override
+  void didUpdateWidget(ReactiveStreamBuilder<VM, T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.notifier != widget.notifier) {
+      oldWidget.notifier.removeListener(_onStreamChanged);
+      _unsubscribe();
+      widget.notifier.addListener(_onStreamChanged);
+      _subscribe(widget.notifier.notifier);
+    }
+  }
+
+  @override
   void dispose() {
     widget.notifier.removeListener(_onStreamChanged);
 

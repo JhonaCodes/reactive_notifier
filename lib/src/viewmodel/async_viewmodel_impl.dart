@@ -151,7 +151,11 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
       try {
         await setupListeners();
       } catch (listenerError) {
-        log('Error on restart listeners: $listenerError');
+        assert(() {
+          if (!ReactiveNotifier.debugLogging) return true;
+          log('Error on restart listeners: $listenerError');
+          return true;
+        }());
       }
     }
   }
@@ -237,10 +241,12 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   ///```
   ///
   void transformState(AsyncState<T> Function(AsyncState<T> state) transformer) {
-    final newState = transformer(_state).data;
-    if (newState != null) {
-      updateState(newState);
-    }
+    final previous = _state;
+    _state = transformer(_state);
+    notifyListeners();
+
+    // Execute async state change hook
+    onAsyncStateChanged(previous, _state);
   }
 
   /// Transforms the data within the current success state using the
@@ -280,7 +286,11 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     if (transformData != null) {
       updateState(transformData);
     } else {
-      log('⚠️ transformDataState<${T.toString()}> returned null - transformation ignored');
+      assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
+        log('⚠️ transformDataState<${T.toString()}> returned null - transformation ignored');
+        return true;
+      }());
     }
   }
 
@@ -314,7 +324,11 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
       // Execute async state change hook (even for silent updates)
       onAsyncStateChanged(previous, _state);
     } else {
-      log('⚠️ transformDataStateSilently<${T.toString()}> returned null - transformation ignored');
+      assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
+        log('⚠️ transformDataStateSilently<${T.toString()}> returned null - transformation ignored');
+        return true;
+      }());
     }
   }
 
@@ -418,7 +432,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   ///
   @protected
   FutureOr<void> onResume(T? data) async {
-    log("Application was initialized and onResume was executed");
+
   }
 
   /// Update data directly
@@ -503,6 +517,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   ///         sequential asynchronous operations if needed
   Future<void> loadNotifier() async {
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔍 loadNotifier() called for ViewModel<${T.toString()}>
 ''', level: 10);
@@ -568,13 +583,12 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     );
   }
 
+  /// Atomic counter for unique listener keys (avoids microsecond collisions)
+  static int _listenerCounter = 0;
+
   /// Holds the currently active listener callbacks.
   /// Maps listener keys to their callback functions for better tracking.
   final Map<String, VoidCallback> _listeners = {};
-
-  /// Tracks which ViewModels this AsyncViewModel is listening to
-  /// Format: 'ListenerVM_hashCode' -> 'ListenedToVM_hashCode'
-  final Map<String, int> _listeningTo = {};
 
   /// Starts listening for changes in the ViewModel's asynchronous state.
   ///
@@ -589,10 +603,10 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   Future<AsyncState<T>> listenVM(void Function(AsyncState<T> data) value,
       {bool callOnInit = false}) async {
     // Create unique key for this listener
-    final listenerKey =
-        'async_vm_${hashCode}_${DateTime.now().microsecondsSinceEpoch}';
+    final listenerKey = 'async_vm_${hashCode}_${++_listenerCounter}';
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔗 AsyncViewModelImpl<${T.toString()}> adding listener
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -608,9 +622,6 @@ Current listeners: ${_listeners.length}
 
     // Store listener
     _listeners[listenerKey] = callback;
-
-    // Track relationship (this AsyncViewModel is listening to current AsyncViewModel)
-    _listeningTo[listenerKey] = hashCode;
 
     // Call on init if requested
     if (callOnInit) {
@@ -631,11 +642,11 @@ Current listeners: ${_listeners.length}
     final listenerCount = _listeners.length;
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔌 AsyncViewModelImpl<${T.toString()}> stopping listeners
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Removing listeners: $listenerCount
-Listening relationships: ${_listeningTo.length}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 5);
       return true;
@@ -646,9 +657,8 @@ Listening relationships: ${_listeningTo.length}
       removeListener(callback);
     }
 
-    // Clear tracking maps
+    // Clear tracking map
     _listeners.clear();
-    _listeningTo.clear();
   }
 
   /// Stops a specific listener by key
@@ -658,9 +668,9 @@ Listening relationships: ${_listeningTo.length}
     if (callback != null) {
       removeListener(callback);
       _listeners.remove(listenerKey);
-      _listeningTo.remove(listenerKey);
 
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 🔌 AsyncViewModelImpl<${T.toString()}> stopped specific listener
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -679,6 +689,7 @@ Remaining listeners: ${_listeners.length}
   @override
   void dispose() {
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🗑️ Starting AsyncViewModelImpl<${T.toString()}> disposal
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -686,7 +697,6 @@ Current state: ${_state.runtimeType}
 LoadOnInit was: $loadOnInit
 HasInitialized: $hasInitializedListenerExecution
 Active listeners: ${_listeners.length}
-Listening to: ${_listeningTo.length} ViewModels
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 10);
       return true;
@@ -714,6 +724,7 @@ Listening to: ${_listeningTo.length} ViewModels
     _notifyReactiveNotifierDisposal();
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ✅ AsyncViewModelImpl<${T.toString()}> completely disposed
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -733,19 +744,15 @@ ReactiveNotifier cleanup: Requested
   /// This allows ReactiveNotifier to clean itself from the global registry
   void _notifyReactiveNotifierDisposal() {
     // Find any ReactiveNotifier that contains this AsyncViewModel instance
-    // and request cleanup from global registry
+    // and request cleanup from global registry (O(1) lookup)
     try {
-      final instances = ReactiveNotifier.getInstances;
-      for (final instance in instances) {
-        if (instance.notifier == this) {
-          // Found the ReactiveNotifier containing this AsyncViewModel
-          // Use cleanCurrentNotifier with forceCleanup since AsyncViewModel is disposing
-          instance.cleanCurrentNotifier(forceCleanup: true);
-          break;
-        }
+      final instance = ReactiveNotifier.findByNotifier(this);
+      if (instance != null) {
+        instance.cleanCurrentNotifier(forceCleanup: true);
       }
     } catch (e) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 ⚠️ Warning: Could not notify ReactiveNotifier of AsyncViewModel disposal
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -772,6 +779,7 @@ Consider calling ReactiveNotifier.cleanup() manually when appropriate.
 
     if (shouldReinitialize) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 🔄 AsyncViewModelImpl<${T.toString()}> re-initializing with context
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

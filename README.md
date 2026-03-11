@@ -51,6 +51,49 @@ ReactiveNotifier follows a singleton pattern where each state is created once an
 
 ---
 
+
+---
+
+## Memory & Lifecycle (Recommended)
+
+ReactiveNotifier instances are singletons by default. To avoid unused instances
+staying in memory, prefer auto-dispose and opt-in background cleanup.
+
+### 1) Auto-dispose Singletons
+
+```dart
+mixin UserService {
+  // Auto-dispose when no builders are using it (ViewModel wrapper)
+  static final user = ReactiveNotifierViewModel<UserViewModel, UserModel>(
+    () => UserViewModel(),
+    autoDispose: true,
+  );
+}
+```
+
+
+If you are using plain notifiers (not ViewModels), you can also do:
+
+```dart
+final counter = ReactiveNotifier.createAutoDispose<int>(() => 0);
+```
+
+### 2) Background Cleanup (Opt-in)
+
+```dart
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Cleans unused auto-dispose notifiers when app is paused/detached
+  final observer = ReactiveNotifierLifecycleObserver()..start();
+
+  runApp(const MyApp());
+}
+```
+
+This ensures that when the app goes to background, unused singletons are
+cleaned and caches are released.
+
 ## Quick Start Guide
 
 ### 1. Simple State with ReactiveNotifier
