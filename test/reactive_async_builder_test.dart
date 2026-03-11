@@ -32,23 +32,26 @@ void main() {
     });
 
     group('Basic Builder Functionality', () {
-      testWidgets('should render onInitial widget when AsyncState is initial',
-          (WidgetTester tester) async {
+      testWidgets('should render onInitial widget when AsyncState is initial', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel with initial state
         final viewModel = TestAsyncViewModel();
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onInitial: () => const Text('Initial State'),
-              onLoading: () => const Text('Loading'),
-              onData: (data, vm, keep) => Text('Success: $data'),
-              onError: (error, stackTrace) => Text('Error: $error'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onInitial: () => const Text('Initial State'),
+                onLoading: () => const Text('Loading'),
+                onData: (data, vm, keep) => Text('Success: $data'),
+                onError: (error, stackTrace) => Text('Error: $error'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Assert: Should show initial state
         expect(find.text('Initial State'), findsOneWidget);
@@ -56,23 +59,26 @@ void main() {
         expect(find.text('Success: test'), findsNothing);
       });
 
-      testWidgets('should render onLoading widget when AsyncState is loading',
-          (WidgetTester tester) async {
+      testWidgets('should render onLoading widget when AsyncState is loading', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel with loading state
         final viewModel = TestAsyncViewModel();
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onInitial: () => const Text('Initial State'),
-              onLoading: () => const Text('Loading'),
-              onData: (data, vm, keep) => Text('Success: $data'),
-              onError: (error, stackTrace) => Text('Error: $error'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onInitial: () => const Text('Initial State'),
+                onLoading: () => const Text('Loading'),
+                onData: (data, vm, keep) => Text('Success: $data'),
+                onError: (error, stackTrace) => Text('Error: $error'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Set loading state
         viewModel.testLoadingState();
@@ -84,23 +90,26 @@ void main() {
         expect(find.text('Success: test'), findsNothing);
       });
 
-      testWidgets('should render onData widget when AsyncState is success',
-          (WidgetTester tester) async {
+      testWidgets('should render onData widget when AsyncState is success', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel with success state
         final viewModel = TestAsyncViewModel();
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onInitial: () => const Text('Initial State'),
-              onLoading: () => const Text('Loading'),
-              onData: (data, vm, keep) => Text('Success: $data'),
-              onError: (error, stackTrace) => Text('Error: $error'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onInitial: () => const Text('Initial State'),
+                onLoading: () => const Text('Loading'),
+                onData: (data, vm, keep) => Text('Success: $data'),
+                onError: (error, stackTrace) => Text('Error: $error'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Set success state
         viewModel.updateState('test data');
@@ -112,23 +121,26 @@ void main() {
         expect(find.text('Loading'), findsNothing);
       });
 
-      testWidgets('should render onError widget when AsyncState is error',
-          (WidgetTester tester) async {
+      testWidgets('should render onError widget when AsyncState is error', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel with error state
         final viewModel = TestAsyncViewModel();
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onInitial: () => const Text('Initial State'),
-              onLoading: () => const Text('Loading'),
-              onData: (data, vm, keep) => Text('Success: $data'),
-              onError: (error, stackTrace) => Text('Error: $error'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onInitial: () => const Text('Initial State'),
+                onLoading: () => const Text('Loading'),
+                onData: (data, vm, keep) => Text('Success: $data'),
+                onError: (error, stackTrace) => Text('Error: $error'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Set error state
         viewModel.errorState('Test error');
@@ -140,20 +152,23 @@ void main() {
         expect(find.text('Loading'), findsNothing);
       });
 
-      testWidgets('should use default widgets when callbacks are not provided',
-          (WidgetTester tester) async {
+      testWidgets('should use default widgets when callbacks are not provided', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel without all callbacks
         final viewModel = TestAsyncViewModel();
 
         // Build widget with minimal callbacks
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onData: (data, vm, keep) => Text('Success: $data'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onData: (data, vm, keep) => Text('Success: $data'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Assert: Should render default initial widget (SizedBox.shrink)
         expect(find.byType(SizedBox), findsOneWidget);
@@ -173,8 +188,9 @@ void main() {
         expect(find.text('Error: Test error'), findsOneWidget);
       });
 
-      testWidgets('should pass correct parameters to onData callback',
-          (WidgetTester tester) async {
+      testWidgets('should pass correct parameters to onData callback', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel and track callback parameters
         final viewModel = TestAsyncViewModel();
         String? receivedData;
@@ -182,24 +198,26 @@ void main() {
         bool keepFunctionCalled = false;
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onData: (data, vm, keep) {
-                receivedData = data;
-                receivedViewModel = vm;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onData: (data, vm, keep) {
+                  receivedData = data;
+                  receivedViewModel = vm;
 
-                // Test keep function
-                final keptWidget = keep(const Text('Kept Widget'));
-                expect(keptWidget, isNotNull);
-                keepFunctionCalled = true;
+                  // Test keep function
+                  final keptWidget = keep(const Text('Kept Widget'));
+                  expect(keptWidget, isNotNull);
+                  keepFunctionCalled = true;
 
-                return Text('Success: $data');
-              },
+                  return Text('Success: $data');
+                },
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Set success state
         viewModel.updateState('test data');
@@ -214,23 +232,26 @@ void main() {
     });
 
     group('State Transition Handling', () {
-      testWidgets('should handle state transitions correctly',
-          (WidgetTester tester) async {
+      testWidgets('should handle state transitions correctly', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onInitial: () => const Text('Initial'),
-              onLoading: () => const Text('Loading'),
-              onData: (data, vm, keep) => Text('Data: $data'),
-              onError: (error, stackTrace) => Text('Error: $error'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onInitial: () => const Text('Initial'),
+                onLoading: () => const Text('Loading'),
+                onData: (data, vm, keep) => Text('Data: $data'),
+                onError: (error, stackTrace) => Text('Error: $error'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Assert: Should start with initial state
         expect(find.text('Initial'), findsOneWidget);
@@ -268,22 +289,25 @@ void main() {
         expect(find.text('Error: error message'), findsNothing);
       });
 
-      testWidgets('should handle multiple rapid state changes',
-          (WidgetTester tester) async {
+      testWidgets('should handle multiple rapid state changes', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onLoading: () => const Text('Loading'),
-              onData: (data, vm, keep) => Text('Data: $data'),
-              onError: (error, stackTrace) => Text('Error: $error'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onLoading: () => const Text('Loading'),
+                onData: (data, vm, keep) => Text('Data: $data'),
+                onError: (error, stackTrace) => Text('Error: $error'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Perform rapid state changes
         viewModel.testLoadingState();
@@ -301,35 +325,33 @@ void main() {
     });
 
     group('Keep Function and Widget Preservation', () {
-      testWidgets('should preserve widgets using keep function',
-          (WidgetTester tester) async {
+      testWidgets('should preserve widgets using keep function', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel and track widget instances
         final viewModel = TestAsyncViewModel();
         Widget? firstKeptWidget;
         Widget? secondKeptWidget;
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onData: (data, vm, keep) {
-                final keptWidget = keep(const Text('Kept Widget'));
-                if (firstKeptWidget == null) {
-                  firstKeptWidget = keptWidget;
-                } else {
-                  secondKeptWidget = keptWidget;
-                }
-                return Column(
-                  children: [
-                    Text('Data: $data'),
-                    keptWidget,
-                  ],
-                );
-              },
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onData: (data, vm, keep) {
+                  final keptWidget = keep(const Text('Kept Widget'));
+                  if (firstKeptWidget == null) {
+                    firstKeptWidget = keptWidget;
+                  } else {
+                    secondKeptWidget = keptWidget;
+                  }
+                  return Column(children: [Text('Data: $data'), keptWidget]);
+                },
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Set initial success state
         viewModel.updateState('data1');
@@ -351,28 +373,31 @@ void main() {
         expect(identical(firstKeptWidget, secondKeptWidget), isTrue);
       });
 
-      testWidgets('should handle keep function with different widget keys',
-          (WidgetTester tester) async {
+      testWidgets('should handle keep function with different widget keys', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onData: (data, vm, keep) {
-                return Column(
-                  children: [
-                    Text('Data: $data'),
-                    keep(const Text('Widget 1', key: Key('widget1'))),
-                    keep(const Text('Widget 2', key: Key('widget2'))),
-                  ],
-                );
-              },
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onData: (data, vm, keep) {
+                  return Column(
+                    children: [
+                      Text('Data: $data'),
+                      keep(const Text('Widget 1', key: Key('widget1'))),
+                      keep(const Text('Widget 2', key: Key('widget2'))),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Set success state
         viewModel.updateState('test');
@@ -386,48 +411,54 @@ void main() {
     });
 
     group('Listener Management and Lifecycle', () {
-      testWidgets('should add and remove listeners correctly',
-          (WidgetTester tester) async {
+      testWidgets('should add and remove listeners correctly', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel and track listener count
         final viewModel = TestAsyncViewModel();
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onData: (data, vm, keep) => Text('Data: $data'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onData: (data, vm, keep) => Text('Data: $data'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Assert: Should have listener attached
         expect(viewModel.testHasListeners, isTrue);
 
         // Act: Remove widget
-        await tester.pumpWidget(const MaterialApp(
-          home: Scaffold(body: Text('Empty')),
-        ));
+        await tester.pumpWidget(
+          const MaterialApp(home: Scaffold(body: Text('Empty'))),
+        );
 
         // Assert: Should have removed listener
         expect(viewModel.testHasListeners, isFalse);
       });
 
-      testWidgets('should handle notifier changes correctly',
-          (WidgetTester tester) async {
+      testWidgets('should handle notifier changes correctly', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create two AsyncViewModels
         final viewModel1 = TestAsyncViewModel();
         final viewModel2 = TestAsyncViewModel();
 
         // Build widget with first viewModel
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel1,
-              onData: (data, vm, keep) => Text('VM1: $data'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel1,
+                onData: (data, vm, keep) => Text('VM1: $data'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Set data on first viewModel
         viewModel1.updateState('data1');
@@ -439,14 +470,16 @@ void main() {
         expect(viewModel2.testHasListeners, isFalse);
 
         // Act: Switch to second viewModel
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel2,
-              onData: (data, vm, keep) => Text('VM2: $data'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel2,
+                onData: (data, vm, keep) => Text('VM2: $data'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Set data on second viewModel
         viewModel2.updateState('data2');
@@ -459,20 +492,23 @@ void main() {
         expect(viewModel2.testHasListeners, isTrue);
       });
 
-      testWidgets('should handle widget disposal correctly',
-          (WidgetTester tester) async {
+      testWidgets('should handle widget disposal correctly', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onData: (data, vm, keep) => Text('Data: $data'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onData: (data, vm, keep) => Text('Data: $data'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Assert: Should have listener
         expect(viewModel.testHasListeners, isTrue);
@@ -486,20 +522,23 @@ void main() {
     });
 
     group('Error Handling and Edge Cases', () {
-      testWidgets('should handle null data gracefully',
-          (WidgetTester tester) async {
+      testWidgets('should handle null data gracefully', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel with nullable data
         final viewModel = NullableAsyncViewModel();
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<NullableAsyncViewModel, String?>(
-              notifier: viewModel,
-              onData: (data, vm, keep) => Text('Data: ${data ?? 'null'}'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<NullableAsyncViewModel, String?>(
+                notifier: viewModel,
+                onData: (data, vm, keep) => Text('Data: ${data ?? 'null'}'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Set null data
         viewModel.updateState(null);
@@ -509,23 +548,26 @@ void main() {
         expect(find.text('Data: null'), findsOneWidget);
       });
 
-      testWidgets('should handle onData callback throwing exception',
-          (WidgetTester tester) async {
+      testWidgets('should handle onData callback throwing exception', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
 
         // Build widget with throwing callback
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onData: (data, vm, keep) {
-                throw Exception('Test exception');
-              },
-              onError: (error, stackTrace) => Text('Error: $error'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onData: (data, vm, keep) {
+                  throw Exception('Test exception');
+                },
+                onError: (error, stackTrace) => Text('Error: $error'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Set success state (should trigger exception)
         viewModel.updateState('test');
@@ -535,54 +577,64 @@ void main() {
         expect(tester.takeException(), isA<Exception>());
       });
 
-      testWidgets('should handle complex error objects',
-          (WidgetTester tester) async {
+      testWidgets('should handle complex error objects', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel with complex error
         final viewModel = TestAsyncViewModel();
         final complexError = CustomError('Complex error message', 404);
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onData: (data, vm, keep) => Text('Data: $data'),
-              onError: (error, stackTrace) {
-                if (error is CustomError) {
-                  return Text('Custom Error: ${error.message} (${error.code})');
-                }
-                return Text('Error: $error');
-              },
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onData: (data, vm, keep) => Text('Data: $data'),
+                onError: (error, stackTrace) {
+                  if (error is CustomError) {
+                    return Text(
+                      'Custom Error: ${error.message} (${error.code})',
+                    );
+                  }
+                  return Text('Error: $error');
+                },
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Set complex error
         viewModel.errorState(complexError);
         await tester.pump();
 
         // Assert: Should handle complex error
-        expect(find.text('Custom Error: Complex error message (404)'),
-            findsOneWidget);
+        expect(
+          find.text('Custom Error: Complex error message (404)'),
+          findsOneWidget,
+        );
       });
     });
 
     group('Deprecated onSuccess Callback', () {
-      testWidgets('should work with deprecated onSuccess callback',
-          (WidgetTester tester) async {
+      testWidgets('should work with deprecated onSuccess callback', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
 
         // Build widget with deprecated callback
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              // ignore: deprecated_member_use
-              onData: (data, vm, keep) => Text('Success: $data'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                // ignore: deprecated_member_use
+                onData: (data, vm, keep) => Text('Success: $data'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Set success state
         viewModel.updateState('test data');
@@ -592,20 +644,23 @@ void main() {
         expect(find.text('Success: test data'), findsOneWidget);
       });
 
-      testWidgets('should prefer onData over deprecated onSuccess',
-          (WidgetTester tester) async {
+      testWidgets('should prefer onData over deprecated onSuccess', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
 
         // Build widget with both callbacks
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onData: (data, vm, keep) => Text('New: $data'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onData: (data, vm, keep) => Text('New: $data'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Set success state
         viewModel.updateState('test data');
@@ -618,24 +673,27 @@ void main() {
     });
 
     group('Performance and Memory Management', () {
-      testWidgets('should handle frequent state updates efficiently',
-          (WidgetTester tester) async {
+      testWidgets('should handle frequent state updates efficiently', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel and track rebuild count
         final viewModel = TestAsyncViewModel();
         var buildCount = 0;
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onData: (data, vm, keep) {
-                buildCount++;
-                return Text('Data: $data (Build: $buildCount)');
-              },
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onData: (data, vm, keep) {
+                  buildCount++;
+                  return Text('Data: $data (Build: $buildCount)');
+                },
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Perform many state updates
         for (int i = 0; i < 100; i++) {
@@ -648,20 +706,23 @@ void main() {
         expect(buildCount, equals(100));
       });
 
-      testWidgets('should clean up resources properly',
-          (WidgetTester tester) async {
+      testWidgets('should clean up resources properly', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel
         final viewModel = TestAsyncViewModel();
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
-              notifier: viewModel,
-              onData: (data, vm, keep) => Text('Data: $data'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<TestAsyncViewModel, String>(
+                notifier: viewModel,
+                onData: (data, vm, keep) => Text('Data: $data'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Add some kept widgets
         viewModel.updateState('test');
@@ -679,23 +740,26 @@ void main() {
     });
 
     group('Integration with AsyncViewModelImpl', () {
-      testWidgets('should integrate correctly with AsyncViewModelImpl',
-          (WidgetTester tester) async {
+      testWidgets('should integrate correctly with AsyncViewModelImpl', (
+        WidgetTester tester,
+      ) async {
         // Setup: Create AsyncViewModel with complex behavior
         final viewModel = ComplexAsyncViewModel();
 
         // Build widget
-        await tester.pumpWidget(MaterialApp(
-          home: Scaffold(
-            body: ReactiveAsyncBuilder<ComplexAsyncViewModel, ComplexData>(
-              notifier: viewModel,
-              onLoading: () => const Text('Loading complex data'),
-              onData: (data, vm, keep) =>
-                  Text('Complex: ${data.value} (${data.timestamp})'),
-              onError: (error, stackTrace) => Text('Error: $error'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ReactiveAsyncBuilder<ComplexAsyncViewModel, ComplexData>(
+                notifier: viewModel,
+                onLoading: () => const Text('Loading complex data'),
+                onData: (data, vm, keep) =>
+                    Text('Complex: ${data.value} (${data.timestamp})'),
+                onError: (error, stackTrace) => Text('Error: $error'),
+              ),
             ),
           ),
-        ));
+        );
 
         // Act: Load data (this sets loading state immediately)
         viewModel.loadData();

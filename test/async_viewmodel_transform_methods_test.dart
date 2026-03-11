@@ -22,18 +22,21 @@ class TestAsyncViewModel extends AsyncViewModelImpl<List<String>> {
 
   // Expose transform methods for testing
   void testTransformDataState(
-      List<String>? Function(List<String>? data) transformer) {
+    List<String>? Function(List<String>? data) transformer,
+  ) {
     transformDataState(transformer);
   }
 
   void testTransformDataStateSilently(
-      List<String>? Function(List<String>? data) transformer) {
+    List<String>? Function(List<String>? data) transformer,
+  ) {
     transformDataStateSilently(transformer);
   }
 
   void testTransformStateSilently(
-      AsyncState<List<String>> Function(AsyncState<List<String>> state)
-          transformer) {
+    AsyncState<List<String>> Function(AsyncState<List<String>> state)
+    transformer,
+  ) {
     transformStateSilently(transformer);
   }
 
@@ -59,7 +62,8 @@ class TestIntAsyncViewModel extends AsyncViewModelImpl<int> {
   }
 
   void testTransformStateSilently(
-      AsyncState<int> Function(AsyncState<int> state) transformer) {
+    AsyncState<int> Function(AsyncState<int> state) transformer,
+  ) {
     transformStateSilently(transformer);
   }
 }
@@ -77,12 +81,14 @@ class TestNullableAsyncViewModel extends AsyncViewModelImpl<String?> {
   }
 
   void testTransformDataStateSilently(
-      String? Function(String? data) transformer) {
+    String? Function(String? data) transformer,
+  ) {
     transformDataStateSilently(transformer);
   }
 
   void testTransformStateSilently(
-      AsyncState<String?> Function(AsyncState<String?> state) transformer) {
+    AsyncState<String?> Function(AsyncState<String?> state) transformer,
+  ) {
     transformStateSilently(transformer);
   }
 }
@@ -98,30 +104,32 @@ void main() {
     });
 
     group('transformDataState Tests', () {
-      test('should transform data within success state and notify listeners',
-          () {
-        final viewModel = TestAsyncViewModel();
-        bool listenerCalled = false;
+      test(
+        'should transform data within success state and notify listeners',
+        () {
+          final viewModel = TestAsyncViewModel();
+          bool listenerCalled = false;
 
-        // Set up listener
-        viewModel.addListener(() {
-          listenerCalled = true;
-        });
+          // Set up listener
+          viewModel.addListener(() {
+            listenerCalled = true;
+          });
 
-        // Set initial success state
-        viewModel.updateState(['apple', 'banana']);
-        listenerCalled = false; // Reset flag
+          // Set initial success state
+          viewModel.updateState(['apple', 'banana']);
+          listenerCalled = false; // Reset flag
 
-        // Transform data
-        viewModel.testTransformDataState((data) {
-          return [...?data, 'cherry'];
-        });
+          // Transform data
+          viewModel.testTransformDataState((data) {
+            return [...?data, 'cherry'];
+          });
 
-        // Verify transformation
-        expect(viewModel.hasData, isTrue);
-        expect(viewModel.data, equals(['apple', 'banana', 'cherry']));
-        expect(listenerCalled, isTrue);
-      });
+          // Verify transformation
+          expect(viewModel.hasData, isTrue);
+          expect(viewModel.data, equals(['apple', 'banana', 'cherry']));
+          expect(listenerCalled, isTrue);
+        },
+      );
 
       test('should handle null data gracefully', () {
         final viewModel = TestNullableAsyncViewModel();
@@ -240,30 +248,31 @@ void main() {
 
     group('transformDataStateSilently Tests', () {
       test(
-          'should transform data within success state without notifying listeners',
-          () {
-        final viewModel = TestAsyncViewModel();
-        bool listenerCalled = false;
+        'should transform data within success state without notifying listeners',
+        () {
+          final viewModel = TestAsyncViewModel();
+          bool listenerCalled = false;
 
-        // Set up listener
-        viewModel.addListener(() {
-          listenerCalled = true;
-        });
+          // Set up listener
+          viewModel.addListener(() {
+            listenerCalled = true;
+          });
 
-        // Set initial success state
-        viewModel.updateState(['apple', 'banana']);
-        listenerCalled = false; // Reset flag
+          // Set initial success state
+          viewModel.updateState(['apple', 'banana']);
+          listenerCalled = false; // Reset flag
 
-        // Transform data silently
-        viewModel.testTransformDataStateSilently((data) {
-          return [...?data, 'cherry'];
-        });
+          // Transform data silently
+          viewModel.testTransformDataStateSilently((data) {
+            return [...?data, 'cherry'];
+          });
 
-        // Verify transformation
-        expect(viewModel.hasData, isTrue);
-        expect(viewModel.data, equals(['apple', 'banana', 'cherry']));
-        expect(listenerCalled, isFalse); // Should not have been called
-      });
+          // Verify transformation
+          expect(viewModel.hasData, isTrue);
+          expect(viewModel.data, equals(['apple', 'banana', 'cherry']));
+          expect(listenerCalled, isFalse); // Should not have been called
+        },
+      );
 
       test('should handle null data gracefully', () {
         final viewModel = TestNullableAsyncViewModel();
@@ -357,59 +366,65 @@ void main() {
     });
 
     group('transformStateSilently Tests', () {
-      test('should transform entire AsyncState without notifying listeners',
-          () {
-        final viewModel = TestAsyncViewModel();
-        bool listenerCalled = false;
+      test(
+        'should transform entire AsyncState without notifying listeners',
+        () {
+          final viewModel = TestAsyncViewModel();
+          bool listenerCalled = false;
 
-        // Set up listener
-        viewModel.addListener(() {
-          listenerCalled = true;
-        });
+          // Set up listener
+          viewModel.addListener(() {
+            listenerCalled = true;
+          });
 
-        // Set initial success state
-        viewModel.updateState(['apple', 'banana']);
-        listenerCalled = false; // Reset flag
+          // Set initial success state
+          viewModel.updateState(['apple', 'banana']);
+          listenerCalled = false; // Reset flag
 
-        // Transform entire state silently
-        viewModel.testTransformStateSilently((state) {
-          if (state.isSuccess && state.data != null) {
-            return AsyncState.success([...state.data!, 'cherry']);
-          }
-          return state;
-        });
+          // Transform entire state silently
+          viewModel.testTransformStateSilently((state) {
+            if (state.isSuccess && state.data != null) {
+              return AsyncState.success([...state.data!, 'cherry']);
+            }
+            return state;
+          });
 
-        // Verify transformation
-        expect(viewModel.hasData, isTrue);
-        expect(viewModel.data, equals(['apple', 'banana', 'cherry']));
-        expect(listenerCalled, isFalse); // Should not have been called
-      });
+          // Verify transformation
+          expect(viewModel.hasData, isTrue);
+          expect(viewModel.data, equals(['apple', 'banana', 'cherry']));
+          expect(listenerCalled, isFalse); // Should not have been called
+        },
+      );
 
-      test('should allow state transitions between different AsyncState types',
-          () {
-        final viewModel = TestAsyncViewModel();
-        bool listenerCalled = false;
+      test(
+        'should allow state transitions between different AsyncState types',
+        () {
+          final viewModel = TestAsyncViewModel();
+          bool listenerCalled = false;
 
-        viewModel.addListener(() {
-          listenerCalled = true;
-        });
+          viewModel.addListener(() {
+            listenerCalled = true;
+          });
 
-        // Set initial success state
-        viewModel.updateState(['apple']);
-        listenerCalled = false;
+          // Set initial success state
+          viewModel.updateState(['apple']);
+          listenerCalled = false;
 
-        // Transform success to error based on condition
-        viewModel.testTransformStateSilently((state) {
-          if (state.isSuccess && state.data != null && state.data!.length < 2) {
-            return AsyncState.error('Not enough items');
-          }
-          return state;
-        });
+          // Transform success to error based on condition
+          viewModel.testTransformStateSilently((state) {
+            if (state.isSuccess &&
+                state.data != null &&
+                state.data!.length < 2) {
+              return AsyncState.error('Not enough items');
+            }
+            return state;
+          });
 
-        expect(viewModel.error != null, isTrue);
-        expect(viewModel.error, equals('Not enough items'));
-        expect(listenerCalled, isFalse);
-      });
+          expect(viewModel.error != null, isTrue);
+          expect(viewModel.error, equals('Not enough items'));
+          expect(listenerCalled, isFalse);
+        },
+      );
 
       test('should handle loading state transformations', () {
         final viewModel = TestAsyncViewModel();
@@ -566,79 +581,84 @@ void main() {
     });
 
     group('Integration Tests - Transform Methods Working Together', () {
-      test('should combine silent and non-silent transformations correctly',
-          () {
-        final viewModel = TestAsyncViewModel();
-        int listenerCallCount = 0;
+      test(
+        'should combine silent and non-silent transformations correctly',
+        () {
+          final viewModel = TestAsyncViewModel();
+          int listenerCallCount = 0;
 
-        viewModel.addListener(() {
-          listenerCallCount++;
-        });
+          viewModel.addListener(() {
+            listenerCallCount++;
+          });
 
-        // Set initial success state
-        viewModel.updateState(['start']);
-        listenerCallCount = 0;
+          // Set initial success state
+          viewModel.updateState(['start']);
+          listenerCallCount = 0;
 
-        // Silent transformation
-        viewModel.testTransformDataStateSilently((data) {
-          return [...?data, 'silent1'];
-        });
+          // Silent transformation
+          viewModel.testTransformDataStateSilently((data) {
+            return [...?data, 'silent1'];
+          });
 
-        expect(viewModel.data, equals(['start', 'silent1']));
-        expect(listenerCallCount, equals(0));
+          expect(viewModel.data, equals(['start', 'silent1']));
+          expect(listenerCallCount, equals(0));
 
-        // Another silent transformation
-        viewModel.testTransformDataStateSilently((data) {
-          return [...?data, 'silent2'];
-        });
+          // Another silent transformation
+          viewModel.testTransformDataStateSilently((data) {
+            return [...?data, 'silent2'];
+          });
 
-        expect(viewModel.data, equals(['start', 'silent1', 'silent2']));
-        expect(listenerCallCount, equals(0));
+          expect(viewModel.data, equals(['start', 'silent1', 'silent2']));
+          expect(listenerCallCount, equals(0));
 
-        // Non-silent transformation
-        viewModel.testTransformDataState((data) {
-          return [...?data, 'notified'];
-        });
+          // Non-silent transformation
+          viewModel.testTransformDataState((data) {
+            return [...?data, 'notified'];
+          });
 
-        expect(viewModel.data,
-            equals(['start', 'silent1', 'silent2', 'notified']));
-        expect(listenerCallCount, equals(1));
-      });
+          expect(
+            viewModel.data,
+            equals(['start', 'silent1', 'silent2', 'notified']),
+          );
+          expect(listenerCallCount, equals(1));
+        },
+      );
 
       test(
-          'should handle transformStateSilently followed by transformDataState',
-          () {
-        final viewModel = TestAsyncViewModel();
-        int listenerCallCount = 0;
+        'should handle transformStateSilently followed by transformDataState',
+        () {
+          final viewModel = TestAsyncViewModel();
+          int listenerCallCount = 0;
 
-        viewModel.addListener(() {
-          listenerCallCount++;
-        });
+          viewModel.addListener(() {
+            listenerCallCount++;
+          });
 
-        // Set initial error state
-        viewModel.errorState('Initial error');
-        listenerCallCount = 0;
+          // Set initial error state
+          viewModel.errorState('Initial error');
+          listenerCallCount = 0;
 
-        // Transform error to success silently
-        viewModel.testTransformStateSilently((state) {
-          if (state.isError) {
-            return AsyncState.success(['recovered']);
-          }
-          return state;
-        });
+          // Transform error to success silently
+          viewModel.testTransformStateSilently((state) {
+            if (state.isError) {
+              return AsyncState.success(['recovered']);
+            }
+            return state;
+          });
 
-        expect(viewModel.hasData, isTrue);
-        expect(viewModel.data, equals(['recovered']));
-        expect(listenerCallCount, equals(0));
+          expect(viewModel.hasData, isTrue);
+          expect(viewModel.data, equals(['recovered']));
+          expect(listenerCallCount, equals(0));
 
-        // Transform data with notification
-        viewModel.testTransformDataState((data) {
-          return [...?data, 'enhanced'];
-        });
+          // Transform data with notification
+          viewModel.testTransformDataState((data) {
+            return [...?data, 'enhanced'];
+          });
 
-        expect(viewModel.data, equals(['recovered', 'enhanced']));
-        expect(listenerCallCount, equals(1));
-      });
+          expect(viewModel.data, equals(['recovered', 'enhanced']));
+          expect(listenerCallCount, equals(1));
+        },
+      );
 
       test('should handle edge cases with multiple transformation types', () {
         final viewModel = TestAsyncViewModel();

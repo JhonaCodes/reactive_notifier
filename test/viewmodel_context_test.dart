@@ -8,23 +8,16 @@ class TenderItem {
   final String name;
   final String status;
 
-  TenderItem({
-    required this.id,
-    required this.name,
-    required this.status,
-  });
+  TenderItem({required this.id, required this.name, required this.status});
 
-  factory TenderItem.empty() => TenderItem(
-        id: '',
-        name: 'Empty Tender',
-        status: 'initial',
-      );
+  factory TenderItem.empty() =>
+      TenderItem(id: '', name: 'Empty Tender', status: 'initial');
 
   factory TenderItem.fromTheme(ThemeData theme) => TenderItem(
-        id: 'theme-${theme.hashCode}',
-        name: 'Themed Tender',
-        status: theme.brightness == Brightness.dark ? 'dark' : 'light',
-      );
+    id: 'theme-${theme.hashCode}',
+    name: 'Themed Tender',
+    status: theme.brightness == Brightness.dark ? 'dark' : 'light',
+  );
 
   @override
   String toString() => 'TenderItem(id: $id, name: $name, status: $status)';
@@ -139,8 +132,9 @@ void main() {
       TenderItemsService.createNew();
     });
 
-    testWidgets('AsyncViewModel can access context during init',
-        (tester) async {
+    testWidgets('AsyncViewModel can access context during init', (
+      tester,
+    ) async {
       // Create a widget tree with specific theme
       final testTheme = ThemeData(
         brightness: Brightness.dark,
@@ -187,8 +181,9 @@ void main() {
       expect(vm.data!.id, contains('theme-'));
     });
 
-    testWidgets('Regular ViewModel can access context during init',
-        (tester) async {
+    testWidgets('Regular ViewModel can access context during init', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: MediaQuery(
@@ -227,8 +222,9 @@ void main() {
       expect(find.text('Count: 101'), findsOneWidget);
     });
 
-    testWidgets('ViewModel context becomes null when builder is disposed',
-        (tester) async {
+    testWidgets('ViewModel context becomes null when builder is disposed', (
+      tester,
+    ) async {
       // First, build the widget
       await tester.pumpWidget(
         MaterialApp(
@@ -246,9 +242,9 @@ void main() {
       expect(vm.hasContext, isTrue);
 
       // Remove the widget (dispose builder)
-      await tester.pumpWidget(const MaterialApp(
-        home: Scaffold(body: Text('No Builder')),
-      ));
+      await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: Text('No Builder'))),
+      );
 
       await tester.pumpAndSettle();
 
@@ -307,11 +303,13 @@ void main() {
 
       expect(
         () => vm.requireContext('test operation'),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('BuildContext Required But Not Available'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('BuildContext Required But Not Available'),
+          ),
+        ),
       );
     });
 
@@ -322,8 +320,7 @@ void main() {
       expect(vm.context, isNull);
 
       // ReactiveNotifier cleanup should handle ViewModelContextNotifier
-      ReactiveNotifier
-          .cleanup(); // This calls ViewModelContextNotifier.cleanup internally
+      ReactiveNotifier.cleanup(); // This calls ViewModelContextNotifier.cleanup internally
     });
   });
 }

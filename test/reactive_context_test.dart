@@ -152,14 +152,13 @@ void main() {
       TestThemeService.reset();
     });
 
-    testWidgets('should provide reactive state through context extensions',
-        (tester) async {
+    testWidgets('should provide reactive state through context extensions', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: SingleChildScrollView(
-              child: ReactiveContextTestWidget(),
-            ),
+            body: SingleChildScrollView(child: ReactiveContextTestWidget()),
           ),
         ),
       );
@@ -185,8 +184,9 @@ void main() {
       expect(find.text('Theme: Dark'), findsOneWidget);
     });
 
-    testWidgets('should update only relevant widgets when state changes',
-        (tester) async {
+    testWidgets('should update only relevant widgets when state changes', (
+      tester,
+    ) async {
       int languageWidgetBuilds = 0;
       int themeWidgetBuilds = 0;
 
@@ -205,7 +205,8 @@ void main() {
                   builder: (context) {
                     themeWidgetBuilds++;
                     return Text(
-                        'Theme: ${context.theme.isDark ? 'Dark' : 'Light'}');
+                      'Theme: ${context.theme.isDark ? 'Dark' : 'Light'}',
+                    );
                   },
                 ),
               ],
@@ -297,14 +298,13 @@ void main() {
       expect(find.text('Theme: false'), findsOneWidget);
     });
 
-    testWidgets('should handle multiple state changes efficiently',
-        (tester) async {
+    testWidgets('should handle multiple state changes efficiently', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: SingleChildScrollView(
-              child: ReactiveContextTestWidget(),
-            ),
+            body: SingleChildScrollView(child: ReactiveContextTestWidget()),
           ),
         ),
       );
@@ -318,8 +318,10 @@ void main() {
       await tester.pump();
 
       expect(find.text('Language: Lang4'), findsOneWidget);
-      expect(find.text('Theme: Dark'),
-          findsOneWidget); // Toggled 5 times: false->true->false->true->false->true (Dark)
+      expect(
+        find.text('Theme: Dark'),
+        findsOneWidget,
+      ); // Toggled 5 times: false->true->false->true->false->true (Dark)
     });
   });
 
@@ -342,8 +344,9 @@ void main() {
       TestThemeService.reset();
     });
 
-    testWidgets('should preserve widgets with .keep() extension',
-        (tester) async {
+    testWidgets('should preserve widgets with .keep() extension', (
+      tester,
+    ) async {
       int normalWidgetBuilds = 0;
       int preservedWidgetBuilds = 0;
 
@@ -472,9 +475,7 @@ void main() {
           forceInheritedFor: [TestLanguageService.instance],
           child: const MaterialApp(
             home: Scaffold(
-              body: SingleChildScrollView(
-                child: ReactiveContextTestWidget(),
-              ),
+              body: SingleChildScrollView(child: ReactiveContextTestWidget()),
             ),
           ),
         ),
@@ -494,9 +495,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: SingleChildScrollView(
-              child: ReactiveContextTestWidget(),
-            ),
+            body: SingleChildScrollView(child: ReactiveContextTestWidget()),
           ),
         ),
       );
@@ -553,7 +552,9 @@ void main() {
       );
 
       expect(
-          find.text('Error: Missing state handled gracefully'), findsOneWidget);
+        find.text('Error: Missing state handled gracefully'),
+        findsOneWidget,
+      );
       expect(find.text('Lang: English'), findsNothing);
     });
 
@@ -580,7 +581,8 @@ void main() {
                               children: [
                                 Text('Language: ${context.lang.name}'),
                                 Text(
-                                    'Theme: ${context.theme.isDark ? 'Dark' : 'Light'}'),
+                                  'Theme: ${context.theme.isDark ? 'Dark' : 'Light'}',
+                                ),
                               ],
                             );
                           },

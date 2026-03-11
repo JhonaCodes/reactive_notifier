@@ -1,12 +1,12 @@
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
+import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 mixin HelperNotifier {
   bool isEmptyData(dynamic value) {
     // If null
     if (value == null) {
-      log("Your current result is null");
       return true;
     }
 
@@ -54,18 +54,20 @@ mixin HelperNotifier {
   }) {
     if (listeners.isEmpty) return;
 
-    final typeStr = typeName ?? T.toString();
-    final actionCapitalized = action[0].toUpperCase() + action.substring(1);
-    final header = '$emoji ViewModel<$typeStr> Listeners $actionCapitalized';
-    final divider = '=' * (header.length - 2);
+    assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
+      final typeStr = typeName ?? T.toString();
+      final actionCapitalized = action[0].toUpperCase() + action.substring(1);
+      final header = '$emoji ViewModel<$typeStr> Listeners $actionCapitalized';
+      final divider = '=' * (header.length - 2);
 
-    final formattedListeners = listeners
-        .asMap()
-        .entries
-        .map((entry) => '  ${entry.key + 1}. ${entry.value}')
-        .join('\n');
+      final formattedListeners = listeners
+          .asMap()
+          .entries
+          .map((entry) => '  ${entry.key + 1}. ${entry.value}')
+          .join('\n');
 
-    log('''
+      log('''
 $divider
 $header
 $divider
@@ -73,6 +75,8 @@ $divider
 • Listeners:
 $formattedListeners
 $divider''', level: level);
+      return true;
+    }());
   }
 
   void logSetup<T>({

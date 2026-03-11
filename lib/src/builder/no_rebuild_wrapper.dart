@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 
 class NoRebuildWrapper extends StatefulWidget {
   final Widget child;
@@ -24,8 +25,13 @@ class NoRebuildWrapperState extends State<NoRebuildWrapper> {
   void didUpdateWidget(covariant NoRebuildWrapper oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.child != widget.child) {
-      log('Rebuild on keep old key: ${oldWidget.key.hashCode}  new key: ${widget.key.hashCode}');
-      // Warning: this breaks the "no rebuild" contract but is safer.
+      assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
+        log(
+          'Rebuild on keep old key: ${oldWidget.key.hashCode}  new key: ${widget.key.hashCode}',
+        );
+        return true;
+      }());
       _child = widget.child;
     }
   }

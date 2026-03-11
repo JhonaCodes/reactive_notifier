@@ -4,7 +4,7 @@
 
 ReactiveNotifier is a lightweight, singleton-based state management solution for Flutter following the **"Create Once, Reuse Always"** philosophy.
 
-**Current Version**: 2.16.1
+**Current Version**: 2.17.0-beta.1
 
 ## Core Components
 
@@ -66,6 +66,8 @@ For detailed guidance on choosing the right component, see the [Quick Reference]
 - [Auto-Dispose](features/auto-dispose.md) - Widget-aware lifecycle with automatic memory cleanup
 - [Communication](features/communication.md) - Cross-service communication with listen/listenVM
 - [Hooks](features/hooks.md) - State change hooks (onStateChanged, onAsyncStateChanged)
+- [onDependenciesStateChanged](features/viewmodel/on-dependencies-state-changed.md) - Declarative dependency tracking with batching
+- [call() Syntax](features/call-syntax.md) - Shorthand data access on ReactiveNotifier
 
 ### Testing
 

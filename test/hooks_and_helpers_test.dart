@@ -78,7 +78,9 @@ class TestAsyncViewModel extends AsyncViewModelImpl<TestAsyncModel> {
 
   @override
   void onAsyncStateChanged(
-      AsyncState<TestAsyncModel> previous, AsyncState<TestAsyncModel> next) {
+    AsyncState<TestAsyncModel> previous,
+    AsyncState<TestAsyncModel> next,
+  ) {
     if (previous.isInitial && next.isLoading) {
       asyncStateChanges.add('initial → loading');
     } else if (previous.isLoading && next.isSuccess) {
@@ -124,23 +126,27 @@ class NotificationTestViewModel extends ViewModel<TestModel> {
 
 // Service mixins for testing
 mixin TestService {
-  static final testState =
-      ReactiveNotifier<TestViewModel>(() => TestViewModel());
+  static final testState = ReactiveNotifier<TestViewModel>(
+    () => TestViewModel(),
+  );
 }
 
 mixin AsyncTestService {
-  static final asyncState =
-      ReactiveNotifier<TestAsyncViewModel>(() => TestAsyncViewModel());
+  static final asyncState = ReactiveNotifier<TestAsyncViewModel>(
+    () => TestAsyncViewModel(),
+  );
 }
 
 mixin UserTestService {
-  static final userState =
-      ReactiveNotifier<UserTestViewModel>(() => UserTestViewModel());
+  static final userState = ReactiveNotifier<UserTestViewModel>(
+    () => UserTestViewModel(),
+  );
 }
 
 mixin NotificationTestService {
   static final notificationState = ReactiveNotifier<NotificationTestViewModel>(
-      () => NotificationTestViewModel());
+    () => NotificationTestViewModel(),
+  );
 }
 
 void main() {
@@ -173,8 +179,9 @@ void main() {
         viewModel.transformState((current) => current.copyWith(value: 5));
         expect(viewModel.stateChanges, ['0 → 5']);
 
-        viewModel
-            .transformState((current) => current.copyWith(name: 'transformed'));
+        viewModel.transformState(
+          (current) => current.copyWith(name: 'transformed'),
+        );
         expect(viewModel.stateChanges, ['0 → 5', '5 → 5']);
       });
 
@@ -192,8 +199,9 @@ void main() {
         viewModel.updateSilently(const TestModel(0)); // Reset state
         viewModel.stateChanges.clear(); // Clear hooks AFTER resetting state
 
-        viewModel
-            .transformStateSilently((current) => current.copyWith(value: 77));
+        viewModel.transformStateSilently(
+          (current) => current.copyWith(value: 77),
+        );
         expect(viewModel.stateChanges, ['0 → 77']);
       });
     });
@@ -212,7 +220,8 @@ void main() {
         asyncVM.asyncStateChanges.clear();
         // Reset to initial state using proper method
         asyncVM.transformStateSilently(
-            (state) => AsyncState<TestAsyncModel>.initial());
+          (state) => AsyncState<TestAsyncModel>.initial(),
+        );
 
         asyncVM.loadData('test1', 'data1');
 
@@ -231,11 +240,14 @@ void main() {
         asyncVM.asyncStateChanges.clear();
         // Reset to initial state using proper method
         asyncVM.transformStateSilently(
-            (state) => AsyncState<TestAsyncModel>.initial());
+          (state) => AsyncState<TestAsyncModel>.initial(),
+        );
 
         asyncVM.simulateError('Test error');
-        expect(asyncVM.asyncStateChanges,
-            contains('AsyncState<TestAsyncModel> → error'));
+        expect(
+          asyncVM.asyncStateChanges,
+          contains('AsyncState<TestAsyncModel> → error'),
+        );
       });
 
       test('should execute hook on transformStateSilently', () {
@@ -248,7 +260,8 @@ void main() {
 
         // Transform from success to loading state (different state types)
         asyncVM.transformStateSilently(
-            (state) => AsyncState<TestAsyncModel>.loading());
+          (state) => AsyncState<TestAsyncModel>.loading(),
+        );
 
         // The hook should be called (even if the state is considered equivalent by Flutter's equality)
         // Just verify the method exists and can be called without errors
@@ -287,43 +300,47 @@ void main() {
 
         // Explicit service access - your philosophy
         expect(userVM, same(UserTestService.userState.notifier));
-        expect(notificationVM,
-            same(NotificationTestService.notificationState.notifier));
+        expect(
+          notificationVM,
+          same(NotificationTestService.notificationState.notifier),
+        );
       });
     });
 
     group('Integration Tests', () {
-      test('should work together: hooks + cross-sandbox communication',
-          () async {
-        // Create ViewModels from different sandboxes
-        final testVM = TestService.testState.notifier;
-        testVM.updateSilently(const TestModel(0)); // Reset state
-        testVM.stateChanges.clear(); // Clear hooks AFTER reset
+      test(
+        'should work together: hooks + cross-sandbox communication',
+        () async {
+          // Create ViewModels from different sandboxes
+          final testVM = TestService.testState.notifier;
+          testVM.updateSilently(const TestModel(0)); // Reset state
+          testVM.stateChanges.clear(); // Clear hooks AFTER reset
 
-        final userVM = UserTestService.userState.notifier;
-        userVM.updateSilently(const TestModel(100, 'user')); // Reset state
+          final userVM = UserTestService.userState.notifier;
+          userVM.updateSilently(const TestModel(100, 'user')); // Reset state
 
-        final notificationVM =
-            NotificationTestService.notificationState.notifier;
-        notificationVM.userChanges.clear(); // Clear previous changes
+          final notificationVM =
+              NotificationTestService.notificationState.notifier;
+          notificationVM.userChanges.clear(); // Clear previous changes
 
-        // Test explicit service access (your philosophy)
-        expect(userVM, same(UserTestService.userState.notifier));
+          // Test explicit service access (your philosophy)
+          expect(userVM, same(UserTestService.userState.notifier));
 
-        // Test hooks working within the same ViewModel
-        testVM.increment();
-        expect(testVM.stateChanges, ['0 → 1']);
+          // Test hooks working within the same ViewModel
+          testVM.increment();
+          expect(testVM.stateChanges, ['0 → 1']);
 
-        // Test cross-sandbox communication
-        userVM.transformState((current) => current.copyWith(value: 200));
-        await Future.delayed(const Duration(milliseconds: 1));
+          // Test cross-sandbox communication
+          userVM.transformState((current) => current.copyWith(value: 200));
+          await Future.delayed(const Duration(milliseconds: 1));
 
-        expect(notificationVM.userChanges, ['User changed to: 200']);
+          expect(notificationVM.userChanges, ['User changed to: 200']);
 
-        // Test multiple state changes triggering hooks
-        testVM.updateName('integration_test');
-        expect(testVM.stateChanges, ['0 → 1', '1 → 1']);
-      });
+          // Test multiple state changes triggering hooks
+          testVM.updateName('integration_test');
+          expect(testVM.stateChanges, ['0 → 1', '1 → 1']);
+        },
+      );
     });
   });
 }

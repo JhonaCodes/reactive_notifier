@@ -46,9 +46,11 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// Used by ReactiveNotifier to avoid circular dispose calls
   bool get isDisposed => _disposed;
 
-  AsyncViewModelImpl(this._state,
-      {this.loadOnInit = true, this.waitForContext = false})
-      : super() {
+  AsyncViewModelImpl(
+    this._state, {
+    this.loadOnInit = true,
+    this.waitForContext = false,
+  }) : super() {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
@@ -67,15 +69,34 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     }
   }
 
+  /// Generation counter to handle concurrent _initializeAsync calls.
+  /// When reinitializeWithContext() triggers a new init while one is in progress,
+  /// the older generation detects it has been superseded and exits early.
+  int _initGeneration = 0;
+
   /// Internal initialization method that properly handles async initialization
   Future<void> _initializeAsync() async {
     if (_initialized || _disposed) return;
+
+    final myGeneration = ++_initGeneration;
 
     /// We make sure it is always false before any full initialization.
     hasInitializedListenerExecution = false;
 
     try {
+      // Setup dependencies synchronously (register + subscribe)
+      _setupDependenciesSync();
+
+      // Only await if there are async dependencies that need loading
+      if (_dependencySnapshots.isNotEmpty) {
+        await _ensureAsyncDependenciesReady();
+        if (myGeneration != _initGeneration || _disposed) return;
+      }
+
       await reload();
+
+      // Check if this initialization was superseded by a newer one
+      if (myGeneration != _initGeneration || _disposed) return;
 
       // Assert _state is properly initialized
       assert(() {
@@ -84,7 +105,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
           return true;
         } catch (_) {
           throw StateError(
-              '⚠️ AsyncViewModelImpl<${T.toString()}> did not properly initialize state in init()');
+            '⚠️ AsyncViewModelImpl<${T.toString()}> did not properly initialize state in init()',
+          );
         }
       }());
 
@@ -98,7 +120,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
         _initializedWithoutContext = true;
       }
     } catch (error, stackTrace) {
-      if (!_disposed) {
+      if (!_disposed && myGeneration == _initGeneration) {
         errorState(error, stackTrace);
       }
     }
@@ -151,7 +173,11 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
       try {
         await setupListeners();
       } catch (listenerError) {
-        log('Error on restart listeners: $listenerError');
+        assert(() {
+          if (!ReactiveNotifier.debugLogging) return true;
+          log('Error on restart listeners: $listenerError');
+          return true;
+        }());
       }
     }
   }
@@ -160,8 +186,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// We remove the listeners registered in [setupListeners] to avoid memory problems.
   ///
   @mustCallSuper
-  Future<void> removeListeners(
-      {List<String> currentListeners = const []}) async {
+  Future<void> removeListeners({
+    List<String> currentListeners = const [],
+  }) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
         logRemove<T>(listeners: currentListeners);
@@ -174,8 +201,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// We register our listeners coming from the notifiers.
   ///
   @mustCallSuper
-  Future<void> setupListeners(
-      {List<String> currentListeners = const []}) async {
+  Future<void> setupListeners({
+    List<String> currentListeners = const [],
+  }) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
         logSetup<T>(listeners: currentListeners);
@@ -237,10 +265,12 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   ///```
   ///
   void transformState(AsyncState<T> Function(AsyncState<T> state) transformer) {
-    final newState = transformer(_state).data;
-    if (newState != null) {
-      updateState(newState);
-    }
+    final previous = _state;
+    _state = transformer(_state);
+    notifyListeners();
+
+    // Execute async state change hook
+    onAsyncStateChanged(previous, _state);
   }
 
   /// Transforms the data within the current success state using the
@@ -280,7 +310,13 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     if (transformData != null) {
       updateState(transformData);
     } else {
-      log('⚠️ transformDataState<${T.toString()}> returned null - transformation ignored');
+      assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
+        log(
+          '⚠️ transformDataState<${T.toString()}> returned null - transformation ignored',
+        );
+        return true;
+      }());
     }
   }
 
@@ -314,7 +350,13 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
       // Execute async state change hook (even for silent updates)
       onAsyncStateChanged(previous, _state);
     } else {
-      log('⚠️ transformDataStateSilently<${T.toString()}> returned null - transformation ignored');
+      assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
+        log(
+          '⚠️ transformDataStateSilently<${T.toString()}> returned null - transformation ignored',
+        );
+        return true;
+      }());
     }
   }
 
@@ -344,7 +386,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   ///```
   ///
   void transformStateSilently(
-      AsyncState<T> Function(AsyncState<T> state) transformer) {
+    AsyncState<T> Function(AsyncState<T> state) transformer,
+  ) {
     final previous = _state;
     _state = transformer(_state);
 
@@ -397,6 +440,133 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     // Override in subclasses to react to async state changes
   }
 
+  // ─── Dependency tracking for onDependenciesStateChanged ───
+
+  /// Stores the last known snapshot for each dependency.
+  final Map<ReactiveNotifier, dynamic> _dependencySnapshots = {};
+
+  /// Stores the listener callback for each dependency (for cleanup).
+  final Map<ReactiveNotifier, VoidCallback> _dependencyListeners = {};
+
+  /// Tracks which dependencies have changed since last batch.
+  final Set<ReactiveNotifier> _pendingDependencyChanges = {};
+
+  /// Whether a microtask is already scheduled to process the batch.
+  bool _dependencyBatchScheduled = false;
+
+  /// Lifecycle hook called when any registered dependency's state changes.
+  ///
+  /// Override this method to declare dependencies and react to their changes.
+  /// Uses [DependencyState.on] to register typed callbacks per dependency.
+  ///
+  /// **Setup phase** (before `init()`): Registers dependencies, takes snapshots,
+  /// and calls each callback with `(current, current)`.
+  ///
+  /// **Reaction phase** (after dependencies fire): Only calls callbacks for
+  /// dependencies that actually changed, with `(previous, current)`.
+  /// Multiple dependency changes are batched into a single `notifyListeners()`.
+  ///
+  /// Example:
+  /// ```dart
+  /// @override
+  /// void onDependenciesStateChanged(DependencyState change) {
+  ///   change.on<UserModel>(UserService.userState, (previous, current) {
+  ///     if (previous.id != current.id) {
+  ///       reload(); // Re-fetch data for new user
+  ///     }
+  ///   });
+  /// }
+  /// ```
+  @protected
+  void onDependenciesStateChanged(DependencyState change) {
+    // Base implementation does nothing.
+    // Override in subclasses to declare and react to dependencies.
+  }
+
+  /// Synchronous dependency registration and subscription.
+  /// Registers dependencies via [onDependenciesStateChanged], takes snapshots,
+  /// and subscribes to changes. This runs synchronously to avoid unnecessary
+  /// async yields when there are no dependencies.
+  void _setupDependenciesSync() {
+    final state = DependencyState.create(
+      isSetup: true,
+      changed: {},
+      snapshots: _dependencySnapshots,
+    );
+
+    // Call hook to register dependencies via change.on<T>()
+    onDependenciesStateChanged(state);
+
+    // If no dependencies were registered, nothing else to do
+    if (_dependencySnapshots.isEmpty) return;
+
+    // Subscribe to each registered dependency with batching
+    for (final notifier in _dependencySnapshots.keys.toList()) {
+      _subscribeToDependency(notifier);
+    }
+  }
+
+  /// Waits for async dependencies that haven't loaded their data yet.
+  /// Only called when there are registered dependencies.
+  Future<void> _ensureAsyncDependenciesReady() async {
+    for (final notifier in _dependencySnapshots.keys.toList()) {
+      final value = notifier.notifier;
+      if (value is AsyncViewModelImpl && value.data == null) {
+        await value.loadNotifier();
+        // Re-snapshot with initialized value
+        final val = notifier.notifier;
+        if (val is ViewModel) {
+          _dependencySnapshots[notifier] = val.data;
+        } else if (val is AsyncViewModelImpl) {
+          _dependencySnapshots[notifier] = val.data;
+        } else {
+          _dependencySnapshots[notifier] = val;
+        }
+      }
+    }
+  }
+
+  /// Subscribes to a dependency's changes with microtask batching.
+  void _subscribeToDependency(ReactiveNotifier notifier) {
+    void listener() {
+      _pendingDependencyChanges.add(notifier);
+      if (!_dependencyBatchScheduled) {
+        _dependencyBatchScheduled = true;
+        scheduleMicrotask(_processDependencyBatch);
+      }
+    }
+
+    _dependencyListeners[notifier] = listener;
+    notifier.addListener(listener);
+  }
+
+  /// Processes batched dependency changes in a single microtask.
+  void _processDependencyBatch() {
+    _dependencyBatchScheduled = false;
+    if (_disposed || _pendingDependencyChanges.isEmpty) return;
+
+    final state = DependencyState.create(
+      isSetup: false,
+      changed: Set.from(_pendingDependencyChanges),
+      snapshots: _dependencySnapshots,
+    );
+    _pendingDependencyChanges.clear();
+
+    onDependenciesStateChanged(state);
+    notifyListeners(); // Single rebuild for all batched changes
+  }
+
+  /// Removes all dependency listeners and clears tracking state.
+  void _cleanupDependencies() {
+    for (final entry in _dependencyListeners.entries) {
+      entry.key.removeListener(entry.value);
+    }
+    _dependencyListeners.clear();
+    _dependencySnapshots.clear();
+    _pendingDependencyChanges.clear();
+    _dependencyBatchScheduled = false;
+  }
+
   /// Override this method to provide the async data loading logic
   @protected
   Future<T> init();
@@ -417,9 +587,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// Example:
   ///
   @protected
-  FutureOr<void> onResume(T? data) async {
-    log("Application was initialized and onResume was executed");
-  }
+  FutureOr<void> onResume(T? data) async {}
 
   /// Update data directly
   void updateState(T data) {
@@ -503,6 +671,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   ///         sequential asynchronous operations if needed
   Future<void> loadNotifier() async {
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔍 loadNotifier() called for ViewModel<${T.toString()}>
 ''', level: 10);
@@ -568,13 +737,12 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     );
   }
 
+  /// Atomic counter for unique listener keys (avoids microsecond collisions)
+  static int _listenerCounter = 0;
+
   /// Holds the currently active listener callbacks.
   /// Maps listener keys to their callback functions for better tracking.
   final Map<String, VoidCallback> _listeners = {};
-
-  /// Tracks which ViewModels this AsyncViewModel is listening to
-  /// Format: 'ListenerVM_hashCode' -> 'ListenedToVM_hashCode'
-  final Map<String, int> _listeningTo = {};
 
   /// Starts listening for changes in the ViewModel's asynchronous state.
   ///
@@ -586,13 +754,15 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// The [value] callback receives the current ```AsyncState<T>``` whenever the state updates.
   ///
   /// Returns a [Future] that completes with the current state.
-  Future<AsyncState<T>> listenVM(void Function(AsyncState<T> data) value,
-      {bool callOnInit = false}) async {
+  Future<AsyncState<T>> listenVM(
+    void Function(AsyncState<T> data) value, {
+    bool callOnInit = false,
+  }) async {
     // Create unique key for this listener
-    final listenerKey =
-        'async_vm_${hashCode}_${DateTime.now().microsecondsSinceEpoch}';
+    final listenerKey = 'async_vm_${hashCode}_${++_listenerCounter}';
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔗 AsyncViewModelImpl<${T.toString()}> adding listener
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -608,9 +778,6 @@ Current listeners: ${_listeners.length}
 
     // Store listener
     _listeners[listenerKey] = callback;
-
-    // Track relationship (this AsyncViewModel is listening to current AsyncViewModel)
-    _listeningTo[listenerKey] = hashCode;
 
     // Call on init if requested
     if (callOnInit) {
@@ -631,11 +798,11 @@ Current listeners: ${_listeners.length}
     final listenerCount = _listeners.length;
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔌 AsyncViewModelImpl<${T.toString()}> stopping listeners
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Removing listeners: $listenerCount
-Listening relationships: ${_listeningTo.length}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 5);
       return true;
@@ -646,9 +813,8 @@ Listening relationships: ${_listeningTo.length}
       removeListener(callback);
     }
 
-    // Clear tracking maps
+    // Clear tracking map
     _listeners.clear();
-    _listeningTo.clear();
   }
 
   /// Stops a specific listener by key
@@ -658,9 +824,9 @@ Listening relationships: ${_listeningTo.length}
     if (callback != null) {
       removeListener(callback);
       _listeners.remove(listenerKey);
-      _listeningTo.remove(listenerKey);
 
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 🔌 AsyncViewModelImpl<${T.toString()}> stopped specific listener
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -679,6 +845,7 @@ Remaining listeners: ${_listeners.length}
   @override
   void dispose() {
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🗑️ Starting AsyncViewModelImpl<${T.toString()}> disposal
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -686,34 +853,37 @@ Current state: ${_state.runtimeType}
 LoadOnInit was: $loadOnInit
 HasInitialized: $hasInitializedListenerExecution
 Active listeners: ${_listeners.length}
-Listening to: ${_listeningTo.length} ViewModels
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 10);
       return true;
     }());
 
-    // 1. Stop internal listenVM() connections to other ViewModels/AsyncViewModels
+    // 1. Cleanup dependency listeners from onDependenciesStateChanged
+    _cleanupDependencies();
+
+    // 2. Stop internal listenVM() connections to other ViewModels/AsyncViewModels
     stopListeningVM();
 
-    // 2. Remove all external listeners registered via setupListeners()
+    // 3. Remove all external listeners registered via setupListeners()
     removeListeners();
 
-    // 3. Clear async state to help GC
+    // 4. Clear async state to help GC
     _state = AsyncState.initial();
 
-    // 4. Reset initialization flags
+    // 5. Reset initialization flags
     hasInitializedListenerExecution = false;
     loadOnInit = true;
     _initialized = false;
     _initializedWithoutContext = false;
 
-    // 5. Mark as disposed
+    // 6. Mark as disposed
     _disposed = true;
 
-    // 6. Notify ReactiveNotifier to remove this AsyncViewModel from global registry
+    // 7. Notify ReactiveNotifier to remove this AsyncViewModel from global registry
     _notifyReactiveNotifierDisposal();
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ✅ AsyncViewModelImpl<${T.toString()}> completely disposed
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -725,7 +895,7 @@ ReactiveNotifier cleanup: Requested
       return true;
     }());
 
-    // 6. Call ChangeNotifier dispose to remove all Flutter listeners
+    // 8. Call ChangeNotifier dispose to remove all Flutter listeners
     super.dispose();
   }
 
@@ -733,19 +903,15 @@ ReactiveNotifier cleanup: Requested
   /// This allows ReactiveNotifier to clean itself from the global registry
   void _notifyReactiveNotifierDisposal() {
     // Find any ReactiveNotifier that contains this AsyncViewModel instance
-    // and request cleanup from global registry
+    // and request cleanup from global registry (O(1) lookup)
     try {
-      final instances = ReactiveNotifier.getInstances;
-      for (final instance in instances) {
-        if (instance.notifier == this) {
-          // Found the ReactiveNotifier containing this AsyncViewModel
-          // Use cleanCurrentNotifier with forceCleanup since AsyncViewModel is disposing
-          instance.cleanCurrentNotifier(forceCleanup: true);
-          break;
-        }
+      final instance = ReactiveNotifier.findByNotifier(this);
+      if (instance != null) {
+        instance.cleanCurrentNotifier(forceCleanup: true);
       }
     } catch (e) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 ⚠️ Warning: Could not notify ReactiveNotifier of AsyncViewModel disposal
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -768,10 +934,11 @@ Consider calling ReactiveNotifier.cleanup() manually when appropriate.
     // Check if we need to initialize due to waitForContext or previous context-less initialization
     bool shouldReinitialize =
         (_initializedWithoutContext && hasContext && !_disposed) ||
-            (waitForContext && !_initialized && hasContext && !_disposed);
+        (waitForContext && !_initialized && hasContext && !_disposed);
 
     if (shouldReinitialize) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 🔄 AsyncViewModelImpl<${T.toString()}> re-initializing with context
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

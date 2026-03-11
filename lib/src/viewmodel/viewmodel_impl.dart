@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
+import 'package:reactive_notifier/src/viewmodel/dependency_state.dart';
 
 /// Used in ViewModel classes where all business logic should reside.
 ///
@@ -48,6 +49,7 @@ abstract class ViewModel<T> extends ChangeNotifier
     }
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ViewModel<${T.toString()}> created
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -88,10 +90,12 @@ Initial state hash: ${_data.hashCode}
   /// We remove the listeners registered in [setupListeners] to avoid memory problems.
   ///
   @mustCallSuper
-  Future<void> removeListeners(
-      {List<String> currentListeners = const []}) async {
+  Future<void> removeListeners({
+    List<String> currentListeners = const [],
+  }) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         logRemove<T>(listeners: currentListeners);
         return true;
       }());
@@ -102,10 +106,12 @@ Initial state hash: ${_data.hashCode}
   /// We register our listeners coming from the notifiers.
   ///
   @mustCallSuper
-  Future<void> setupListeners(
-      {List<String> currentListeners = const []}) async {
+  Future<void> setupListeners({
+    List<String> currentListeners = const [],
+  }) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         logSetup<T>(listeners: currentListeners);
         return true;
       }());
@@ -136,6 +142,7 @@ Initial state hash: ${_data.hashCode}
   void reinitializeWithContext() {
     if (_initializedWithoutContext && hasContext && !_disposed) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 🔄 ViewModel<${T.toString()}> re-initializing with context
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -187,6 +194,9 @@ Context now available: ✓
         _initializedWithoutContext = true;
       }
 
+      // Setup dependencies BEFORE init() so they're available
+      _setupDependencies();
+
       init();
 
       // Ensure _data was assigned in init()
@@ -215,12 +225,13 @@ Check the init() implementation at: ${_getCreationLocation()}
       unawaited(setupListeners());
     } catch (e, stack) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 ⚠️ Error during ViewModel<${T.toString()}> initialization
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ID: $_instanceId
 Error: $e
-Stack trace: 
+Stack trace:
 $stack
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 100);
@@ -234,6 +245,7 @@ $stack
   void _reinitializeIfNeeded() {
     if (_disposed) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 🔄 Reinitializing disposed ViewModel<${T.toString()}>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -270,6 +282,7 @@ Was disposed for: ${DateTime.now().difference(_disposeTime!).inMilliseconds}ms
     onStateChanged(previous, newState);
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 📝 ViewModel<${T.toString()}> updated
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -297,6 +310,7 @@ New state hash: ${_data.hashCode}
     onStateChanged(previous, newState);
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔄 ViewModel<${T.toString()}> transformed
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -323,6 +337,7 @@ New state hash: ${_data.hashCode}
     onStateChanged(previous, newState);
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔄 ViewModel<${T.toString()}> transformed silently
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -346,6 +361,7 @@ New state hash: ${_data.hashCode}
     onStateChanged(previous, newState);
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🤫 ViewModel<${T.toString()}> updated silently
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -365,32 +381,36 @@ New state hash: ${_data.hashCode}
     if (_disposed) return;
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🗑️ Starting ViewModel<${T.toString()}> disposal
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ID: $_instanceId
 Current updates: $_updateCount
 Active listeners: ${_listeners.length}
-Listening to: ${_listeningTo.length} ViewModels
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 10);
       return true;
     }());
 
-    // 1. Remove all external listeners registered via setupListeners()
+    // 1. Cleanup dependency listeners from onDependenciesStateChanged
+    _cleanupDependencies();
+
+    // 2. Remove all external listeners registered via setupListeners()
     removeListeners();
 
-    // 2. Stop internal listenVM() connections to other ViewModels
+    // 3. Stop internal listenVM() connections to other ViewModels
     stopListeningVM();
 
-    // 3. Notify ReactiveNotifier to remove this ViewModel from global registry
-    _notifyReactiveNotifierDisposal();
-
-    // 4. Mark as disposed and record timing
+    // 4. Mark as disposed BEFORE notifying ReactiveNotifier to prevent double disposal
     _disposed = true;
     _disposeTime = DateTime.now();
 
+    // 5. Notify ReactiveNotifier to remove this ViewModel from global registry
+    _notifyReactiveNotifierDisposal();
+
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       final lifespan = _initTime != null
           ? _disposeTime!.difference(_initTime!).inMilliseconds
           : 'unknown';
@@ -407,7 +427,7 @@ ReactiveNotifier cleanup: Requested
       return true;
     }());
 
-    // 5. Call ChangeNotifier dispose to remove all Flutter listeners
+    // 6. Call ChangeNotifier dispose to remove all Flutter listeners
     super.dispose();
   }
 
@@ -415,19 +435,15 @@ ReactiveNotifier cleanup: Requested
   /// This allows ReactiveNotifier to clean itself from the global registry
   void _notifyReactiveNotifierDisposal() {
     // Find any ReactiveNotifier that contains this ViewModel instance
-    // and request cleanup from global registry
+    // and request cleanup from global registry (O(1) lookup)
     try {
-      final instances = ReactiveNotifier.getInstances;
-      for (final instance in instances) {
-        if (instance.notifier == this) {
-          // Found the ReactiveNotifier containing this ViewModel
-          // Use cleanCurrentNotifier with forceCleanup since ViewModel is disposing
-          instance.cleanCurrentNotifier(forceCleanup: true);
-          break;
-        }
+      final instance = ReactiveNotifier.findByNotifier(this);
+      if (instance != null) {
+        instance.cleanCurrentNotifier(forceCleanup: true);
       }
     } catch (e) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 ⚠️ Warning: Could not notify ReactiveNotifier of ViewModel disposal
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -498,6 +514,7 @@ Consider calling ReactiveNotifier.cleanup() manually when appropriate.
   ///         sequential asynchronous operations if needed
   Future<void> loadNotifier() async {
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔍 loadNotifier() called for ViewModel<${T.toString()}>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -523,6 +540,7 @@ Is disposed: $_disposed
     updateState(emptyState);
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🧹 ViewModel<${T.toString()}> state cleaned
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -544,23 +562,30 @@ New empty state hash: ${_data.hashCode}
       await setupListeners();
       await onResume(_data);
     } catch (error, stackTrace) {
-      log(error.toString());
-      log(stackTrace.toString());
+      assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
+        log(error.toString());
+        log(stackTrace.toString());
+        return true;
+      }());
       try {
         await setupListeners();
       } catch (listenerError) {
-        log('Error on restart listeners: $listenerError');
+        assert(() {
+          if (!ReactiveNotifier.debugLogging) return true;
+          log('Error on restart listeners: $listenerError');
+          return true;
+        }());
       }
     }
   }
 
+  /// Atomic counter for unique listener keys (avoids microsecond collisions)
+  static int _listenerCounter = 0;
+
   /// Holds the currently active listener callbacks.
   /// Maps listener keys to their callback functions for better tracking.
   final Map<String, VoidCallback> _listeners = {};
-
-  /// Tracks which ViewModels this ViewModel is listening to
-  /// Format: 'ListenerVM_hashCode' -> 'ListenedToVM_hashCode'
-  final Map<String, int> _listeningTo = {};
 
   /// Starts listening for changes in the ViewModel.
   ///
@@ -574,10 +599,10 @@ New empty state hash: ${_data.hashCode}
   /// Returns the current value of [_data].
   T listenVM(void Function(T data) value, {bool callOnInit = false}) {
     // Create unique key for this listener
-    final listenerKey =
-        'vm_${hashCode}_${DateTime.now().microsecondsSinceEpoch}';
+    final listenerKey = 'vm_${hashCode}_${++_listenerCounter}';
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔗 ViewModel<${T.toString()}> adding listener
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -593,9 +618,6 @@ Current listeners: ${_listeners.length}
 
     // Store listener
     _listeners[listenerKey] = callback;
-
-    // Track relationship (this ViewModel is listening to current ViewModel)
-    _listeningTo[listenerKey] = hashCode;
 
     // Call on init if requested
     if (callOnInit) {
@@ -616,11 +638,11 @@ Current listeners: ${_listeners.length}
     final listenerCount = _listeners.length;
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔌 ViewModel<${T.toString()}> stopping listeners
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Removing listeners: $listenerCount
-Listening relationships: ${_listeningTo.length}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ''', level: 5);
       return true;
@@ -631,9 +653,8 @@ Listening relationships: ${_listeningTo.length}
       removeListener(callback);
     }
 
-    // Clear tracking maps
+    // Clear tracking map
     _listeners.clear();
-    _listeningTo.clear();
   }
 
   /// Stops a specific listener by key
@@ -643,9 +664,9 @@ Listening relationships: ${_listeningTo.length}
     if (callback != null) {
       removeListener(callback);
       _listeners.remove(listenerKey);
-      _listeningTo.remove(listenerKey);
 
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 🔌 ViewModel<${T.toString()}> stopped specific listener
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -698,6 +719,114 @@ Remaining listeners: ${_listeners.length}
     // Override in subclasses to react to state changes
   }
 
+  // ─── Dependency tracking for onDependenciesStateChanged ───
+
+  /// Stores the last known snapshot for each dependency.
+  final Map<ReactiveNotifier, dynamic> _dependencySnapshots = {};
+
+  /// Stores the listener callback for each dependency (for cleanup).
+  final Map<ReactiveNotifier, VoidCallback> _dependencyListeners = {};
+
+  /// Tracks which dependencies have changed since last batch.
+  final Set<ReactiveNotifier> _pendingDependencyChanges = {};
+
+  /// Whether a microtask is already scheduled to process the batch.
+  bool _dependencyBatchScheduled = false;
+
+  /// Lifecycle hook called when any registered dependency's state changes.
+  ///
+  /// Override this method to declare dependencies and react to their changes.
+  /// Uses [DependencyState.on] to register typed callbacks per dependency.
+  ///
+  /// **Setup phase** (before `init()`): Registers dependencies, takes snapshots,
+  /// and calls each callback with `(current, current)`.
+  ///
+  /// **Reaction phase** (after dependencies fire): Only calls callbacks for
+  /// dependencies that actually changed, with `(previous, current)`.
+  /// Multiple dependency changes are batched into a single `notifyListeners()`.
+  ///
+  /// Example:
+  /// ```dart
+  /// @override
+  /// void onDependenciesStateChanged(DependencyState change) {
+  ///   change.on<UserModel>(UserService.userState, (previous, current) {
+  ///     if (previous.id != current.id) {
+  ///       // User changed — react
+  ///     }
+  ///   });
+  ///
+  ///   final userData = UserService.userState();
+  ///   updateState(data.copyWith(userName: userData.name));
+  /// }
+  /// ```
+  @protected
+  void onDependenciesStateChanged(DependencyState change) {
+    // Base implementation does nothing.
+    // Override in subclasses to declare and react to dependencies.
+  }
+
+  /// Sets up dependencies declared in [onDependenciesStateChanged].
+  /// Called before [init()] during ViewModel construction.
+  void _setupDependencies() {
+    final state = DependencyState.create(
+      isSetup: true,
+      changed: {},
+      snapshots: _dependencySnapshots,
+    );
+
+    // Call hook to register dependencies via change.on<T>()
+    onDependenciesStateChanged(state);
+
+    // If no dependencies were registered, nothing else to do
+    if (_dependencySnapshots.isEmpty) return;
+
+    // Subscribe to each registered dependency with batching
+    for (final notifier in _dependencySnapshots.keys.toList()) {
+      _subscribeToDependency(notifier);
+    }
+  }
+
+  /// Subscribes to a dependency's changes with microtask batching.
+  void _subscribeToDependency(ReactiveNotifier notifier) {
+    void listener() {
+      _pendingDependencyChanges.add(notifier);
+      if (!_dependencyBatchScheduled) {
+        _dependencyBatchScheduled = true;
+        scheduleMicrotask(_processDependencyBatch);
+      }
+    }
+
+    _dependencyListeners[notifier] = listener;
+    notifier.addListener(listener);
+  }
+
+  /// Processes batched dependency changes in a single microtask.
+  void _processDependencyBatch() {
+    _dependencyBatchScheduled = false;
+    if (_disposed || _pendingDependencyChanges.isEmpty) return;
+
+    final state = DependencyState.create(
+      isSetup: false,
+      changed: Set.from(_pendingDependencyChanges),
+      snapshots: _dependencySnapshots,
+    );
+    _pendingDependencyChanges.clear();
+
+    onDependenciesStateChanged(state);
+    notifyListeners(); // Single rebuild for all batched changes
+  }
+
+  /// Removes all dependency listeners and clears tracking state.
+  void _cleanupDependencies() {
+    for (final entry in _dependencyListeners.entries) {
+      entry.key.removeListener(entry.value);
+    }
+    _dependencyListeners.clear();
+    _dependencySnapshots.clear();
+    _pendingDependencyChanges.clear();
+    _dependencyBatchScheduled = false;
+  }
+
   /// Called after the ViewModel's primary initialization logic (e.g., in `init(), setupListeners, etc`)
   /// has completed successfully.
   ///
@@ -714,7 +843,5 @@ Remaining listeners: ${_listeners.length}
   /// Example:
   ///
   @protected
-  FutureOr<void> onResume(T data) async {
-    log("Application was initialized and onResume was executed");
-  }
+  FutureOr<void> onResume(T data) async {}
 }

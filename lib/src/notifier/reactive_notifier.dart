@@ -17,6 +17,18 @@ import '../context/viewmodel_context_notifier.dart';
 /// - Notification overflow detection
 /// - Detailed debug logging
 class ReactiveNotifier<T> extends NotifierImpl<T> {
+  /// Controls debug logging for all ReactiveNotifier components.
+  /// Only affects debug builds (assert blocks). Defaults to true in debug mode.
+  /// Set to `false` to suppress all ReactiveNotifier debug logs.
+  ///
+  /// ```dart
+  /// void main() {
+  ///   ReactiveNotifier.debugLogging = false; // Silence all debug logs
+  ///   runApp(MyApp());
+  /// }
+  /// ```
+  static bool debugLogging = true;
+
   // Singleton management
   static final HashMap<Key, dynamic> _instances = HashMap.from({});
 
@@ -45,6 +57,9 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   static final Map<Key, ReactiveNotifier> _instanceRegistry =
       <Key, ReactiveNotifier>{};
 
+  // O(1) reverse lookup: maps notifier value identity -> ReactiveNotifier container
+  static final Map<int, ReactiveNotifier> _notifierToInstance = {};
+
   // Factory function storage for recreate() functionality
   final T Function() _createFunction;
 
@@ -52,11 +67,15 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   bool _isRecreating = false;
 
   ReactiveNotifier._(
-      T Function() create, this.related, this.keyNotifier, this.autoDispose)
-      : _createFunction = create,
-        super(create()) {
+    T Function() create,
+    this.related,
+    this.keyNotifier,
+    this.autoDispose,
+  ) : _createFunction = create,
+      super(create()) {
     if (related != null) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 🔍 Setting up relations for ReactiveNotifier<$T>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━''', level: 10);
@@ -67,8 +86,11 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
       related?.forEach((child) {
         child._parents.add(this);
         assert(() {
-          log('➕ Added parent-child relation: $T -> ${child.notifier.runtimeType}',
-              level: 10);
+          if (!ReactiveNotifier.debugLogging) return true;
+          log(
+            '➕ Added parent-child relation: $T -> ${child.notifier.runtimeType}',
+            level: 10,
+          );
           return true;
         }());
       });
@@ -81,11 +103,16 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   /// - [create]: Function that creates the initial state
   /// - [related]: Optional list of related states
   /// - [key]: Optional key for instance identity
-  factory ReactiveNotifier(T Function() create,
-      {List<ReactiveNotifier>? related, Key? key, bool autoDispose = false}) {
+  factory ReactiveNotifier(
+    T Function() create, {
+    List<ReactiveNotifier>? related,
+    Key? key,
+    bool autoDispose = false,
+  }) {
     key ??= UniqueKey();
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 📦 Creating ReactiveNotifier<$T>
 ${related != null ? '🔗 With related types: ${related.map((r) => r.notifier.runtimeType).join(', ')}' : ''}
@@ -111,6 +138,7 @@ Location: $trace
       final instance = ReactiveNotifier._(create, related, key, autoDispose);
       _instances[key] = instance;
       _instanceRegistry[key] = instance;
+      _notifierToInstance[identityHashCode(instance.notifier)] = instance;
     } catch (e) {
       if (e is StateError) {
         rethrow;
@@ -134,6 +162,50 @@ Location: $trace
     return _instances[key] as ReactiveNotifier<T>;
   }
 
+  /// Convenience factory for auto-dispose singletons.
+  ///
+  /// Prefer this when you want singleton-like state that should be
+  /// automatically cleaned up when unused.
+  static ReactiveNotifier<T> createAutoDispose<T>(
+    T Function() create, {
+    List<ReactiveNotifier>? related,
+    Key? key,
+    Duration? timeout,
+  }) {
+    final instance = ReactiveNotifier<T>(
+      create,
+      related: related,
+      key: key,
+      autoDispose: true,
+    );
+
+    if (timeout != null) {
+      instance.enableAutoDispose(timeout: timeout);
+    }
+
+    return instance;
+  }
+
+  /// Shorthand accessor that returns the unwrapped data value directly.
+  ///
+  /// Uses Dart's `call()` syntax so you can write:
+  /// ```dart
+  /// final userData = UserService.userState(); // returns data directly
+  /// ```
+  ///
+  /// For `ReactiveNotifier<ViewModel<T>>`: returns `T` (the ViewModel's data).
+  /// For `ReactiveNotifier<AsyncViewModelImpl<T>>`: returns `T?` (the async data).
+  /// For `ReactiveNotifier<int>` (simple types): returns `T` directly.
+  ///
+  /// Note: Returns a snapshot — not reactive. For reactivity use builders,
+  /// `listenVM()`, or `onDependenciesStateChanged`.
+  dynamic call() {
+    final value = notifier;
+    if (value is ViewModel) return value.data;
+    if (value is AsyncViewModelImpl) return value.data;
+    return value;
+  }
+
   @override
   void updateState(T newState) {
     if (notifier != newState) {
@@ -145,8 +217,10 @@ Location: $trace
       // Check for possible notification overflow
       _checkNotificationOverflow();
 
-      log('📝 Updating state for $T: $notifier -> ${newState.runtimeType}',
-          level: 10);
+      log(
+        '📝 Updating state for $T: $notifier -> ${newState.runtimeType}',
+        level: 10,
+      );
 
       _updatingNotifiers.add(this);
 
@@ -157,12 +231,15 @@ Location: $trace
         // Notify parents if they exist
         if (_parents.isNotEmpty) {
           assert(() {
+            if (!ReactiveNotifier.debugLogging) return true;
             log('📤 Notifying parent states for $T', level: 10);
             return true;
           }());
 
           for (var parent in _parents) {
-            parent.notifyListeners();
+            if (!parent._disposed) {
+              parent.notifyListeners();
+            }
           }
         }
       } finally {
@@ -182,26 +259,20 @@ Location: $trace
       // Check for possible notification overflow
       _checkNotificationOverflow();
 
-      log('📝 Updating state silently for $T: $notifier -> ${newState.runtimeType}',
-          level: 10);
+      assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
+        log(
+          '📝 Updating state silently for $T: $notifier -> ${newState.runtimeType}',
+          level: 10,
+        );
+        return true;
+      }());
 
       _updatingNotifiers.add(this);
 
       try {
-        // Update value without notifying
+        // Update value without notifying (truly silent - no parent notifications)
         super.updateSilently(newState);
-
-        // Notify parents if they exist
-        if (_parents.isNotEmpty) {
-          assert(() {
-            log('📤 Notifying parent states for $T', level: 10);
-            return true;
-          }());
-
-          for (var parent in _parents) {
-            parent.notifyListeners();
-          }
-        }
       } finally {
         _updatingNotifiers.remove(this);
       }
@@ -218,25 +289,17 @@ Location: $trace
     // Check for possible notification overflow
     _checkNotificationOverflow();
 
-    log('🔄 Transforming state silently for $T', level: 10);
+    assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
+      log('🔄 Transforming state silently for $T', level: 10);
+      return true;
+    }());
 
     _updatingNotifiers.add(this);
 
     try {
-      // Transform state without notifying
+      // Transform state without notifying (truly silent - no parent notifications)
       super.transformStateSilently(transform);
-
-      // Notify parents if they exist
-      if (_parents.isNotEmpty) {
-        assert(() {
-          log('📤 Notifying parent states for $T', level: 10);
-          return true;
-        }());
-
-        for (var parent in _parents) {
-          parent.notifyListeners();
-        }
-      }
     } finally {
       _updatingNotifiers.remove(this);
     }
@@ -263,12 +326,15 @@ Location: $trace
       // Notify parents if they exist
       if (_parents.isNotEmpty) {
         assert(() {
+          if (!ReactiveNotifier.debugLogging) return true;
           log('📤 Notifying parent states for $T', level: 10);
           return true;
         }());
 
         for (var parent in _parents) {
-          parent.notifyListeners();
+          if (!parent._disposed) {
+            parent.notifyListeners();
+          }
         }
       }
     } finally {
@@ -292,6 +358,7 @@ Location: $trace
 
       if (_notificationCount >= _notificationThreshold) {
         assert(() {
+          if (!ReactiveNotifier.debugLogging) return true;
           log('''
 ⚠️ Notification Overflow Detected!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -493,8 +560,11 @@ ${_formatNotifierInfo(child)}
   /// Gets a related state by type
   R from<R>([Key? key]) {
     assert(() {
-      log('🔍 Getting related state of type $R from $T${key != null ? ' with key: $key' : ''}',
-          level: 10);
+      if (!ReactiveNotifier.debugLogging) return true;
+      log(
+        '🔍 Getting related state of type $R from $T${key != null ? ' with key: $key' : ''}',
+        level: 10,
+      );
       return true;
     }());
 
@@ -551,6 +621,7 @@ Available types: ${related!.map((r) => '${r.notifier.runtimeType}(${r.keyNotifie
       _isScheduledForDispose = false;
 
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 🔄 Auto-dispose cancelled for ReactiveNotifier<$T>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -564,6 +635,7 @@ Reason: New widget started using this notifier
     }
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ➕ Reference added to ReactiveNotifier<$T>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -584,6 +656,7 @@ Auto-dispose enabled: $autoDispose
     }
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ➖ Reference removed from ReactiveNotifier<$T>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -601,6 +674,18 @@ Auto-dispose enabled: $autoDispose
     }
   }
 
+  /// Checks if the internal ViewModel/AsyncViewModel has active listenVM() subscribers.
+  /// This bridges the gap between the ReactiveNotifier container (ChangeNotifier #1)
+  /// and the ViewModel value (ChangeNotifier #2) for cleanup safety.
+  bool _hasInternalViewModelListeners() {
+    final value = notifier;
+    if (value is ViewModel && value.activeListenerCount > 0) return true;
+    if (value is AsyncViewModelImpl && value.activeListenerCount > 0) {
+      return true;
+    }
+    return false;
+  }
+
   /// Schedule automatic disposal after timeout
   void _scheduleAutoDispose() {
     if (_isScheduledForDispose || _disposed) return;
@@ -608,7 +693,22 @@ Auto-dispose enabled: $autoDispose
     _isScheduledForDispose = true;
     _disposeTimer = Timer(_autoDisposeTimeout, () {
       if (_referenceCount <= 0 && autoDispose && !_disposed) {
+        // Guard: Don't dispose if the internal ViewModel has active listenVM() subscribers
+        if (_hasInternalViewModelListeners()) {
+          _isScheduledForDispose = false;
+          assert(() {
+            if (!ReactiveNotifier.debugLogging) return true;
+            log(
+              '[ReactiveNotifier] Auto-dispose deferred for <$T>: '
+              'ViewModel has active listenVM() subscribers.',
+              level: 10,
+            );
+            return true;
+          }());
+          return;
+        }
         assert(() {
+          if (!ReactiveNotifier.debugLogging) return true;
           log('''
 🗑️ Auto-disposing ReactiveNotifier<$T>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -626,6 +726,7 @@ Final reference count: $_referenceCount
     });
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ⏰ Auto-dispose scheduled for ReactiveNotifier<$T>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -645,6 +746,7 @@ Will dispose if no references are added
     }
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ⚙️ Auto-dispose configured for ReactiveNotifier<$T>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -707,6 +809,7 @@ Available instances: ${_instances.length}
     final instance = _instances[key] as ReactiveNotifier<T>;
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔄 Reinitializing ReactiveNotifier<$T>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -748,6 +851,7 @@ Creating fresh state...
     } catch (e) {
       // If disposal fails, log but continue with replacement
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 ⚠️ Warning during old ViewModel disposal in reinitializeInstance
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -766,6 +870,7 @@ Continuing with state replacement...
     instance.notifyListeners();
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ✅ ReactiveNotifier<$T> successfully reinitialized
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -807,6 +912,10 @@ Active references: ${instance._referenceCount}
   /// Replace the internal notifier with a new instance
   /// Used by reinitializeInstance to update the internal state
   void replaceNotifier(T newNotifier) {
+    // Update reverse lookup map
+    _notifierToInstance.remove(identityHashCode(notifier));
+    _notifierToInstance[identityHashCode(newNotifier)] = this;
+
     // This is a protected method that updates the internal state
     // It's used internally by reinitializeInstance
     updateSilently(newNotifier);
@@ -814,6 +923,36 @@ Active references: ${instance._referenceCount}
 
   /// Global cleanup flag to prevent concurrent modifications during cleanup
   static bool _isGlobalCleanupInProgress = false;
+
+  /// Garbage collect unused auto-dispose instances.
+  ///
+  /// Cleans instances that: have no references, no listeners, no parents,
+  /// and are marked autoDispose. Returns the number of instances cleaned.
+  static int garbageCollectUnused() {
+    if (_isGlobalCleanupInProgress) {
+      return 0;
+    }
+
+    int cleaned = 0;
+
+    // Work on a copy to avoid concurrent modification.
+    final instancesList = _instances.values.toList();
+    for (final instance in instancesList) {
+      if (instance is ReactiveNotifier) {
+        if (!instance._disposed &&
+            instance.autoDispose &&
+            instance.referenceCount <= 0 &&
+            !instance.hasListeners &&
+            instance._parents.isEmpty &&
+            !instance._hasInternalViewModelListeners()) {
+          final ok = instance.cleanCurrentNotifier();
+          if (ok) cleaned++;
+        }
+      }
+    }
+
+    return cleaned;
+  }
 
   /// Utility methods
   static void cleanup() {
@@ -823,6 +962,7 @@ Active references: ${instance._referenceCount}
 
     _isGlobalCleanupInProgress = true;
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🧹 Starting global ReactiveNotifier cleanup
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -862,6 +1002,7 @@ Updating notifiers: ${_updatingNotifiers.length}
           }
         } catch (e) {
           assert(() {
+            if (!ReactiveNotifier.debugLogging) return true;
             log('''
 ⚠️ Error disposing ViewModel during cleanup
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -880,6 +1021,7 @@ Continuing with cleanup...
     _instances.clear();
     _updatingNotifiers.clear();
     _instanceRegistry.clear();
+    _notifierToInstance.clear();
 
     // 3. Clear ReactiveContext registries
     try {
@@ -900,6 +1042,7 @@ Continuing with cleanup...
     _isGlobalCleanupInProgress = false;
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ✅ Global ReactiveNotifier cleanup completed
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -950,6 +1093,7 @@ All memory should now be available for garbage collection
     // Skip cleanup if global cleanup is in progress to avoid concurrent modification
     if (_isGlobalCleanupInProgress) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 🔄 Skipping cleanCurrentNotifier during global cleanup
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -965,6 +1109,7 @@ Reason: Global cleanup is already handling this instance
     // Check if it has listeners (unless force cleanup)
     if (hasListeners && !forceCleanup) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         final trace = StackTrace.current.toString().split('\n')[1];
         log('''
 ⚠️ Cannot clean ReactiveNotifier<$T>
@@ -990,9 +1135,15 @@ Location of cleanup request: $trace
     // Check if it has parents (notifiers referencing it) (unless force cleanup)
     if (_parents.isNotEmpty && !forceCleanup) {
       assert(() {
-        final parentInfo = _parents.map((parent) => '''
+        if (!ReactiveNotifier.debugLogging) return true;
+        final parentInfo = _parents
+            .map(
+              (parent) =>
+                  '''
    - ${parent.notifier.runtimeType} (${parent.keyNotifier})
-     ${_getParentLocationInfo(parent)}''').join('\n');
+     ${_getParentLocationInfo(parent)}''',
+            )
+            .join('\n');
 
         final trace = StackTrace.current.toString().split('\n')[1];
         log('''
@@ -1020,6 +1171,7 @@ Location of cleanup request: $trace
     // Force cleanup mode: Stop listeners and clean relationships
     if (forceCleanup) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 Force cleanup mode enabled for ReactiveNotifier<$T>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1047,11 +1199,12 @@ Cleaning regardless of current state...
       _parents.clear();
     }
 
-    // Si es seguro limpiar esta instancia
-    if (notifier is ViewModel) {
+    // If it is safe to clean this instance (check isDisposed to prevent double disposal)
+    if (notifier is ViewModel && !(notifier as ViewModel).isDisposed) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
-ℹ️ Propagating dispose to StateNotifierImpl
+ℹ️ Propagating dispose to ViewModel
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Type: ${notifier.runtimeType}
 Key: $keyNotifier
@@ -1062,9 +1215,26 @@ This will release any resources held by the ViewModel (timers, streams, etc.)
       }());
 
       (notifier as ViewModel).dispose();
+    } else if (notifier is AsyncViewModelImpl &&
+        !(notifier as AsyncViewModelImpl).isDisposed) {
+      assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
+        log('''
+ℹ️ Propagating dispose to AsyncViewModelImpl
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type: ${notifier.runtimeType}
+Key: $keyNotifier
+This will release any resources held by the AsyncViewModel (timers, streams, etc.)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 10);
+        return true;
+      }());
+
+      (notifier as AsyncViewModelImpl).dispose();
     }
 
     // It's safe to clean this instance
+    _notifierToInstance.remove(identityHashCode(notifier));
     _instances.removeWhere((key, value) {
       if (value == this) {
         return true;
@@ -1080,6 +1250,7 @@ This will release any resources held by the ViewModel (timers, streams, etc.)
     }
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ✅ ReactiveNotifier<$T> successfully cleaned
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1093,11 +1264,12 @@ ${_getLocationInfo()}
     return true;
   }
 
-// Helper method to get location information for a parent
+  // Helper method to get location information for a parent
   String _getParentLocationInfo(ReactiveNotifier parent) {
     try {
-      final framePattern =
-          RegExp(r'#\d+\s+([^(]+)\(([^:]+):(\d+)(?::(\d+))?\)');
+      final framePattern = RegExp(
+        r'#\d+\s+([^(]+)\(([^:]+):(\d+)(?::(\d+))?\)',
+      );
       final frames = StackTrace.current.toString().split('\n');
 
       for (final frame in frames) {
@@ -1131,6 +1303,7 @@ ${_getLocationInfo()}
 
     if (!_instances.containsKey(key)) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         final trace = StackTrace.current.toString().split('\n')[1];
         log('''
 ⚠️ Cannot clean ReactiveNotifier instance
@@ -1153,6 +1326,7 @@ Location of cleanup request: $trace
     // Check if instance has listeners
     if (instance is ReactiveNotifier && instance.hasListeners) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         final trace = StackTrace.current.toString().split('\n')[1];
         log('''
 ⚠️ Warning: Cleaning ReactiveNotifier with active listeners
@@ -1173,6 +1347,7 @@ Location of cleanup request: $trace
     _instances.remove(key);
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ✅ ReactiveNotifier instance successfully cleaned
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1205,6 +1380,7 @@ Type: ${instance?.notifier.runtimeType}
 
     if (instancesOfType.isEmpty) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         final trace = StackTrace.current.toString().split('\n')[1];
         log('''
 ℹ️ No ReactiveNotifier instances of type <$T> found
@@ -1224,6 +1400,7 @@ Location of cleanup request: $trace
 
     if (instancesWithListeners.isNotEmpty) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         final trace = StackTrace.current.toString().split('\n')[1];
         final listenerInfo = instancesWithListeners
             .map((entry) => '   - Key: ${entry.key}')
@@ -1246,11 +1423,18 @@ Location of cleanup request: $trace
       }());
     }
 
-    _instances.removeWhere((_, value) => value is ReactiveNotifier<T>);
+    _instances.removeWhere((_, value) {
+      if (value is ReactiveNotifier<T>) {
+        _notifierToInstance.remove(identityHashCode(value.notifier));
+        return true;
+      }
+      return false;
+    });
 
     final removedCount = instancesBeforeCleanup - _instances.length;
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ✅ ReactiveNotifier instances of type <$T> successfully cleaned
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1274,6 +1458,12 @@ Count: $removedCount
       _instances.values.map((e) => e as ReactiveNotifier).toList();
   static ReactiveNotifier<T> getInstanceByKey<T>(Key key) =>
       _instances[key]! as ReactiveNotifier<T>;
+
+  /// O(1) lookup: find the ReactiveNotifier that contains a given notifier value.
+  /// Returns null if no ReactiveNotifier contains this value.
+  static ReactiveNotifier? findByNotifier(Object notifierValue) {
+    return _notifierToInstance[identityHashCode(notifierValue)];
+  }
 
   /// Recreates the notifier instance with a fresh state using the original factory function.
   ///
@@ -1312,6 +1502,7 @@ Count: $removedCount
     // Guard against infinite loops during recreation
     if (_isRecreating) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 ⚠️ Recursive recreate() call detected and blocked
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1343,6 +1534,7 @@ Use reinitializeInstance() to create a fresh instance after disposal.
     }
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🔄 Starting recreate() for ReactiveNotifier<$T>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1361,6 +1553,30 @@ Has listeners: $hasListeners
     try {
       // Step 1: Dispose the old ViewModel/AsyncViewModel properly
       final oldNotifier = notifier;
+
+      // Warn if the old ViewModel has active listenVM() subscribers
+      assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
+        if (oldNotifier is ViewModel && oldNotifier.activeListenerCount > 0) {
+          log(
+            '[ReactiveNotifier] WARNING: recreate() on ViewModel<$T> with '
+            '${oldNotifier.activeListenerCount} active listenVM() subscribers. '
+            'Those subscribers will stop receiving updates from the new instance.',
+            level: 100,
+          );
+        }
+        if (oldNotifier is AsyncViewModelImpl &&
+            oldNotifier.activeListenerCount > 0) {
+          log(
+            '[ReactiveNotifier] WARNING: recreate() on AsyncViewModel<$T> with '
+            '${oldNotifier.activeListenerCount} active listenVM() subscribers. '
+            'Those subscribers will stop receiving updates from the new instance.',
+            level: 100,
+          );
+        }
+        return true;
+      }());
+
       _disposeOldNotifier(oldNotifier);
 
       // Step 2: Create fresh state using the original factory function
@@ -1383,16 +1599,20 @@ Has listeners: $hasListeners
       // Step 6: Notify related parent states if they exist
       if (_parents.isNotEmpty) {
         assert(() {
+          if (!ReactiveNotifier.debugLogging) return true;
           log('📤 Notifying parent states after recreate for $T', level: 10);
           return true;
         }());
 
         for (var parent in _parents) {
-          parent.notifyListeners();
+          if (!parent._disposed) {
+            parent.notifyListeners();
+          }
         }
       }
 
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 ✅ recreate() completed for ReactiveNotifier<$T>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1408,6 +1628,7 @@ Listeners notified: ✓
       return newState;
     } catch (e, stackTrace) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 ⚠️ Error during recreate() for ReactiveNotifier<$T>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1433,18 +1654,50 @@ $stackTrace
         // Remove listeners first to prevent callbacks during disposal
         oldNotifier.stopListeningVM();
         oldNotifier.removeListeners();
-        // Note: We don't call dispose() on the old ViewModel because it would
-        // try to clean up the ReactiveNotifier from the registry via
-        // _notifyReactiveNotifierDisposal(), which we don't want during recreate.
-        // The ViewModel will be garbage collected when no longer referenced.
+        // Dispose ChangeNotifier resources (timers, streams, etc.)
+        // _disposed is set first in ViewModel.dispose() so it won't
+        // re-enter _notifyReactiveNotifierDisposal since we're already in recreate
+        try {
+          oldNotifier.dispose();
+        } catch (e) {
+          assert(() {
+            if (!ReactiveNotifier.debugLogging) return true;
+            log('''
+⚠️ Error disposing old ViewModel during recreate()
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type: ${oldNotifier.runtimeType}
+Error: $e
+This may indicate resources that were not properly cleaned up.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 50);
+            return true;
+          }());
+        }
       } else if (oldNotifier is AsyncViewModelImpl && !oldNotifier.isDisposed) {
         // Remove listeners first to prevent callbacks during disposal
         oldNotifier.stopListeningVM();
         oldNotifier.removeListeners();
-        // Same as above - don't call dispose() to avoid registry cleanup
+        // Dispose ChangeNotifier resources (timers, streams, etc.)
+        try {
+          oldNotifier.dispose();
+        } catch (e) {
+          assert(() {
+            if (!ReactiveNotifier.debugLogging) return true;
+            log('''
+⚠️ Error disposing old AsyncViewModel during recreate()
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type: ${oldNotifier.runtimeType}
+Error: $e
+This may indicate resources that were not properly cleaned up.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+''', level: 50);
+            return true;
+          }());
+        }
       }
     } catch (e) {
       assert(() {
+        if (!ReactiveNotifier.debugLogging) return true;
         log('''
 ⚠️ Warning during old notifier cleanup in recreate()
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1467,6 +1720,7 @@ Continuing with recreation...
   @override
   void dispose() {
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🗑️ ReactiveNotifier<${T.toString()}> dispose() called directly
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1505,6 +1759,7 @@ let ViewModel handle disposal via _handleViewModelDisposal().
         }
       } catch (e) {
         assert(() {
+          if (!ReactiveNotifier.debugLogging) return true;
           log('''
 ⚠️ Warning during ViewModel disposal from ReactiveNotifier
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1518,6 +1773,7 @@ This may indicate the ViewModel was already disposed or there's a circular refer
     }
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ✅ ReactiveNotifier<${T.toString()}> dispose completed
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1563,6 +1819,7 @@ Note: Instance remains in global registry unless manually cleaned
   /// - Existing ViewModels with waitForContext: true will reinitialize automatically
   static void initContext(BuildContext context) {
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 🌍 ReactiveNotifier: Initializing global BuildContext
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1593,8 +1850,11 @@ Current ViewModels: ${_instances.length}
           } catch (e) {
             // Silently ignore if method doesn't exist or fails - happens for ViewModel<T> which don't have this method
             assert(() {
-              log('Note: Could not reinitialize ViewModel ${notifier.runtimeType}: $e',
-                  level: 10);
+              if (!ReactiveNotifier.debugLogging) return true;
+              log(
+                'Note: Could not reinitialize ViewModel ${notifier.runtimeType}: $e',
+                level: 10,
+              );
               return true;
             }());
           }
@@ -1603,6 +1863,7 @@ Current ViewModels: ${_instances.length}
     }
 
     assert(() {
+      if (!ReactiveNotifier.debugLogging) return true;
       log('''
 ✅ ReactiveNotifier: Global context initialization completed
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

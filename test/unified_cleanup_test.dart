@@ -55,10 +55,12 @@ void main() {
       expect(viewModel.activeListenerCount, equals(3));
 
       // Add multiple listeners to AsyncViewModel
-      asyncViewModel
-          .listenVM((state) => log('Async Listener 1: ${state.runtimeType}'));
-      asyncViewModel
-          .listenVM((state) => log('Async Listener 2: ${state.runtimeType}'));
+      asyncViewModel.listenVM(
+        (state) => log('Async Listener 1: ${state.runtimeType}'),
+      );
+      asyncViewModel.listenVM(
+        (state) => log('Async Listener 2: ${state.runtimeType}'),
+      );
 
       expect(asyncViewModel.activeListenerCount, equals(2));
 

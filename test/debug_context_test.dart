@@ -8,7 +8,7 @@ import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
 /// Debug test to understand the timing issues
 class DebugAsyncVM extends AsyncViewModelImpl<String> {
   DebugAsyncVM()
-      : super(AsyncState.initial(), loadOnInit: false); // Don't auto-initialize
+    : super(AsyncState.initial(), loadOnInit: false); // Don't auto-initialize
 
   @override
   Future<String> init() async {

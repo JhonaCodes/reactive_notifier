@@ -16,7 +16,10 @@ class AsyncState<T> {
   factory AsyncState.empty() => AsyncState._(status: AsyncStatus.empty);
   factory AsyncState.error(Object error, [StackTrace? stackTrace]) =>
       AsyncState._(
-          status: AsyncStatus.error, error: error, stackTrace: stackTrace);
+        status: AsyncStatus.error,
+        error: error,
+        stackTrace: stackTrace,
+      );
 
   bool get isInitial => status == AsyncStatus.initial;
   bool get isLoading => status == AsyncStatus.loading;

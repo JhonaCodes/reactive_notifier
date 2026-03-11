@@ -26,10 +26,7 @@ class MockScreenLayout extends StatelessWidget {
         appBar: AppBar(
           title: Text(
             title,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
           ),
           backgroundColor: Colors.blue[600],
           foregroundColor: Colors.white,
@@ -81,7 +78,9 @@ void main() {
                       const Text(
                         'Counter with ReactiveBuilder',
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
@@ -103,7 +102,9 @@ void main() {
                             const Text(
                               'Current Count',
                               style: TextStyle(
-                                  fontSize: 16, color: Colors.black54),
+                                fontSize: 16,
+                                color: Colors.black54,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Text(
@@ -125,11 +126,16 @@ void main() {
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: Colors.green[200]!),
                         ),
-                        child: keep(const Text(
-                          'This text never rebuilds during state changes. It demonstrates the keep() function for widget preservation.',
-                          style: TextStyle(fontSize: 14, color: Colors.black87),
-                          textAlign: TextAlign.center,
-                        )),
+                        child: keep(
+                          const Text(
+                            'This text never rebuilds during state changes. It demonstrates the keep() function for widget preservation.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       ),
                     ],
                   );
@@ -162,7 +168,9 @@ void main() {
                       const Text(
                         'Counter Updated Demo',
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
@@ -184,7 +192,9 @@ void main() {
                             const Text(
                               'Updated Count',
                               style: TextStyle(
-                                  fontSize: 16, color: Colors.black54),
+                                fontSize: 16,
+                                color: Colors.black54,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Text(
@@ -198,7 +208,9 @@ void main() {
                             const SizedBox(height: 12),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.green[600],
                                 borderRadius: BorderRadius.circular(16),
@@ -222,11 +234,16 @@ void main() {
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: Colors.blue[200]!),
                         ),
-                        child: keep(const Text(
-                          'This preserved text demonstrates that the keep() function prevents unnecessary rebuilds during state updates.',
-                          style: TextStyle(fontSize: 14, color: Colors.black87),
-                          textAlign: TextAlign.center,
-                        )),
+                        child: keep(
+                          const Text(
+                            'This preserved text demonstrates that the keep() function prevents unnecessary rebuilds during state updates.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       ),
                     ],
                   );
@@ -251,8 +268,9 @@ void main() {
               title: 'String Data Demo',
               backgroundColor: Colors.orange[50],
               body: ReactiveBuilder<String>(
-                notifier:
-                    ReactiveNotifier<String>(() => 'Hello ReactiveNotifier!'),
+                notifier: ReactiveNotifier<String>(
+                  () => 'Hello ReactiveNotifier!',
+                ),
                 build: (value, notifier, keep) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -260,7 +278,9 @@ void main() {
                       const Text(
                         'String Data Type Support',
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
@@ -282,7 +302,9 @@ void main() {
                             const Text(
                               'String Message',
                               style: TextStyle(
-                                  fontSize: 16, color: Colors.black54),
+                                fontSize: 16,
+                                color: Colors.black54,
+                              ),
                             ),
                             const SizedBox(height: 12),
                             Container(
@@ -306,7 +328,9 @@ void main() {
                             Center(
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.orange[600],
                                   borderRadius: BorderRadius.circular(16),
@@ -333,11 +357,13 @@ void main() {
                         ),
                         child: Column(
                           children: [
-                            keep(const Icon(
-                              Icons.check_circle,
-                              color: Colors.green,
-                              size: 32,
-                            )),
+                            keep(
+                              const Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                                size: 32,
+                              ),
+                            ),
                             const SizedBox(height: 8),
                             const Text(
                               'String type supported',
@@ -381,7 +407,9 @@ void main() {
                       const Text(
                         'Boolean Conditional Rendering',
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
@@ -417,10 +445,13 @@ void main() {
                             const SizedBox(height: 12),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
-                                color:
-                                    value ? Colors.green[600] : Colors.red[600],
+                                color: value
+                                    ? Colors.green[600]
+                                    : Colors.red[600],
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Text(
@@ -442,11 +473,16 @@ void main() {
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: Colors.grey[300]!),
                         ),
-                        child: keep(const Text(
-                          'This static content demonstrates conditional rendering with boolean states. The content above changes based on the boolean value.',
-                          style: TextStyle(fontSize: 14, color: Colors.black87),
-                          textAlign: TextAlign.center,
-                        )),
+                        child: keep(
+                          const Text(
+                            'This static content demonstrates conditional rendering with boolean states. The content above changes based on the boolean value.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       ),
                     ],
                   );
@@ -479,7 +515,9 @@ void main() {
                       const Text(
                         'Null Safety Handling',
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
@@ -504,8 +542,9 @@ void main() {
                               value == null
                                   ? Icons.warning
                                   : Icons.check_circle,
-                              color:
-                                  value == null ? Colors.orange : Colors.green,
+                              color: value == null
+                                  ? Colors.orange
+                                  : Colors.green,
                               size: 64,
                             ),
                             const SizedBox(height: 16),
@@ -515,9 +554,10 @@ void main() {
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
-                                    color: value == null
-                                        ? Colors.orange[200]!
-                                        : Colors.green[200]!),
+                                  color: value == null
+                                      ? Colors.orange[200]!
+                                      : Colors.green[200]!,
+                                ),
                               ),
                               child: Text(
                                 value ?? 'No value',
@@ -534,7 +574,9 @@ void main() {
                             const SizedBox(height: 16),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
                                 color: value == null
                                     ? Colors.orange[600]
@@ -564,16 +606,20 @@ void main() {
                         ),
                         child: Column(
                           children: [
-                            keep(const Icon(
-                              Icons.security,
-                              color: Colors.blue,
-                              size: 32,
-                            )),
+                            keep(
+                              const Icon(
+                                Icons.security,
+                                color: Colors.blue,
+                                size: 32,
+                              ),
+                            ),
                             const SizedBox(height: 12),
                             const Text(
                               'Null-safe rendering demonstrates Flutter\'s null safety features working seamlessly with ReactiveNotifier.',
                               style: TextStyle(
-                                  fontSize: 14, color: Colors.black87),
+                                fontSize: 14,
+                                color: Colors.black87,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                           ],

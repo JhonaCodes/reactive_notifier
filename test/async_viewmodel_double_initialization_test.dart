@@ -5,7 +5,7 @@ import 'package:reactive_notifier/reactive_notifier.dart';
 /// when navigating back to a screen that already had context
 class DoubleInitializationTestViewModel extends AsyncViewModelImpl<String> {
   DoubleInitializationTestViewModel()
-      : super(AsyncState.initial(), loadOnInit: true);
+    : super(AsyncState.initial(), loadOnInit: true);
 
   int initCallCount = 0;
 
@@ -21,7 +21,8 @@ mixin DoubleInitTestService {
 
   static ReactiveNotifier<DoubleInitializationTestViewModel> get instance {
     _instance ??= ReactiveNotifier<DoubleInitializationTestViewModel>(
-        () => DoubleInitializationTestViewModel());
+      () => DoubleInitializationTestViewModel(),
+    );
     return _instance!;
   }
 
@@ -43,64 +44,93 @@ void main() {
     });
 
     test(
-        'should not double-initialize when reinitializeWithContext is called multiple times',
-        () async {
-      // Create the ViewModel instance
-      final viewModel = DoubleInitTestService.instance.notifier;
+      'should not double-initialize when reinitializeWithContext is called multiple times',
+      () async {
+        // Create the ViewModel instance
+        final viewModel = DoubleInitTestService.instance.notifier;
 
-      // Wait for initial initialization to complete
-      await Future.delayed(const Duration(milliseconds: 50));
+        // Wait for initial initialization to complete
+        await Future.delayed(const Duration(milliseconds: 50));
 
-      // Verify initial state after first initialization
-      expect(viewModel.initCallCount, equals(1),
-          reason: 'Should initialize only once initially');
-      expect(viewModel.hasData, isTrue,
-          reason: 'Should have data after initialization');
-      expect(viewModel.data, equals('Initialized 1 times'),
-          reason: 'Should contain correct initial data');
+        // Verify initial state after first initialization
+        expect(
+          viewModel.initCallCount,
+          equals(1),
+          reason: 'Should initialize only once initially',
+        );
+        expect(
+          viewModel.hasData,
+          isTrue,
+          reason: 'Should have data after initialization',
+        );
+        expect(
+          viewModel.data,
+          equals('Initialized 1 times'),
+          reason: 'Should contain correct initial data',
+        );
 
-      // Simulate what happens when user navigates back to a screen
-      // This would previously cause double initialization
-      viewModel.reinitializeWithContext();
+        // Simulate what happens when user navigates back to a screen
+        // This would previously cause double initialization
+        viewModel.reinitializeWithContext();
 
-      // Wait a bit to ensure no async operations occur
-      await Future.delayed(const Duration(milliseconds: 50));
+        // Wait a bit to ensure no async operations occur
+        await Future.delayed(const Duration(milliseconds: 50));
 
-      // Verify that init was not called again
-      expect(viewModel.initCallCount, equals(1),
-          reason: 'Should NOT initialize again when context already available');
-      expect(viewModel.data, equals('Initialized 1 times'),
-          reason: 'Data should remain the same');
-    });
+        // Verify that init was not called again
+        expect(
+          viewModel.initCallCount,
+          equals(1),
+          reason: 'Should NOT initialize again when context already available',
+        );
+        expect(
+          viewModel.data,
+          equals('Initialized 1 times'),
+          reason: 'Data should remain the same',
+        );
+      },
+    );
 
     test(
-        'should maintain initialization state correctly through multiple reinitializeWithContext calls',
-        () async {
-      final viewModel = DoubleInitTestService.instance.notifier;
+      'should maintain initialization state correctly through multiple reinitializeWithContext calls',
+      () async {
+        final viewModel = DoubleInitTestService.instance.notifier;
 
-      // Wait for initialization to complete
-      await Future.delayed(const Duration(milliseconds: 50));
+        // Wait for initialization to complete
+        await Future.delayed(const Duration(milliseconds: 50));
 
-      // Check initial state
-      expect(viewModel.initCallCount, equals(1),
-          reason: 'Should initialize once initially');
-      expect(viewModel.hasInitializedListenerExecution, isTrue,
-          reason: 'hasInitializedListenerExecution should be true');
+        // Check initial state
+        expect(
+          viewModel.initCallCount,
+          equals(1),
+          reason: 'Should initialize once initially',
+        );
+        expect(
+          viewModel.hasInitializedListenerExecution,
+          isTrue,
+          reason: 'hasInitializedListenerExecution should be true',
+        );
 
-      // Call reinitializeWithContext multiple times (simulating multiple screen navigations)
-      viewModel.reinitializeWithContext();
-      viewModel.reinitializeWithContext();
-      viewModel.reinitializeWithContext();
+        // Call reinitializeWithContext multiple times (simulating multiple screen navigations)
+        viewModel.reinitializeWithContext();
+        viewModel.reinitializeWithContext();
+        viewModel.reinitializeWithContext();
 
-      // Wait to ensure no additional async operations occur
-      await Future.delayed(const Duration(milliseconds: 50));
+        // Wait to ensure no additional async operations occur
+        await Future.delayed(const Duration(milliseconds: 50));
 
-      // Verify that init was not called additional times
-      expect(viewModel.initCallCount, equals(1),
+        // Verify that init was not called additional times
+        expect(
+          viewModel.initCallCount,
+          equals(1),
           reason:
-              'Should not reinitialize when already initialized with context');
-      expect(viewModel.data, equals('Initialized 1 times'),
-          reason: 'Data should remain unchanged');
-    });
+              'Should not reinitialize when already initialized with context',
+        );
+        expect(
+          viewModel.data,
+          equals('Initialized 1 times'),
+          reason: 'Data should remain unchanged',
+        );
+      },
+    );
   });
 }

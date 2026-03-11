@@ -10,9 +10,7 @@ class ReactiveNotifierAlchemistConfig {
   static final AlchemistConfig standard = AlchemistConfig(
     // Don't force update golden files by default
     forceUpdateGoldenFiles: false,
-    theme: ThemeData(
-      fontFamily: 'Ahem',
-    ),
+    theme: ThemeData(fontFamily: 'Ahem'),
 
     // Configure platform-specific golden test settings
     platformGoldensConfig: const PlatformGoldensConfig(
@@ -25,9 +23,7 @@ class ReactiveNotifierAlchemistConfig {
   /// Configuration for wide layout tests
   static final AlchemistConfig wideLayout = AlchemistConfig(
     forceUpdateGoldenFiles: false,
-    theme: ThemeData(
-      fontFamily: 'Ahem',
-    ),
+    theme: ThemeData(fontFamily: 'Ahem'),
     platformGoldensConfig: const PlatformGoldensConfig(
       enabled: true,
       renderShadows: true,
@@ -83,9 +79,4 @@ class ReactiveNotifierAlchemistConfig {
 }
 
 /// Layout types for golden tests
-enum LayoutType {
-  mobile,
-  tablet,
-  desktop,
-  wide,
-}
+enum LayoutType { mobile, tablet, desktop, wide }

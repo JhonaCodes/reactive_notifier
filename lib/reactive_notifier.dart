@@ -23,9 +23,15 @@ export 'package:reactive_notifier/src/notifier/reactive_notifier_viewmodel.dart'
 export 'package:reactive_notifier/src/viewmodel/viewmodel_impl.dart';
 export 'package:reactive_notifier/src/viewmodel/async_viewmodel_impl.dart';
 
+/// Export DependencyState for onDependenciesStateChanged lifecycle hook
+export 'package:reactive_notifier/src/viewmodel/dependency_state.dart';
+
 /// Export ReactiveContext functionality
 export 'package:reactive_notifier/src/context/reactive_context_extensions.dart';
 export 'package:reactive_notifier/src/context/reactive_context_preservation.dart';
+
+/// Export lifecycle observer for background cleanup
+export 'package:reactive_notifier/src/lifecycle/reactive_notifier_lifecycle_observer.dart';
 
 /// Export ReactiveContext builder widget
 export 'package:reactive_notifier/src/context/reactive_context_enhanced.dart'

@@ -9,15 +9,13 @@ class TestItem {
 
   TestItem({required this.message, required this.hasContextAccess});
 
-  factory TestItem.withContext() => TestItem(
-        message: 'Created with context access',
-        hasContextAccess: true,
-      );
+  factory TestItem.withContext() =>
+      TestItem(message: 'Created with context access', hasContextAccess: true);
 
   factory TestItem.withoutContext() => TestItem(
-        message: 'Created without context access',
-        hasContextAccess: false,
-      );
+    message: 'Created without context access',
+    hasContextAccess: false,
+  );
 
   @override
   String toString() =>
@@ -60,8 +58,9 @@ mixin TestAsyncService {
 }
 
 mixin TestService {
-  static final ReactiveNotifier<TestVM> instance =
-      ReactiveNotifier<TestVM>(TestVM.new);
+  static final ReactiveNotifier<TestVM> instance = ReactiveNotifier<TestVM>(
+    TestVM.new,
+  );
 }
 
 void main() {
@@ -95,8 +94,9 @@ void main() {
       expect(vm.hasContext, isTrue);
     });
 
-    testWidgets('Regular ViewModel receives context during init',
-        (tester) async {
+    testWidgets('Regular ViewModel receives context during init', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -130,10 +130,7 @@ void main() {
 
     test('requireContext throws when no context available', () {
       final vm = TestVM();
-      expect(
-        () => vm.requireContext('test'),
-        throwsA(isA<StateError>()),
-      );
+      expect(() => vm.requireContext('test'), throwsA(isA<StateError>()));
     });
   });
 }

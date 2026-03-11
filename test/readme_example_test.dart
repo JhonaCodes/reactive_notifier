@@ -76,13 +76,15 @@ class NotificationViewModel extends ViewModel<List<String>> {
     // Cross-service communication using listenVM
     UserService.user.notifier.listenVM((userData) {
       addNotification(
-          'User ${userData.name} now has ${userData.points} points');
+        'User ${userData.name} now has ${userData.points} points',
+      );
     });
   }
 
   @override
-  Future<void> setupListeners(
-      {List<String> currentListeners = const []}) async {
+  Future<void> setupListeners({
+    List<String> currentListeners = const [],
+  }) async {
     // Example of setupListeners - called automatically in init
     await super.setupListeners(currentListeners: currentListeners);
   }
@@ -159,8 +161,10 @@ void main() {
         viewModel.increment();
 
         // Check hooks were called
-        expect(viewModel.stateChanges,
-            ['0 → 1: Incremented to 1', '1 → 2: Incremented to 2']);
+        expect(viewModel.stateChanges, [
+          '0 → 1: Incremented to 1',
+          '1 → 2: Incremented to 2',
+        ]);
       });
 
       test('should handle silent updates', () {
@@ -207,7 +211,8 @@ void main() {
         final viewModel = CounterViewModel();
 
         viewModel.transformState(
-            (current) => CounterModel(current.count + 10, 'Transformed'));
+          (current) => CounterModel(current.count + 10, 'Transformed'),
+        );
 
         expect(viewModel.data.count, equals(10));
         expect(viewModel.data.message, equals('Transformed'));
@@ -217,7 +222,8 @@ void main() {
         final viewModel = CounterViewModel();
 
         viewModel.transformStateSilently(
-            (current) => CounterModel(current.count + 5, 'Silent transform'));
+          (current) => CounterModel(current.count + 5, 'Silent transform'),
+        );
 
         expect(viewModel.data.count, equals(5));
         expect(viewModel.data.message, equals('Silent transform'));

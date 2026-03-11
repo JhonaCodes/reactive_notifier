@@ -23,61 +23,90 @@ void main() {
       test('should handle complex object states with nested properties', () {
         // Setup: Create ReactiveNotifier with complex Map state
         final complexState = ReactiveNotifier<Map<String, dynamic>>(
-            () => {'count': 0, 'name': 'Test'});
+          () => {'count': 0, 'name': 'Test'},
+        );
 
         // Assert: Initial state should be correct
-        expect(complexState.notifier, {'count': 0, 'name': 'Test'},
-            reason: 'Initial complex state should be set correctly');
+        expect(
+          complexState.notifier,
+          {'count': 0, 'name': 'Test'},
+          reason: 'Initial complex state should be set correctly',
+        );
 
         // Act: Update complex state
         complexState.updateState({'count': 1, 'name': 'Updated'});
 
         // Assert: Complex state should be updated completely
-        expect(complexState.notifier, {'count': 1, 'name': 'Updated'},
-            reason: 'Complex state should be updated with new values');
+        expect(
+          complexState.notifier,
+          {'count': 1, 'name': 'Updated'},
+          reason: 'Complex state should be updated with new values',
+        );
       });
 
-      test('should handle custom object states with properties and methods',
-          () {
-        // Setup: Create ReactiveNotifier with custom object state
-        final customState =
-            ReactiveNotifier<CustomObject>(() => CustomObject(1, 'initial'));
+      test(
+        'should handle custom object states with properties and methods',
+        () {
+          // Setup: Create ReactiveNotifier with custom object state
+          final customState = ReactiveNotifier<CustomObject>(
+            () => CustomObject(1, 'initial'),
+          );
 
-        // Assert: Initial custom object should be correct
-        expect(customState.notifier.id, 1,
-            reason: 'Initial custom object id should be correct');
-        expect(customState.notifier.name, 'initial',
-            reason: 'Initial custom object name should be correct');
+          // Assert: Initial custom object should be correct
+          expect(
+            customState.notifier.id,
+            1,
+            reason: 'Initial custom object id should be correct',
+          );
+          expect(
+            customState.notifier.name,
+            'initial',
+            reason: 'Initial custom object name should be correct',
+          );
 
-        // Act: Update custom object state
-        customState.updateState(CustomObject(2, 'updated'));
+          // Act: Update custom object state
+          customState.updateState(CustomObject(2, 'updated'));
 
-        // Assert: Custom object should be updated with new values
-        expect(customState.notifier.id, 2,
-            reason: 'Custom object id should be updated');
-        expect(customState.notifier.name, 'updated',
-            reason: 'Custom object name should be updated');
-      });
+          // Assert: Custom object should be updated with new values
+          expect(
+            customState.notifier.id,
+            2,
+            reason: 'Custom object id should be updated',
+          );
+          expect(
+            customState.notifier.name,
+            'updated',
+            reason: 'Custom object name should be updated',
+          );
+        },
+      );
 
       test('should handle deeply nested object structures', () {
         // Setup: Create ReactiveNotifier with deeply nested object
-        final nestedState = ReactiveNotifier<Map<String, dynamic>>(() => {
-              'user': {
-                'profile': {
-                  'personal': {'name': 'John', 'age': 30},
-                  'settings': {'theme': 'dark', 'notifications': true}
-                },
-                'permissions': ['read', 'write']
+        final nestedState = ReactiveNotifier<Map<String, dynamic>>(
+          () => {
+            'user': {
+              'profile': {
+                'personal': {'name': 'John', 'age': 30},
+                'settings': {'theme': 'dark', 'notifications': true},
               },
-              'session': {'active': true, 'timestamp': 1234567890}
-            });
+              'permissions': ['read', 'write'],
+            },
+            'session': {'active': true, 'timestamp': 1234567890},
+          },
+        );
 
         // Assert: Initial nested structure should be accessible
         expect(
-            nestedState.notifier['user']['profile']['personal']['name'], 'John',
-            reason: 'Deeply nested initial values should be accessible');
-        expect(nestedState.notifier['session']['active'], true,
-            reason: 'Session state should be accessible');
+          nestedState.notifier['user']['profile']['personal']['name'],
+          'John',
+          reason: 'Deeply nested initial values should be accessible',
+        );
+        expect(
+          nestedState.notifier['session']['active'],
+          true,
+          reason: 'Session state should be accessible',
+        );
 
         // Act: Update deeply nested structure
         final updatedState = Map<String, dynamic>.from(nestedState.notifier);
@@ -86,24 +115,38 @@ void main() {
         nestedState.updateState(updatedState);
 
         // Assert: Nested updates should be reflected
-        expect(nestedState.notifier['user']['profile']['personal']['age'], 31,
-            reason: 'Deeply nested values should be updatable');
-        expect(nestedState.notifier['session']['timestamp'], 1234567999,
-            reason: 'Session timestamp should be updated');
+        expect(
+          nestedState.notifier['user']['profile']['personal']['age'],
+          31,
+          reason: 'Deeply nested values should be updatable',
+        );
+        expect(
+          nestedState.notifier['session']['timestamp'],
+          1234567999,
+          reason: 'Session timestamp should be updated',
+        );
       });
 
       test('should handle list and collection states correctly', () {
         // Setup: Create ReactiveNotifier with collection states
-        final listState = ReactiveNotifier<List<Map<String, dynamic>>>(() => [
-              {'id': 1, 'name': 'Item 1', 'active': true},
-              {'id': 2, 'name': 'Item 2', 'active': false}
-            ]);
+        final listState = ReactiveNotifier<List<Map<String, dynamic>>>(
+          () => [
+            {'id': 1, 'name': 'Item 1', 'active': true},
+            {'id': 2, 'name': 'Item 2', 'active': false},
+          ],
+        );
 
         // Assert: Initial list should be correct
-        expect(listState.notifier.length, 2,
-            reason: 'Initial list should have correct length');
-        expect(listState.notifier[0]['name'], 'Item 1',
-            reason: 'First item should have correct name');
+        expect(
+          listState.notifier.length,
+          2,
+          reason: 'Initial list should have correct length',
+        );
+        expect(
+          listState.notifier[0]['name'],
+          'Item 1',
+          reason: 'First item should have correct name',
+        );
 
         // Act: Update list by adding new item
         final updatedList = List<Map<String, dynamic>>.from(listState.notifier);
@@ -111,20 +154,30 @@ void main() {
         listState.updateState(updatedList);
 
         // Assert: List should be updated with new item
-        expect(listState.notifier.length, 3,
-            reason: 'Updated list should have correct length');
-        expect(listState.notifier[2]['name'], 'Item 3',
-            reason: 'New item should be added correctly');
+        expect(
+          listState.notifier.length,
+          3,
+          reason: 'Updated list should have correct length',
+        );
+        expect(
+          listState.notifier[2]['name'],
+          'Item 3',
+          reason: 'New item should be added correctly',
+        );
 
         // Act: Update existing item in list
-        final modifiedList =
-            List<Map<String, dynamic>>.from(listState.notifier);
+        final modifiedList = List<Map<String, dynamic>>.from(
+          listState.notifier,
+        );
         modifiedList[1]['active'] = true;
         listState.updateState(modifiedList);
 
         // Assert: Existing item should be updated
-        expect(listState.notifier[1]['active'], true,
-            reason: 'Existing item should be updatable');
+        expect(
+          listState.notifier[1]['active'],
+          true,
+          reason: 'Existing item should be updatable',
+        );
       });
     });
 
@@ -134,22 +187,31 @@ void main() {
         final nullableState = ReactiveNotifier<int?>(() => null);
 
         // Assert: Initial state should be null
-        expect(nullableState.notifier, isNull,
-            reason: 'Initial nullable state should be null');
+        expect(
+          nullableState.notifier,
+          isNull,
+          reason: 'Initial nullable state should be null',
+        );
 
         // Act: Update from null to value
         nullableState.updateState(5);
 
         // Assert: State should be updated to non-null value
-        expect(nullableState.notifier, 5,
-            reason: 'Nullable state should accept non-null values');
+        expect(
+          nullableState.notifier,
+          5,
+          reason: 'Nullable state should accept non-null values',
+        );
 
         // Act: Update back to null
         nullableState.updateState(null);
 
         // Assert: State should accept null again
-        expect(nullableState.notifier, isNull,
-            reason: 'Nullable state should accept null updates');
+        expect(
+          nullableState.notifier,
+          isNull,
+          reason: 'Nullable state should accept null updates',
+        );
       });
 
       test('should handle nullable complex objects', () {
@@ -157,26 +219,41 @@ void main() {
         final nullableObjectState = ReactiveNotifier<CustomObject?>(() => null);
 
         // Assert: Initial nullable object should be null
-        expect(nullableObjectState.notifier, isNull,
-            reason: 'Initial nullable object should be null');
+        expect(
+          nullableObjectState.notifier,
+          isNull,
+          reason: 'Initial nullable object should be null',
+        );
 
         // Act: Update with custom object
         nullableObjectState.updateState(CustomObject(42, 'test'));
 
         // Assert: Nullable object should contain custom object
-        expect(nullableObjectState.notifier, isNotNull,
-            reason: 'Nullable object should accept custom object');
-        expect(nullableObjectState.notifier!.id, 42,
-            reason: 'Custom object properties should be accessible');
-        expect(nullableObjectState.notifier!.name, 'test',
-            reason: 'Custom object name should be correct');
+        expect(
+          nullableObjectState.notifier,
+          isNotNull,
+          reason: 'Nullable object should accept custom object',
+        );
+        expect(
+          nullableObjectState.notifier!.id,
+          42,
+          reason: 'Custom object properties should be accessible',
+        );
+        expect(
+          nullableObjectState.notifier!.name,
+          'test',
+          reason: 'Custom object name should be correct',
+        );
 
         // Act: Update back to null
         nullableObjectState.updateState(null);
 
         // Assert: Should accept null again
-        expect(nullableObjectState.notifier, isNull,
-            reason: 'Nullable object should accept null again');
+        expect(
+          nullableObjectState.notifier,
+          isNull,
+          reason: 'Nullable object should accept null again',
+        );
       });
 
       test('should notify listeners correctly for null transitions', () {
@@ -194,19 +271,31 @@ void main() {
         nullableState.updateState(null);
 
         // Assert: Should notify about null transition
-        expect(notificationCount, 1,
-            reason: 'Should notify when transitioning to null');
-        expect(receivedValue, isNull,
-            reason: 'Listener should receive null value');
+        expect(
+          notificationCount,
+          1,
+          reason: 'Should notify when transitioning to null',
+        );
+        expect(
+          receivedValue,
+          isNull,
+          reason: 'Listener should receive null value',
+        );
 
         // Act: Update from null to value
         nullableState.updateState('restored');
 
         // Assert: Should notify about restoration from null
-        expect(notificationCount, 2,
-            reason: 'Should notify when transitioning from null');
-        expect(receivedValue, 'restored',
-            reason: 'Listener should receive restored value');
+        expect(
+          notificationCount,
+          2,
+          reason: 'Should notify when transitioning from null',
+        );
+        expect(
+          receivedValue,
+          'restored',
+          reason: 'Listener should receive restored value',
+        );
       });
     });
 
@@ -227,10 +316,15 @@ void main() {
         stateTransition.updateState('completed');
 
         // Assert: All transitions should be tracked
-        expect(transitionCount, 2,
-            reason: 'Should count all state transitions');
-        expect(transitions, ['processing', 'completed'],
-            reason: 'Should track state transition sequence');
+        expect(
+          transitionCount,
+          2,
+          reason: 'Should count all state transitions',
+        );
+        expect(transitions, [
+          'processing',
+          'completed',
+        ], reason: 'Should track state transition sequence');
       });
 
       test('should handle state machine with validation', () {
@@ -245,7 +339,7 @@ void main() {
           'idle': ['loading'],
           'loading': ['success', 'error'],
           'success': ['idle'],
-          'error': ['idle']
+          'error': ['idle'],
         };
 
         stateMachine.addListener(() {
@@ -272,14 +366,26 @@ void main() {
         validateAndUpdate('error'); // loading -> error (valid)
 
         // Assert: Valid transitions should be executed, invalid ones rejected
-        expect(validTransitions, 5,
-            reason: 'Valid transitions should be counted');
-        expect(invalidTransitions, 1,
-            reason: 'Invalid transitions should be rejected');
-        expect(stateHistory, ['loading', 'success', 'idle', 'loading', 'error'],
-            reason: 'Only valid state transitions should be in history');
-        expect(stateMachine.notifier, 'error',
-            reason: 'Final state should be from last valid transition');
+        expect(
+          validTransitions,
+          5,
+          reason: 'Valid transitions should be counted',
+        );
+        expect(
+          invalidTransitions,
+          1,
+          reason: 'Invalid transitions should be rejected',
+        );
+        expect(
+          stateHistory,
+          ['loading', 'success', 'idle', 'loading', 'error'],
+          reason: 'Only valid state transitions should be in history',
+        );
+        expect(
+          stateMachine.notifier,
+          'error',
+          reason: 'Final state should be from last valid transition',
+        );
       });
 
       test('should track state lifecycle with timestamps', () {
@@ -301,17 +407,24 @@ void main() {
         lifecycleState.updateState('terminated');
 
         // Assert: All lifecycle states should be tracked with timestamps
-        expect(stateLifecycle.length, 4,
-            reason: 'All lifecycle transitions should be tracked');
-        expect(stateLifecycle.map((e) => e['state']),
-            ['initialized', 'active', 'suspended', 'terminated'],
-            reason: 'Lifecycle states should be in correct order');
+        expect(
+          stateLifecycle.length,
+          4,
+          reason: 'All lifecycle transitions should be tracked',
+        );
+        expect(
+          stateLifecycle.map((e) => e['state']),
+          ['initialized', 'active', 'suspended', 'terminated'],
+          reason: 'Lifecycle states should be in correct order',
+        );
 
         // Assert: Timestamps should be in chronological order
         for (int i = 1; i < stateLifecycle.length; i++) {
-          expect(stateLifecycle[i]['timestamp'] as int,
-              greaterThanOrEqualTo(stateLifecycle[i - 1]['timestamp'] as int),
-              reason: 'Timestamps should be in chronological order');
+          expect(
+            stateLifecycle[i]['timestamp'] as int,
+            greaterThanOrEqualTo(stateLifecycle[i - 1]['timestamp'] as int),
+            reason: 'Timestamps should be in chronological order',
+          );
         }
       });
     });
@@ -322,8 +435,9 @@ void main() {
         final historicalState = ReactiveNotifier<int>(() => 0);
         final history = <int>[];
 
-        historicalState
-            .addListener(() => history.add(historicalState.notifier));
+        historicalState.addListener(
+          () => history.add(historicalState.notifier),
+        );
 
         // Act: Perform multiple state updates
         historicalState.updateState(1);
@@ -331,10 +445,16 @@ void main() {
         historicalState.updateState(3);
 
         // Assert: Complete history should be maintained
-        expect(history, [1, 2, 3],
-            reason: 'Complete state history should be maintained');
-        expect(historicalState.notifier, 3,
-            reason: 'Current state should be the latest');
+        expect(history, [
+          1,
+          2,
+          3,
+        ], reason: 'Complete state history should be maintained');
+        expect(
+          historicalState.notifier,
+          3,
+          reason: 'Current state should be the latest',
+        );
       });
 
       test('should support undo operations with history navigation', () {
@@ -353,10 +473,17 @@ void main() {
         undoableState.updateState(previousState);
 
         // Assert: Undo should restore previous state
-        expect(undoableState.notifier, 1,
-            reason: 'Undo should restore previous state');
-        expect(history, [0, 1, 2, 1],
-            reason: 'Undo operation should be recorded in history');
+        expect(
+          undoableState.notifier,
+          1,
+          reason: 'Undo should restore previous state',
+        );
+        expect(history, [
+          0,
+          1,
+          2,
+          1,
+        ], reason: 'Undo operation should be recorded in history');
       });
 
       test('should handle complex undo/redo operations', () {
@@ -406,39 +533,63 @@ void main() {
         performEdit('edit3');
 
         // Assert: All edits should be in undo stack
-        expect(editorState.notifier, 'edit3',
-            reason: 'Current state should be latest edit');
-        expect(undoStack, ['initial', 'edit1', 'edit2', 'edit3'],
-            reason: 'Undo stack should contain all edits');
+        expect(
+          editorState.notifier,
+          'edit3',
+          reason: 'Current state should be latest edit',
+        );
+        expect(undoStack, [
+          'initial',
+          'edit1',
+          'edit2',
+          'edit3',
+        ], reason: 'Undo stack should contain all edits');
 
         // Act: Perform undo operations
         undo(); // Back to edit2
         undo(); // Back to edit1
 
         // Assert: Undo should work correctly
-        expect(editorState.notifier, 'edit1',
-            reason: 'Undo should restore previous state');
-        expect(redoStack, ['edit3', 'edit2'],
-            reason: 'Redo stack should contain undone operations');
+        expect(
+          editorState.notifier,
+          'edit1',
+          reason: 'Undo should restore previous state',
+        );
+        expect(redoStack, [
+          'edit3',
+          'edit2',
+        ], reason: 'Redo stack should contain undone operations');
 
         // Act: Perform redo operation
         redo(); // Forward to edit2
 
         // Assert: Redo should work correctly
-        expect(editorState.notifier, 'edit2',
-            reason: 'Redo should restore next state');
+        expect(
+          editorState.notifier,
+          'edit2',
+          reason: 'Redo should restore next state',
+        );
         expect(redoStack, ['edit3'], reason: 'Redo stack should be updated');
 
         // Act: Perform new edit after undo/redo
         performEdit('newEdit');
 
         // Assert: New edit should clear redo stack
-        expect(editorState.notifier, 'newEdit',
-            reason: 'New edit should be current state');
-        expect(redoStack.isEmpty, true,
-            reason: 'New edit should clear redo stack');
-        expect(undoStack.last, 'newEdit',
-            reason: 'New edit should be added to undo stack');
+        expect(
+          editorState.notifier,
+          'newEdit',
+          reason: 'New edit should be current state',
+        );
+        expect(
+          redoStack.isEmpty,
+          true,
+          reason: 'New edit should clear redo stack',
+        );
+        expect(
+          undoStack.last,
+          'newEdit',
+          reason: 'New edit should be added to undo stack',
+        );
       });
     });
   });

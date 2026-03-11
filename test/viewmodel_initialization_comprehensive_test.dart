@@ -23,11 +23,7 @@ class CounterState {
     required this.hasContextData,
   });
 
-  CounterState copyWith({
-    int? count,
-    String? source,
-    bool? hasContextData,
-  }) {
+  CounterState copyWith({int? count, String? source, bool? hasContextData}) {
     return CounterState(
       count: count ?? this.count,
       source: source ?? this.source,
@@ -35,17 +31,11 @@ class CounterState {
     );
   }
 
-  static CounterState initial() => const CounterState(
-        count: 0,
-        source: 'initial',
-        hasContextData: false,
-      );
+  static CounterState initial() =>
+      const CounterState(count: 0, source: 'initial', hasContextData: false);
 
-  static CounterState fromContext(BuildContext context) => const CounterState(
-        count: 100,
-        source: 'context',
-        hasContextData: true,
-      );
+  static CounterState fromContext(BuildContext context) =>
+      const CounterState(count: 100, source: 'context', hasContextData: true);
 }
 
 class AsyncCounterState {
@@ -60,10 +50,10 @@ class AsyncCounterState {
   });
 
   static AsyncCounterState initial() => const AsyncCounterState(
-        count: 0,
-        source: 'initial',
-        hasContextData: false,
-      );
+    count: 0,
+    source: 'initial',
+    hasContextData: false,
+  );
 
   static AsyncCounterState fromContext(BuildContext context) =>
       const AsyncCounterState(
@@ -135,14 +125,16 @@ mixin TestAsyncViewModelService {
   static ReactiveNotifier<TestAsyncViewModel>? _instance;
 
   static ReactiveNotifier<TestAsyncViewModel> get instance {
-    _instance ??=
-        ReactiveNotifier<TestAsyncViewModel>(() => TestAsyncViewModel());
+    _instance ??= ReactiveNotifier<TestAsyncViewModel>(
+      () => TestAsyncViewModel(),
+    );
     return _instance!;
   }
 
   static ReactiveNotifier<TestAsyncViewModel> createNew() {
-    _instance =
-        ReactiveNotifier<TestAsyncViewModel>(() => TestAsyncViewModel());
+    _instance = ReactiveNotifier<TestAsyncViewModel>(
+      () => TestAsyncViewModel(),
+    );
     return _instance!;
   }
 }
@@ -160,325 +152,350 @@ void main() {
 
     group('Constructor Behavior - ALWAYS Initialize', () {
       test(
-          'ViewModel without context should execute init() and have data available',
-          () {
-        // Create ViewModel outside widget tree (no context)
-        final vm = TestViewModel();
+        'ViewModel without context should execute init() and have data available',
+        () {
+          // Create ViewModel outside widget tree (no context)
+          final vm = TestViewModel();
 
-        // Should have executed init() once
-        expect(vm.initCallCount, equals(1));
+          // Should have executed init() once
+          expect(vm.initCallCount, equals(1));
 
-        // Should have data available
-        expect(vm.data.source, equals('initial'));
-        expect(vm.data.hasContextData, isFalse);
-        expect(vm.hasInitializedListenerExecution, isTrue);
+          // Should have data available
+          expect(vm.data.source, equals('initial'));
+          expect(vm.data.hasContextData, isFalse);
+          expect(vm.hasInitializedListenerExecution, isTrue);
 
-        // Should be marked as initialized without context
-        expect(vm.hasContext, isFalse);
-      });
+          // Should be marked as initialized without context
+          expect(vm.hasContext, isFalse);
+        },
+      );
 
       test(
-          'AsyncViewModel without context should execute init() and complete initialization',
-          () async {
-        // Create AsyncViewModel outside widget tree (no context)
-        final vm = TestAsyncViewModel();
+        'AsyncViewModel without context should execute init() and complete initialization',
+        () async {
+          // Create AsyncViewModel outside widget tree (no context)
+          final vm = TestAsyncViewModel();
 
-        // Wait for async initialization to complete successfully
-        int attempts = 0;
-        while (attempts < 50) {
-          await Future.delayed(const Duration(milliseconds: 20));
-          // Check if we have successfully completed initialization with data
-          if (vm.hasInitializedListenerExecution && vm.data != null) {
-            break;
+          // Wait for async initialization to complete successfully
+          int attempts = 0;
+          while (attempts < 50) {
+            await Future.delayed(const Duration(milliseconds: 20));
+            // Check if we have successfully completed initialization with data
+            if (vm.hasInitializedListenerExecution && vm.data != null) {
+              break;
+            }
+            attempts++;
           }
-          attempts++;
-        }
 
-        // Should have executed init() once
-        expect(vm.initCallCount, equals(1));
+          // Should have executed init() once
+          expect(vm.initCallCount, equals(1));
 
-        // Should have completed initialization
-        expect(vm.hasInitializedListenerExecution, isTrue);
+          // Should have completed initialization
+          expect(vm.hasInitializedListenerExecution, isTrue);
 
-        // State should be success state with data
-        expect(vm.data, isNotNull);
-        expect(vm.data!.source, equals('initial'));
-        expect(vm.data!.hasContextData, isFalse);
+          // State should be success state with data
+          expect(vm.data, isNotNull);
+          expect(vm.data!.source, equals('initial'));
+          expect(vm.data!.hasContextData, isFalse);
 
-        // Should be marked as initialized without context
-        expect(vm.hasContext, isFalse);
+          // Should be marked as initialized without context
+          expect(vm.hasContext, isFalse);
 
-        // Clean up
-        vm.dispose();
-      });
+          // Clean up
+          vm.dispose();
+        },
+      );
 
       testWidgets(
-          'ViewModel with context should execute init() and have data available',
-          (tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: ReactiveViewModelBuilder<TestViewModel, CounterState>(
-              viewmodel: TestViewModelService.instance.notifier,
-              build: (state, viewModel, keep) => Text('Count: ${state.count}'),
+        'ViewModel with context should execute init() and have data available',
+        (tester) async {
+          await tester.pumpWidget(
+            MaterialApp(
+              home: ReactiveViewModelBuilder<TestViewModel, CounterState>(
+                viewmodel: TestViewModelService.instance.notifier,
+                build: (state, viewModel, keep) =>
+                    Text('Count: ${state.count}'),
+              ),
             ),
-          ),
-        );
+          );
 
-        await tester.pump();
+          await tester.pump();
 
-        final vm = TestViewModelService.instance.notifier;
+          final vm = TestViewModelService.instance.notifier;
 
-        // Should have executed init()
-        expect(vm.initCallCount, greaterThanOrEqualTo(1));
+          // Should have executed init()
+          expect(vm.initCallCount, greaterThanOrEqualTo(1));
 
-        // Should have context data
-        expect(vm.data.source, equals('context'));
-        expect(vm.data.hasContextData, isTrue);
-        expect(vm.hasInitializedListenerExecution, isTrue);
+          // Should have context data
+          expect(vm.data.source, equals('context'));
+          expect(vm.data.hasContextData, isTrue);
+          expect(vm.hasInitializedListenerExecution, isTrue);
 
-        // Should have context
-        expect(vm.hasContext, isTrue);
-      });
+          // Should have context
+          expect(vm.hasContext, isTrue);
+        },
+      );
 
       testWidgets(
-          'AsyncViewModel with context should execute init() and have state available',
-          (tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: ReactiveAsyncBuilder<TestAsyncViewModel, AsyncCounterState>(
-              notifier: TestAsyncViewModelService.instance.notifier,
-              onData: (state, viewModel, keep) => Text('Count: ${state.count}'),
-              onLoading: () => const CircularProgressIndicator(),
-              onError: (error, stackTrace) => Text('Error: $error'),
+        'AsyncViewModel with context should execute init() and have state available',
+        (tester) async {
+          await tester.pumpWidget(
+            MaterialApp(
+              home: ReactiveAsyncBuilder<TestAsyncViewModel, AsyncCounterState>(
+                notifier: TestAsyncViewModelService.instance.notifier,
+                onData: (state, viewModel, keep) =>
+                    Text('Count: ${state.count}'),
+                onLoading: () => const CircularProgressIndicator(),
+                onError: (error, stackTrace) => Text('Error: $error'),
+              ),
             ),
-          ),
-        );
+          );
 
-        // Wait for initialization with manual pumping
-        await tester.pump();
+          // Wait for initialization
+          await tester.pump();
+          final vm = TestAsyncViewModelService.instance.notifier;
 
-        // Wait for async operations with timeout
-        int attempts = 0;
-        final vm = TestAsyncViewModelService.instance.notifier;
-        while (attempts < 20) {
-          await tester.pump(const Duration(milliseconds: 50));
-          // Check if initialization completed with data
-          if (vm.hasInitializedListenerExecution && vm.data != null) {
-            break;
-          }
-          attempts++;
-        }
+          // Use runAsync to advance real async operations
+          await tester.runAsync(() async {
+            int attempts = 0;
+            while (attempts < 20) {
+              await Future.delayed(const Duration(milliseconds: 50));
+              if (vm.hasInitializedListenerExecution && vm.data != null) {
+                break;
+              }
+              attempts++;
+            }
+          });
+          await tester.pump();
 
-        // Should have executed init()
-        expect(vm.initCallCount, greaterThanOrEqualTo(1));
+          // Should have executed init()
+          expect(vm.initCallCount, greaterThanOrEqualTo(1));
 
-        // Should have data available
-        expect(vm.data, isNotNull);
+          // Should have data available
+          expect(vm.data, isNotNull);
 
-        // Should have context data
-        expect(vm.data!.source, equals('async_context'));
-        expect(vm.data!.hasContextData, isTrue);
-        expect(vm.hasInitializedListenerExecution, isTrue);
+          // Should have context data
+          expect(vm.data!.source, equals('async_context'));
+          expect(vm.data!.hasContextData, isTrue);
+          expect(vm.hasInitializedListenerExecution, isTrue);
 
-        // Should have context
-        expect(vm.hasContext, isTrue);
-      });
+          // Should have context
+          expect(vm.hasContext, isTrue);
+        },
+      );
     });
 
     group('Reinitialize with Context', () {
       testWidgets(
-          'ViewModel created without context → builder mounts → reinitializes once',
-          (tester) async {
-        // Create ViewModel without context first
-        final vm = TestViewModel();
-        expect(vm.initCallCount, equals(1));
-        expect(vm.data.source, equals('initial'));
-        expect(vm.hasContext, isFalse);
+        'ViewModel created without context → builder mounts → reinitializes once',
+        (tester) async {
+          // Create ViewModel without context first
+          final vm = TestViewModel();
+          expect(vm.initCallCount, equals(1));
+          expect(vm.data.source, equals('initial'));
+          expect(vm.hasContext, isFalse);
 
-        // Now mount builder to provide context
-        await tester.pumpWidget(
-          MaterialApp(
-            home: ReactiveViewModelBuilder<TestViewModel, CounterState>(
-              viewmodel: vm,
-              build: (state, viewModel, keep) => Text('Count: ${state.count}'),
+          // Now mount builder to provide context
+          await tester.pumpWidget(
+            MaterialApp(
+              home: ReactiveViewModelBuilder<TestViewModel, CounterState>(
+                viewmodel: vm,
+                build: (state, viewModel, keep) =>
+                    Text('Count: ${state.count}'),
+              ),
             ),
-          ),
-        );
+          );
 
-        await tester.pump();
+          await tester.pump();
 
-        // Should have reinitalized with context
-        expect(vm.initCallCount, equals(2)); // Initial + reinitialize
-        expect(vm.data.source, equals('context'));
-        expect(vm.data.hasContextData, isTrue);
-        expect(vm.hasContext, isTrue);
-      });
+          // Should have reinitalized with context
+          expect(vm.initCallCount, equals(2)); // Initial + reinitialize
+          expect(vm.data.source, equals('context'));
+          expect(vm.data.hasContextData, isTrue);
+          expect(vm.hasContext, isTrue);
+        },
+      );
 
       testWidgets(
-          'ViewModel created with context → builder mounts → does NOT reinitialize',
-          (tester) async {
-        // Mount builder first to provide context
-        await tester.pumpWidget(
-          MaterialApp(
-            home: ReactiveViewModelBuilder<TestViewModel, CounterState>(
-              viewmodel: TestViewModelService.instance.notifier,
-              build: (state, viewModel, keep) => Text('Count: ${state.count}'),
+        'ViewModel created with context → builder mounts → does NOT reinitialize',
+        (tester) async {
+          // Mount builder first to provide context
+          await tester.pumpWidget(
+            MaterialApp(
+              home: ReactiveViewModelBuilder<TestViewModel, CounterState>(
+                viewmodel: TestViewModelService.instance.notifier,
+                build: (state, viewModel, keep) =>
+                    Text('Count: ${state.count}'),
+              ),
             ),
-          ),
-        );
+          );
 
-        await tester.pump();
+          await tester.pump();
 
-        final vm = TestViewModelService.instance.notifier;
-        final initialCallCount = vm.initCallCount;
+          final vm = TestViewModelService.instance.notifier;
+          final initialCallCount = vm.initCallCount;
 
-        // Rebuild widget
-        await tester.pumpWidget(
-          MaterialApp(
-            home: ReactiveViewModelBuilder<TestViewModel, CounterState>(
-              viewmodel: vm,
-              build: (state, viewModel, keep) =>
-                  Text('Updated: ${state.count}'),
+          // Rebuild widget
+          await tester.pumpWidget(
+            MaterialApp(
+              home: ReactiveViewModelBuilder<TestViewModel, CounterState>(
+                viewmodel: vm,
+                build: (state, viewModel, keep) =>
+                    Text('Updated: ${state.count}'),
+              ),
             ),
-          ),
-        );
+          );
 
-        await tester.pump();
+          await tester.pump();
 
-        // Should NOT have reinitalized
-        expect(vm.initCallCount, equals(initialCallCount));
-        expect(vm.data.source, equals('context'));
-      });
+          // Should NOT have reinitalized
+          expect(vm.initCallCount, equals(initialCallCount));
+          expect(vm.data.source, equals('context'));
+        },
+      );
 
       testWidgets(
-          'AsyncViewModel created without context → builder mounts → reinitializes once',
-          (tester) async {
-        // Create AsyncViewModel without context first
-        final vm = TestAsyncViewModel();
+        'AsyncViewModel created without context → builder mounts → reinitializes once',
+        (tester) async {
+          // Create AsyncViewModel without context first
+          final vm = TestAsyncViewModel();
 
-        // Wait for initial async init
-        int attempts = 0;
-        while (!vm.hasInitializedListenerExecution && attempts < 10) {
-          await Future.delayed(const Duration(milliseconds: 10));
-          attempts++;
-        }
+          // Wait for initial async init using runAsync for real async operations
+          await tester.runAsync(() async {
+            int attempts = 0;
+            while (!vm.hasInitializedListenerExecution && attempts < 20) {
+              await Future.delayed(const Duration(milliseconds: 10));
+              attempts++;
+            }
+          });
 
-        expect(vm.initCallCount, equals(1));
-        expect(vm.data!.source, equals('initial'));
-        expect(vm.hasContext, isFalse);
+          expect(vm.initCallCount, equals(1));
+          expect(vm.data!.source, equals('initial'));
+          expect(vm.hasContext, isFalse);
 
-        // Now mount builder to provide context
-        await tester.pumpWidget(
-          MaterialApp(
-            home: ReactiveAsyncBuilder<TestAsyncViewModel, AsyncCounterState>(
-              notifier: vm,
-              onData: (state, viewModel, keep) => Text('Count: ${state.count}'),
-              onLoading: () => const CircularProgressIndicator(),
-              onError: (error, stackTrace) => Text('Error: $error'),
+          // Now mount builder to provide context
+          await tester.pumpWidget(
+            MaterialApp(
+              home: ReactiveAsyncBuilder<TestAsyncViewModel, AsyncCounterState>(
+                notifier: vm,
+                onData: (state, viewModel, keep) =>
+                    Text('Count: ${state.count}'),
+                onLoading: () => const CircularProgressIndicator(),
+                onError: (error, stackTrace) => Text('Error: $error'),
+              ),
             ),
-          ),
-        );
+          );
 
-        // Wait for reinitialize
-        await tester.pump();
-        attempts = 0;
-        while (attempts < 20) {
-          await tester.pump(const Duration(milliseconds: 50));
-          if (vm.data != null && vm.data!.source == 'async_context') {
-            break;
-          }
-          attempts++;
-        }
+          // Wait for reinitialize using runAsync
+          await tester.pump();
+          await tester.runAsync(() async {
+            int attempts = 0;
+            while (attempts < 20) {
+              await Future.delayed(const Duration(milliseconds: 50));
+              if (vm.data != null && vm.data!.source == 'async_context') {
+                break;
+              }
+              attempts++;
+            }
+          });
+          await tester.pump();
 
-        // Should have reinitalized with context
-        expect(vm.initCallCount, equals(2)); // Initial + reinitialize
-        expect(vm.data!.source, equals('async_context'));
-        expect(vm.data!.hasContextData, isTrue);
-        expect(vm.hasContext, isTrue);
-      });
+          // Should have reinitalized with context
+          expect(vm.initCallCount, equals(2)); // Initial + reinitialize
+          expect(vm.data!.source, equals('async_context'));
+          expect(vm.data!.hasContextData, isTrue);
+          expect(vm.hasContext, isTrue);
+        },
+      );
 
       testWidgets(
-          'AsyncViewModel created with context → builder mounts → does NOT reinitialize',
-          (tester) async {
-        // Mount builder first to provide context
-        await tester.pumpWidget(
-          MaterialApp(
-            home: ReactiveAsyncBuilder<TestAsyncViewModel, AsyncCounterState>(
-              notifier: TestAsyncViewModelService.instance.notifier,
-              onData: (state, viewModel, keep) => Text('Count: ${state.count}'),
-              onLoading: () => const CircularProgressIndicator(),
-              onError: (error, stackTrace) => Text('Error: $error'),
+        'AsyncViewModel created with context → builder mounts → does NOT reinitialize',
+        (tester) async {
+          // Mount builder first to provide context
+          await tester.pumpWidget(
+            MaterialApp(
+              home: ReactiveAsyncBuilder<TestAsyncViewModel, AsyncCounterState>(
+                notifier: TestAsyncViewModelService.instance.notifier,
+                onData: (state, viewModel, keep) =>
+                    Text('Count: ${state.count}'),
+                onLoading: () => const CircularProgressIndicator(),
+                onError: (error, stackTrace) => Text('Error: $error'),
+              ),
             ),
-          ),
-        );
+          );
 
-        // Wait for initialization
-        await tester.pump();
-        int attempts = 0;
-        while (attempts < 20) {
-          await tester.pump(const Duration(milliseconds: 50));
+          // Wait for initialization using runAsync for real async operations
+          await tester.pump();
           final vm = TestAsyncViewModelService.instance.notifier;
-          if (vm.data != null && vm.hasInitializedListenerExecution) {
-            break;
-          }
-          attempts++;
-        }
 
-        final vm = TestAsyncViewModelService.instance.notifier;
-        final initialCallCount = vm.initCallCount;
+          await tester.runAsync(() async {
+            int attempts = 0;
+            while (attempts < 20) {
+              await Future.delayed(const Duration(milliseconds: 50));
+              if (vm.data != null && vm.hasInitializedListenerExecution) {
+                break;
+              }
+              attempts++;
+            }
+          });
+          await tester.pump();
+          final initialCallCount = vm.initCallCount;
 
-        // Rebuild widget
-        await tester.pumpWidget(
-          MaterialApp(
-            home: ReactiveAsyncBuilder<TestAsyncViewModel, AsyncCounterState>(
-              notifier: vm,
-              onData: (state, viewModel, keep) =>
-                  Text('Updated: ${state.count}'),
-              onLoading: () => const CircularProgressIndicator(),
-              onError: (error, stackTrace) => Text('Error: $error'),
+          // Rebuild widget
+          await tester.pumpWidget(
+            MaterialApp(
+              home: ReactiveAsyncBuilder<TestAsyncViewModel, AsyncCounterState>(
+                notifier: vm,
+                onData: (state, viewModel, keep) =>
+                    Text('Updated: ${state.count}'),
+                onLoading: () => const CircularProgressIndicator(),
+                onError: (error, stackTrace) => Text('Error: $error'),
+              ),
             ),
-          ),
-        );
+          );
 
-        await tester.pump();
+          await tester.pump();
 
-        // Should NOT have reinitalized
-        expect(vm.initCallCount, equals(initialCallCount));
-        expect(vm.data!.source, equals('async_context'));
-      });
+          // Should NOT have reinitalized
+          expect(vm.initCallCount, equals(initialCallCount));
+          expect(vm.data!.source, equals('async_context'));
+        },
+      );
     });
 
     group('Edge Cases & Concurrency', () {
       testWidgets(
-          'Multiple calls to reinitializeWithContext() → only first time executes',
-          (tester) async {
-        // Create ViewModel without context
-        final vm = TestViewModel();
-        expect(vm.initCallCount, equals(1));
+        'Multiple calls to reinitializeWithContext() → only first time executes',
+        (tester) async {
+          // Create ViewModel without context
+          final vm = TestViewModel();
+          expect(vm.initCallCount, equals(1));
 
-        // Mount builder to provide context
-        await tester.pumpWidget(
-          MaterialApp(
-            home: ReactiveViewModelBuilder<TestViewModel, CounterState>(
-              viewmodel: vm,
-              build: (state, viewModel, keep) => Text('Count: ${state.count}'),
+          // Mount builder to provide context
+          await tester.pumpWidget(
+            MaterialApp(
+              home: ReactiveViewModelBuilder<TestViewModel, CounterState>(
+                viewmodel: vm,
+                build: (state, viewModel, keep) =>
+                    Text('Count: ${state.count}'),
+              ),
             ),
-          ),
-        );
+          );
 
-        await tester.pump();
-        expect(vm.initCallCount, equals(2)); // Initial + reinitialize
+          await tester.pump();
+          expect(vm.initCallCount, equals(2)); // Initial + reinitialize
 
-        // Call reinitializeWithContext manually multiple times
-        vm.reinitializeWithContext();
-        vm.reinitializeWithContext();
-        vm.reinitializeWithContext();
+          // Call reinitializeWithContext manually multiple times
+          vm.reinitializeWithContext();
+          vm.reinitializeWithContext();
+          vm.reinitializeWithContext();
 
-        await tester.pump();
+          await tester.pump();
 
-        // Should still be only 2 calls (no additional reinitializations)
-        expect(vm.initCallCount, equals(2));
-      });
+          // Should still be only 2 calls (no additional reinitializations)
+          expect(vm.initCallCount, equals(2));
+        },
+      );
 
       test('reinitializeWithContext() after dispose → does not execute', () {
         // Create ViewModel without context
@@ -496,77 +513,81 @@ void main() {
         expect(vm.initCallCount, equals(1));
       });
 
-      testWidgets('Multiple builders concurrently → context handled correctly',
-          (tester) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Column(
-              children: [
-                Expanded(
-                  child: ReactiveViewModelBuilder<TestViewModel, CounterState>(
-                    viewmodel: TestViewModelService.instance.notifier,
-                    build: (state, viewModel, keep) =>
-                        Text('Builder 1: ${state.count}'),
+      testWidgets(
+        'Multiple builders concurrently → context handled correctly',
+        (tester) async {
+          await tester.pumpWidget(
+            MaterialApp(
+              home: Column(
+                children: [
+                  Expanded(
+                    child:
+                        ReactiveViewModelBuilder<TestViewModel, CounterState>(
+                          viewmodel: TestViewModelService.instance.notifier,
+                          build: (state, viewModel, keep) =>
+                              Text('Builder 1: ${state.count}'),
+                        ),
                   ),
-                ),
-                Expanded(
-                  child: ReactiveViewModelBuilder<TestViewModel, CounterState>(
-                    viewmodel: TestViewModelService.instance.notifier,
-                    build: (state, viewModel, keep) =>
-                        Text('Builder 2: ${state.count}'),
+                  Expanded(
+                    child:
+                        ReactiveViewModelBuilder<TestViewModel, CounterState>(
+                          viewmodel: TestViewModelService.instance.notifier,
+                          build: (state, viewModel, keep) =>
+                              Text('Builder 2: ${state.count}'),
+                        ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
+          );
 
-        await tester.pump();
+          await tester.pump();
 
-        final vm = TestViewModelService.instance.notifier;
+          final vm = TestViewModelService.instance.notifier;
 
-        // Should have context
-        expect(vm.hasContext, isTrue);
-        expect(vm.data.source, equals('context'));
+          // Should have context
+          expect(vm.hasContext, isTrue);
+          expect(vm.data.source, equals('context'));
 
-        // Should not have double initialized
-        expect(vm.initCallCount, lessThanOrEqualTo(2));
-      });
+          // Should not have double initialized
+          expect(vm.initCallCount, lessThanOrEqualTo(2));
+        },
+      );
 
       testWidgets(
-          'Builder dismounts → context cleared but ViewModel continues functioning',
-          (tester) async {
-        // Mount builder
-        await tester.pumpWidget(
-          MaterialApp(
-            home: ReactiveViewModelBuilder<TestViewModel, CounterState>(
-              viewmodel: TestViewModelService.instance.notifier,
-              build: (state, viewModel, keep) => Text('Count: ${state.count}'),
+        'Builder dismounts → context cleared but ViewModel continues functioning',
+        (tester) async {
+          // Mount builder
+          await tester.pumpWidget(
+            MaterialApp(
+              home: ReactiveViewModelBuilder<TestViewModel, CounterState>(
+                viewmodel: TestViewModelService.instance.notifier,
+                build: (state, viewModel, keep) =>
+                    Text('Count: ${state.count}'),
+              ),
             ),
-          ),
-        );
+          );
 
-        await tester.pump();
+          await tester.pump();
 
-        final vm = TestViewModelService.instance.notifier;
-        expect(vm.hasContext, isTrue);
+          final vm = TestViewModelService.instance.notifier;
+          expect(vm.hasContext, isTrue);
 
-        // Remove builder
-        await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(body: Text('No Builder')),
-          ),
-        );
+          // Remove builder
+          await tester.pumpWidget(
+            const MaterialApp(home: Scaffold(body: Text('No Builder'))),
+          );
 
-        await tester.pump();
+          await tester.pump();
 
-        // Context should be cleared but ViewModel should still work
-        expect(vm.hasContext, isFalse);
-        expect(vm.isDisposed, isFalse);
+          // Context should be cleared but ViewModel should still work
+          expect(vm.hasContext, isFalse);
+          expect(vm.isDisposed, isFalse);
 
-        // Should still be able to access data
-        expect(vm.data.source, equals('context')); // Retains last state
-      });
+          // Should still be able to access data
+          expect(vm.data.source, equals('context')); // Retains last state
+        },
+      );
     });
 
     group('State Consistency', () {
@@ -574,8 +595,10 @@ void main() {
         // Create without context
         final vm = TestViewModel();
 
-        expect(vm.hasInitializedListenerExecution,
-            isTrue); // Should be true after init
+        expect(
+          vm.hasInitializedListenerExecution,
+          isTrue,
+        ); // Should be true after init
         expect(vm.hasContext, isFalse);
         expect(vm.isDisposed, isFalse);
       });

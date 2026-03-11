@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/foundation.dart';
 
 /// [NotifierImpl]
@@ -70,8 +68,6 @@ abstract class NotifierImpl<T> extends ChangeNotifier {
   ///
   /// Returns the current value of [_data].
   T listen(void Function(T data) value) {
-    log("Listen notifier is active");
-
     if (_currentListener != null) {
       removeListener(_currentListener!);
     }

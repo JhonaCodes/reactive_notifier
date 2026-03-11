@@ -110,6 +110,7 @@ ReactiveViewModelBuilder<UserViewModel, UserModel>(
 | Hook | Description | Details |
 |------|-------------|---------|
 | `onStateChanged(previous, next)` | State change hook | [View details](viewmodel/on-state-changed.md) |
+| `onDependenciesStateChanged(change)` | Dependency tracking hook | [View details](viewmodel/on-dependencies-state-changed.md) |
 
 ### Helper Methods
 
@@ -135,12 +136,12 @@ ReactiveViewModelBuilder<UserViewModel, UserModel>(
 │                    ViewModel Lifecycle                   │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
-│  Constructor ──► init() ──► setupListeners() ──► onResume()
+│  Constructor ──► onDependenciesStateChanged() ──► init() ──► setupListeners() ──► onResume()
 │                                                         │
-│       │              │              │              │    │
-│       ▼              ▼              ▼              ▼    │
-│   Create with    Sync init     Register      Post-init │
-│   initial state  logic here    listeners     tasks     │
+│       │                    │              │              │              │    │
+│       ▼                    ▼              ▼              ▼              ▼    │
+│   Create with     Register deps      Sync init     Register      Post-init │
+│   initial state   & snapshot         logic here    listeners     tasks     │
 │                                                         │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │

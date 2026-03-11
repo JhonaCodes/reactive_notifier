@@ -16,7 +16,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.38.3'
+          flutter-version: '3.41.2'
           channel: 'stable'
 
       - name: Install dependencies
@@ -27,6 +27,12 @@ jobs:
 
 #      - name: Analyze project source
 #        run: flutter analyze
+
+      - name: Setup golden files for Linux
+        run: |
+          if [ ! -d "test/goldens/linux" ]; then
+            cp -r test/goldens/ci test/goldens/linux
+          fi
 
       - name: Run tests
         run: flutter test --coverage

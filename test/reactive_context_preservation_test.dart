@@ -21,9 +21,7 @@ mixin TestDataService {
   static ReactiveNotifier<String>? _instance;
 
   static ReactiveNotifier<String> get instance {
-    return _instance ??= ReactiveNotifier<String>(
-      () => 'initial',
-    );
+    return _instance ??= ReactiveNotifier<String>(() => 'initial');
   }
 
   static void updateData(String value) {
@@ -55,9 +53,7 @@ void main() {
           home: Scaffold(
             body: Column(
               children: [
-                Builder(
-                  builder: (context) => Text('Data: ${context.data}'),
-                ),
+                Builder(builder: (context) => Text('Data: ${context.data}')),
                 const CountedWidget(text: 'Preserved').keep('widget_1'),
                 Builder(
                   builder: (context) {
@@ -87,8 +83,9 @@ void main() {
       expect(find.text('Normal-updated - Build #3'), findsOneWidget); // Rebuilt
     });
 
-    testWidgets('should handle multiple preserved widgets properly',
-        (tester) async {
+    testWidgets('should handle multiple preserved widgets properly', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -182,12 +179,15 @@ void main() {
 
       expect(CountedWidget.buildCount, 3);
       expect(find.text('Context Kept - Build #1'), findsOneWidget); // Preserved
-      expect(find.text('Normal-context_updated - Build #3'),
-          findsOneWidget); // Rebuilt
+      expect(
+        find.text('Normal-context_updated - Build #3'),
+        findsOneWidget,
+      ); // Rebuilt
     });
 
-    testWidgets('should handle context.keepAll() for batch preservation',
-        (tester) async {
+    testWidgets('should handle context.keepAll() for batch preservation', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -220,12 +220,15 @@ void main() {
       expect(find.text('Batch 1 - Build #1'), findsOneWidget); // Preserved
       expect(find.text('Batch 2 - Build #2'), findsOneWidget); // Preserved
       expect(find.text('Batch 3 - Build #3'), findsOneWidget); // Preserved
-      expect(find.text('Normal-batch_updated - Build #5'),
-          findsOneWidget); // Rebuilt
+      expect(
+        find.text('Normal-batch_updated - Build #5'),
+        findsOneWidget,
+      ); // Rebuilt
     });
 
-    testWidgets('should handle widget tree changes with preservation',
-        (tester) async {
+    testWidgets('should handle widget tree changes with preservation', (
+      tester,
+    ) async {
       bool showPreserved = true;
 
       await tester.pumpWidget(
@@ -265,10 +268,14 @@ void main() {
       await tester.tap(find.text('Toggle'));
       await tester.pump();
 
-      expect(find.text('Preserved - Build #3'),
-          findsOneWidget); // Re-created after removal
-      expect(find.text('Always Visible - Build #2'),
-          findsOneWidget); // Should still be there
+      expect(
+        find.text('Preserved - Build #3'),
+        findsOneWidget,
+      ); // Re-created after removal
+      expect(
+        find.text('Always Visible - Build #2'),
+        findsOneWidget,
+      ); // Should still be there
       expect(CountedWidget.buildCount, 3); // One new build when re-added
     });
 
@@ -319,8 +326,9 @@ void main() {
                     Text('Data: ${context.data}'),
                     Column(
                       children: [
-                        const CountedWidget(text: 'Nested Preserved')
-                            .keep('nested_key'),
+                        const CountedWidget(
+                          text: 'Nested Preserved',
+                        ).keep('nested_key'),
                         const CountedWidget(text: 'Nested Normal'),
                       ],
                     ).keep('container_key'),
@@ -344,8 +352,9 @@ void main() {
       expect(find.text('Nested Normal - Build #2'), findsOneWidget);
     });
 
-    testWidgets('should handle rapid state changes efficiently',
-        (tester) async {
+    testWidgets('should handle rapid state changes efficiently', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
