@@ -28,5 +28,11 @@ jobs:
 #      - name: Analyze project source
 #        run: flutter analyze
 
+      - name: Setup golden files for Linux
+        run: |
+          if [ ! -d "test/goldens/linux" ]; then
+            cp -r test/goldens/ci test/goldens/linux
+          fi
+
       - name: Run tests
         run: flutter test --coverage
