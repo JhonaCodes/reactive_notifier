@@ -432,22 +432,34 @@ Future<void> waitForAsyncInit(
   );
 }
 
-/// Helper function to safely wait for context changes with timeout
+/// Helper function to safely wait for context changes with timeout.
+/// Uses tester.runAsync to allow real async operations (like _initializeAsync)
+/// to complete, since tester.pump alone cannot advance real Futures.
 Future<void> waitForContextChange(
   dynamic vm,
   String expectedSource,
   WidgetTester tester, {
   int maxAttempts = 20,
 }) async {
-  int attempts = 0;
-  while (attempts < maxAttempts) {
-    await tester.pump(const Duration(milliseconds: 50));
+  // Use runAsync to allow real async operations to complete
+  await tester.runAsync(() async {
+    int attempts = 0;
+    while (attempts < maxAttempts) {
+      await Future.delayed(const Duration(milliseconds: 50));
 
-    if (vm.data != null && vm.data!.source == expectedSource) {
-      return; // Success
+      if (vm.data != null && vm.data!.source == expectedSource) {
+        return; // Success
+      }
+
+      attempts++;
     }
+  });
 
-    attempts++;
+  // Final pump to sync widget state
+  await tester.pump();
+
+  if (vm.data != null && vm.data!.source == expectedSource) {
+    return; // Success
   }
 
   // If we get here, provide detailed failure info
@@ -578,21 +590,23 @@ void main() {
             ),
           );
 
-          // Wait for async initialization
+          // Wait for async initialization using runAsync for real async operations
           await tester.pump();
           final vm = BasicAsyncViewModelService.instance.notifier;
 
-          // Use safer wait with timeout protection
-          int attempts = 0;
-          while (attempts < 20) {
-            await tester.pump(const Duration(milliseconds: 50));
-            if (vm.hasInitializedListenerExecution && vm.data != null) {
-              break;
+          await tester.runAsync(() async {
+            int attempts = 0;
+            while (attempts < 20) {
+              await Future.delayed(const Duration(milliseconds: 50));
+              if (vm.hasInitializedListenerExecution && vm.data != null) {
+                break;
+              }
+              attempts++;
             }
-            attempts++;
-          }
+          });
+          await tester.pump();
 
-          if (attempts >= 20) {
+          if (!vm.hasInitializedListenerExecution || vm.data == null) {
             fail(
               'AsyncViewModel with context failed to initialize within timeout. '
               'hasInitialized: ${vm.hasInitializedListenerExecution}, data: ${vm.data}',
@@ -684,8 +698,8 @@ void main() {
           // Create AsyncViewModel without context first
           final vm = BasicAsyncViewModel();
 
-          // Wait for initial initialization using helper
-          await waitForAsyncInit(vm);
+          // Use runAsync to allow real async operations to complete
+          await tester.runAsync(() => waitForAsyncInit(vm));
 
           expect(vm.initCallCount, equals(1));
           expect(vm.data!.source, equals('initial'));
@@ -712,25 +726,23 @@ void main() {
 
           // Wait for widget mount and context registration
           await tester.pump();
-          await tester.pump(
-            const Duration(milliseconds: 100),
-          ); // Give more time for context setup
 
-          // Wait for reinitialize with timeout protection
-          int attempts = 0;
-          bool contextReady = false;
-          while (attempts < 30 && !contextReady) {
-            // Increased attempts and timeout protection
-            await tester.pump(const Duration(milliseconds: 50));
+          // Use runAsync to allow the async reinitializeWithContext to complete
+          await tester.runAsync(() async {
+            // Give time for context registration and async reinitialization
+            int attempts = 0;
+            while (attempts < 30) {
+              await Future.delayed(const Duration(milliseconds: 50));
+              if (vm.hasContext &&
+                  (vm.initCallCount > initialCallCount ||
+                      (vm.data != null && vm.data!.source == 'context'))) {
+                break;
+              }
+              attempts++;
+            }
+          });
 
-            // Check multiple conditions for context readiness
-            contextReady =
-                vm.hasContext &&
-                (vm.initCallCount > initialCallCount ||
-                    (vm.data != null && vm.data!.source == 'context'));
-
-            attempts++;
-          }
+          await tester.pump();
 
           // Should have context available now
           expect(
@@ -821,22 +833,25 @@ void main() {
             ),
           );
 
-          // Wait for initialization
+          // Wait for initialization using runAsync for real async operations
           await tester.pump();
 
           // Get reference first to avoid recreating
           final vm = BasicAsyncViewModelService.instance.notifier;
 
-          int attempts = 0;
-          while (attempts < 20) {
-            await tester.pump(const Duration(milliseconds: 50));
-            if (vm.data != null && vm.hasInitializedListenerExecution) {
-              break;
+          await tester.runAsync(() async {
+            int attempts = 0;
+            while (attempts < 20) {
+              await Future.delayed(const Duration(milliseconds: 50));
+              if (vm.data != null && vm.hasInitializedListenerExecution) {
+                break;
+              }
+              attempts++;
             }
-            attempts++;
-          }
+          });
+          await tester.pump();
 
-          if (attempts >= 20) {
+          if (!vm.hasInitializedListenerExecution || vm.data == null) {
             fail(
               'AsyncViewModel failed to initialize properly within timeout. '
               'hasInitialized: ${vm.hasInitializedListenerExecution}, data: ${vm.data}',
@@ -900,8 +915,8 @@ void main() {
         // Use BasicAsyncViewModel instead to avoid ComplexAsyncViewModel timeout issues
         final vm = BasicAsyncViewModel();
 
-        // Wait for initial initialization using helper
-        await waitForAsyncInit(vm);
+        // Wait for initial initialization using runAsync for real async
+        await tester.runAsync(() => waitForAsyncInit(vm));
 
         expect(vm.data!.source, equals('initial'));
         final initialCallCount = vm.initCallCount;
@@ -978,8 +993,8 @@ void main() {
         (tester) async {
           final vm = BasicAsyncViewModel();
 
-          // Wait for initial initialization using helper
-          await waitForAsyncInit(vm);
+          // Wait for initial initialization using runAsync for real async
+          await tester.runAsync(() => waitForAsyncInit(vm));
           expect(vm.initCallCount, equals(1));
 
           await tester.pumpWidget(
@@ -1124,16 +1139,19 @@ void main() {
             ),
           );
 
-          // Wait for initialization
+          // Wait for initialization using runAsync for real async operations
           await tester.pump();
-          int attempts = 0;
-          while (attempts < 20) {
-            await tester.pump(const Duration(milliseconds: 50));
-            if (vm.hasInitializedListenerExecution && vm.data != null) {
-              break;
+          await tester.runAsync(() async {
+            int attempts = 0;
+            while (attempts < 20) {
+              await Future.delayed(const Duration(milliseconds: 50));
+              if (vm.hasInitializedListenerExecution && vm.data != null) {
+                break;
+              }
+              attempts++;
             }
-            attempts++;
-          }
+          });
+          await tester.pump();
           expect(vm.initCallCount, greaterThanOrEqualTo(1));
 
           // Dispose manually
@@ -1335,19 +1353,24 @@ void main() {
               ),
             );
 
-            // Wait for initialization with safer timeout
+            // Wait for initialization using runAsync for real async operations
             await tester.pump();
-            int attempts = 0;
-            while (attempts < 20) {
-              await tester.pump(const Duration(milliseconds: 50));
-              final vm = ContextDependentAsyncService.instance.notifier;
-              if (vm.data != null && vm.hasInitializedListenerExecution) {
-                break;
+            bool initComplete = false;
+            await tester.runAsync(() async {
+              int attempts = 0;
+              while (attempts < 20) {
+                await Future.delayed(const Duration(milliseconds: 50));
+                final vm = ContextDependentAsyncService.instance.notifier;
+                if (vm.data != null && vm.hasInitializedListenerExecution) {
+                  initComplete = true;
+                  break;
+                }
+                attempts++;
               }
-              attempts++;
-            }
+            });
+            await tester.pump();
 
-            if (attempts >= 20) {
+            if (!initComplete) {
               log(
                 'AsyncViewModel initialization timed out - skipping detailed assertions',
               );
@@ -1404,8 +1427,8 @@ void main() {
           // Create without context but don't require it initially
           final vm = ContextDependentAsyncViewModel(requiresContext: false);
 
-          // Wait for initial initialization using helper
-          await waitForAsyncInit(vm);
+          // Wait for initial initialization using runAsync for real async
+          await tester.runAsync(() => waitForAsyncInit(vm));
           expect(vm.data!.source, equals('async_fallback'));
 
           await tester.pumpWidget(
@@ -1909,8 +1932,8 @@ void main() {
         (tester) async {
           final vm = BasicAsyncViewModel();
 
-          // Wait for initial state using helper function
-          await waitForAsyncInit(vm);
+          // Wait for initial state using runAsync for real async
+          await tester.runAsync(() => waitForAsyncInit(vm));
           final withoutContextState = vm.data!;
 
           await tester.pumpWidget(

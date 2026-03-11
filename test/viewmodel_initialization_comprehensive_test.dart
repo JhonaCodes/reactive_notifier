@@ -251,20 +251,22 @@ void main() {
             ),
           );
 
-          // Wait for initialization with manual pumping
+          // Wait for initialization
           await tester.pump();
-
-          // Wait for async operations with timeout
-          int attempts = 0;
           final vm = TestAsyncViewModelService.instance.notifier;
-          while (attempts < 20) {
-            await tester.pump(const Duration(milliseconds: 50));
-            // Check if initialization completed with data
-            if (vm.hasInitializedListenerExecution && vm.data != null) {
-              break;
+
+          // Use runAsync to advance real async operations
+          await tester.runAsync(() async {
+            int attempts = 0;
+            while (attempts < 20) {
+              await Future.delayed(const Duration(milliseconds: 50));
+              if (vm.hasInitializedListenerExecution && vm.data != null) {
+                break;
+              }
+              attempts++;
             }
-            attempts++;
-          }
+          });
+          await tester.pump();
 
           // Should have executed init()
           expect(vm.initCallCount, greaterThanOrEqualTo(1));
@@ -358,12 +360,14 @@ void main() {
           // Create AsyncViewModel without context first
           final vm = TestAsyncViewModel();
 
-          // Wait for initial async init
-          int attempts = 0;
-          while (!vm.hasInitializedListenerExecution && attempts < 10) {
-            await Future.delayed(const Duration(milliseconds: 10));
-            attempts++;
-          }
+          // Wait for initial async init using runAsync for real async operations
+          await tester.runAsync(() async {
+            int attempts = 0;
+            while (!vm.hasInitializedListenerExecution && attempts < 20) {
+              await Future.delayed(const Duration(milliseconds: 10));
+              attempts++;
+            }
+          });
 
           expect(vm.initCallCount, equals(1));
           expect(vm.data!.source, equals('initial'));
@@ -382,16 +386,19 @@ void main() {
             ),
           );
 
-          // Wait for reinitialize
+          // Wait for reinitialize using runAsync
           await tester.pump();
-          attempts = 0;
-          while (attempts < 20) {
-            await tester.pump(const Duration(milliseconds: 50));
-            if (vm.data != null && vm.data!.source == 'async_context') {
-              break;
+          await tester.runAsync(() async {
+            int attempts = 0;
+            while (attempts < 20) {
+              await Future.delayed(const Duration(milliseconds: 50));
+              if (vm.data != null && vm.data!.source == 'async_context') {
+                break;
+              }
+              attempts++;
             }
-            attempts++;
-          }
+          });
+          await tester.pump();
 
           // Should have reinitalized with context
           expect(vm.initCallCount, equals(2)); // Initial + reinitialize
@@ -417,19 +424,21 @@ void main() {
             ),
           );
 
-          // Wait for initialization
+          // Wait for initialization using runAsync for real async operations
           await tester.pump();
-          int attempts = 0;
-          while (attempts < 20) {
-            await tester.pump(const Duration(milliseconds: 50));
-            final vm = TestAsyncViewModelService.instance.notifier;
-            if (vm.data != null && vm.hasInitializedListenerExecution) {
-              break;
-            }
-            attempts++;
-          }
-
           final vm = TestAsyncViewModelService.instance.notifier;
+
+          await tester.runAsync(() async {
+            int attempts = 0;
+            while (attempts < 20) {
+              await Future.delayed(const Duration(milliseconds: 50));
+              if (vm.data != null && vm.hasInitializedListenerExecution) {
+                break;
+              }
+              attempts++;
+            }
+          });
+          await tester.pump();
           final initialCallCount = vm.initCallCount;
 
           // Rebuild widget

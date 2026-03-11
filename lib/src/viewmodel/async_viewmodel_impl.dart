@@ -69,18 +69,34 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     }
   }
 
+  /// Generation counter to handle concurrent _initializeAsync calls.
+  /// When reinitializeWithContext() triggers a new init while one is in progress,
+  /// the older generation detects it has been superseded and exits early.
+  int _initGeneration = 0;
+
   /// Internal initialization method that properly handles async initialization
   Future<void> _initializeAsync() async {
     if (_initialized || _disposed) return;
+
+    final myGeneration = ++_initGeneration;
 
     /// We make sure it is always false before any full initialization.
     hasInitializedListenerExecution = false;
 
     try {
-      // Setup dependencies BEFORE reload/init so they're available
-      await _setupDependencies();
+      // Setup dependencies synchronously (register + subscribe)
+      _setupDependenciesSync();
+
+      // Only await if there are async dependencies that need loading
+      if (_dependencySnapshots.isNotEmpty) {
+        await _ensureAsyncDependenciesReady();
+        if (myGeneration != _initGeneration || _disposed) return;
+      }
 
       await reload();
+
+      // Check if this initialization was superseded by a newer one
+      if (myGeneration != _initGeneration || _disposed) return;
 
       // Assert _state is properly initialized
       assert(() {
@@ -104,7 +120,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
         _initializedWithoutContext = true;
       }
     } catch (error, stackTrace) {
-      if (!_disposed) {
+      if (!_disposed && myGeneration == _initGeneration) {
         errorState(error, stackTrace);
       }
     }
@@ -467,9 +483,11 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     // Override in subclasses to declare and react to dependencies.
   }
 
-  /// Sets up dependencies declared in [onDependenciesStateChanged].
-  /// Called before [init()] during async initialization.
-  Future<void> _setupDependencies() async {
+  /// Synchronous dependency registration and subscription.
+  /// Registers dependencies via [onDependenciesStateChanged], takes snapshots,
+  /// and subscribes to changes. This runs synchronously to avoid unnecessary
+  /// async yields when there are no dependencies.
+  void _setupDependenciesSync() {
     final state = DependencyState.create(
       isSetup: true,
       changed: {},
@@ -482,13 +500,20 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     // If no dependencies were registered, nothing else to do
     if (_dependencySnapshots.isEmpty) return;
 
-    // Guarantee initialization of async dependencies
+    // Subscribe to each registered dependency with batching
+    for (final notifier in _dependencySnapshots.keys.toList()) {
+      _subscribeToDependency(notifier);
+    }
+  }
+
+  /// Waits for async dependencies that haven't loaded their data yet.
+  /// Only called when there are registered dependencies.
+  Future<void> _ensureAsyncDependenciesReady() async {
     for (final notifier in _dependencySnapshots.keys.toList()) {
       final value = notifier.notifier;
       if (value is AsyncViewModelImpl && value.data == null) {
         await value.loadNotifier();
         // Re-snapshot with initialized value
-        // Re-snapshot: extract value directly
         final val = notifier.notifier;
         if (val is ViewModel) {
           _dependencySnapshots[notifier] = val.data;
@@ -498,11 +523,6 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
           _dependencySnapshots[notifier] = val;
         }
       }
-    }
-
-    // Subscribe to each registered dependency with batching
-    for (final notifier in _dependencySnapshots.keys.toList()) {
-      _subscribeToDependency(notifier);
     }
   }
 
