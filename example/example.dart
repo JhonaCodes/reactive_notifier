@@ -14,9 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ReactiveNotifier Example',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue),
       home: const CounterScreen(),
     );
   }
@@ -77,9 +75,13 @@ class MyTheme {
 mixin CounterService {
   static final ReactiveNotifier<CounterState> instance =
       ReactiveNotifier<CounterState>(
-    () => const CounterState(
-        count: 0, message: 'Initial', isEven: true, isAtLimit: false),
-  );
+        () => const CounterState(
+          count: 0,
+          message: 'Initial',
+          isEven: true,
+          isAtLimit: false,
+        ),
+      );
 
   static void increment() {
     final currentState = instance.notifier;
@@ -114,7 +116,11 @@ mixin CounterService {
   static void reset() {
     instance.updateState(
       const CounterState(
-          count: 0, message: 'Reset to 0', isEven: true, isAtLimit: false),
+        count: 0,
+        message: 'Reset to 0',
+        isEven: true,
+        isAtLimit: false,
+      ),
     );
   }
 }
@@ -205,16 +211,16 @@ class GlobalStateSection extends StatelessWidget {
             Text(
               'ReactiveContext - Global State',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.green,
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: Colors.green,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Use for: Language, Theme, User preferences, Global settings',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontStyle: FontStyle.italic,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic),
             ),
             const SizedBox(height: 16),
 
@@ -264,16 +270,16 @@ class ComplexStateSection extends StatelessWidget {
             Text(
               'ReactiveBuilder - Complex Business Logic',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.orange,
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: Colors.orange,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               'Use for: Business logic, Validation, Complex state, API calls',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontStyle: FontStyle.italic,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic),
             ),
             const SizedBox(height: 16),
             ReactiveBuilder<CounterState>(
@@ -315,11 +321,13 @@ class ComplexStateSection extends StatelessWidget {
                     const SizedBox(height: 8),
 
                     // Expensive widget preserved with keep()
-                    keep(const _ExpensiveWidget(
-                      title: 'Preserved Chart',
-                      subtitle: 'Complex chart that never rebuilds',
-                      color: Colors.orange,
-                    )),
+                    keep(
+                      const _ExpensiveWidget(
+                        title: 'Preserved Chart',
+                        subtitle: 'Complex chart that never rebuilds',
+                        color: Colors.orange,
+                      ),
+                    ),
                   ],
                 );
               },
@@ -342,10 +350,7 @@ class ControlButtonsSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Controls',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
+            Text('Controls', style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 16),
 
             // Counter controls (complex business logic)
@@ -436,21 +441,12 @@ class _ExpensiveWidget extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, color: color),
           ),
-          Text(
-            subtitle,
-            style: const TextStyle(fontSize: 12),
-          ),
+          Text(subtitle, style: const TextStyle(fontSize: 12)),
           Text(
             'Built at: $buildTime',
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 10, color: Colors.grey[600]),
           ),
         ],
       ),
@@ -487,11 +483,11 @@ class MigrationState {
   }
 
   static MigrationState initial() => const MigrationState(
-        userDisplayName: 'Guest',
-        themeMode: 'Unknown',
-        screenWidth: 0,
-        hasContextData: false,
-      );
+    userDisplayName: 'Guest',
+    themeMode: 'Unknown',
+    screenWidth: 0,
+    hasContextData: false,
+  );
 }
 
 /// Example ViewModel demonstrating BuildContext access and State Change Hooks
@@ -513,7 +509,8 @@ class MigrationViewModel extends ViewModel<MigrationState> {
   void onStateChanged(MigrationState previous, MigrationState next) {
     // NEW v2.13.0: State change hooks
     stateChanges.add(
-        'State changed: ${previous.userDisplayName} → ${next.userDisplayName}');
+      'State changed: ${previous.userDisplayName} → ${next.userDisplayName}',
+    );
 
     // Log specific changes
     if (previous.themeMode != next.themeMode) {
@@ -540,16 +537,21 @@ class MigrationViewModel extends ViewModel<MigrationState> {
             final mediaQuery = MediaQuery.of(requireContext('migration demo'));
             final theme = Theme.of(context!);
 
-            updateState(MigrationState(
-              userDisplayName: 'Context User',
-              themeMode: theme.brightness == Brightness.dark ? 'Dark' : 'Light',
-              screenWidth: mediaQuery.size.width,
-              hasContextData: true,
-            ));
+            updateState(
+              MigrationState(
+                userDisplayName: 'Context User',
+                themeMode: theme.brightness == Brightness.dark
+                    ? 'Dark'
+                    : 'Light',
+                screenWidth: mediaQuery.size.width,
+                hasContextData: true,
+              ),
+            );
           } catch (e) {
             // Fallback if context access fails
             updateState(
-                MigrationState.initial().copyWith(hasContextData: false));
+              MigrationState.initial().copyWith(hasContextData: false),
+            );
           }
         }
       });
@@ -591,18 +593,18 @@ class ContextAccessDemo extends StatelessWidget {
                   children: [
                     Text(
                       'NEW: Automatic BuildContext Access',
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                color: Colors.purple,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: Colors.purple,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'ViewModels can now access BuildContext automatically!',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontStyle: FontStyle.italic,
-                          ),
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
                     const SizedBox(height: 16),
 
@@ -611,7 +613,8 @@ class ContextAccessDemo extends StatelessWidget {
                     Text('User: ${state.userDisplayName}'),
                     Text('Theme Mode: ${state.themeMode}'),
                     Text(
-                        'Screen Width: ${state.screenWidth.toStringAsFixed(0)}'),
+                      'Screen Width: ${state.screenWidth.toStringAsFixed(0)}',
+                    ),
                     Text('Context Data Available: ${state.hasContextData}'),
 
                     const SizedBox(height: 16),
@@ -637,13 +640,17 @@ class ContextAccessDemo extends StatelessWidget {
                             '• Cross-Service Communication\n'
                             '• Explicit Sandbox Architecture',
                             style: TextStyle(
-                                fontSize: 12, fontFamily: 'monospace'),
+                              fontSize: 12,
+                              fontFamily: 'monospace',
+                            ),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'State Changes Recorded: ${viewModel.stateChanges.length}',
                             style: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.bold),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           if (viewModel.stateChanges.isNotEmpty)
                             Text(

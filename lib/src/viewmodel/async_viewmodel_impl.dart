@@ -46,9 +46,11 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// Used by ReactiveNotifier to avoid circular dispose calls
   bool get isDisposed => _disposed;
 
-  AsyncViewModelImpl(this._state,
-      {this.loadOnInit = true, this.waitForContext = false})
-      : super() {
+  AsyncViewModelImpl(
+    this._state, {
+    this.loadOnInit = true,
+    this.waitForContext = false,
+  }) : super() {
     if (kFlutterMemoryAllocationsEnabled) {
       ChangeNotifier.maybeDispatchObjectCreation(this);
     }
@@ -87,7 +89,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
           return true;
         } catch (_) {
           throw StateError(
-              '⚠️ AsyncViewModelImpl<${T.toString()}> did not properly initialize state in init()');
+            '⚠️ AsyncViewModelImpl<${T.toString()}> did not properly initialize state in init()',
+          );
         }
       }());
 
@@ -167,8 +170,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// We remove the listeners registered in [setupListeners] to avoid memory problems.
   ///
   @mustCallSuper
-  Future<void> removeListeners(
-      {List<String> currentListeners = const []}) async {
+  Future<void> removeListeners({
+    List<String> currentListeners = const [],
+  }) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
         logRemove<T>(listeners: currentListeners);
@@ -181,8 +185,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// We register our listeners coming from the notifiers.
   ///
   @mustCallSuper
-  Future<void> setupListeners(
-      {List<String> currentListeners = const []}) async {
+  Future<void> setupListeners({
+    List<String> currentListeners = const [],
+  }) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
         logSetup<T>(listeners: currentListeners);
@@ -291,7 +296,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     } else {
       assert(() {
         if (!ReactiveNotifier.debugLogging) return true;
-        log('⚠️ transformDataState<${T.toString()}> returned null - transformation ignored');
+        log(
+          '⚠️ transformDataState<${T.toString()}> returned null - transformation ignored',
+        );
         return true;
       }());
     }
@@ -329,7 +336,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     } else {
       assert(() {
         if (!ReactiveNotifier.debugLogging) return true;
-        log('⚠️ transformDataStateSilently<${T.toString()}> returned null - transformation ignored');
+        log(
+          '⚠️ transformDataStateSilently<${T.toString()}> returned null - transformation ignored',
+        );
         return true;
       }());
     }
@@ -361,7 +370,8 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   ///```
   ///
   void transformStateSilently(
-      AsyncState<T> Function(AsyncState<T> state) transformer) {
+    AsyncState<T> Function(AsyncState<T> state) transformer,
+  ) {
     final previous = _state;
     _state = transformer(_state);
 
@@ -557,9 +567,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// Example:
   ///
   @protected
-  FutureOr<void> onResume(T? data) async {
-
-  }
+  FutureOr<void> onResume(T? data) async {}
 
   /// Update data directly
   void updateState(T data) {
@@ -726,8 +734,10 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// The [value] callback receives the current ```AsyncState<T>``` whenever the state updates.
   ///
   /// Returns a [Future] that completes with the current state.
-  Future<AsyncState<T>> listenVM(void Function(AsyncState<T> data) value,
-      {bool callOnInit = false}) async {
+  Future<AsyncState<T>> listenVM(
+    void Function(AsyncState<T> data) value, {
+    bool callOnInit = false,
+  }) async {
     // Create unique key for this listener
     final listenerKey = 'async_vm_${hashCode}_${++_listenerCounter}';
 
@@ -904,7 +914,7 @@ Consider calling ReactiveNotifier.cleanup() manually when appropriate.
     // Check if we need to initialize due to waitForContext or previous context-less initialization
     bool shouldReinitialize =
         (_initializedWithoutContext && hasContext && !_disposed) ||
-            (waitForContext && !_initialized && hasContext && !_disposed);
+        (waitForContext && !_initialized && hasContext && !_disposed);
 
     if (shouldReinitialize) {
       assert(() {

@@ -31,12 +31,21 @@ void main() {
         });
 
         // Assert: Should return current value immediately
-        expect(returnedValue, equals(42),
-            reason: 'listen() should return current value immediately');
-        expect(callbackCallCount, equals(0),
-            reason: 'Callback should not be called on setup by default');
-        expect(callbackValue, equals(0),
-            reason: 'Callback value should remain unchanged on setup');
+        expect(
+          returnedValue,
+          equals(42),
+          reason: 'listen() should return current value immediately',
+        );
+        expect(
+          callbackCallCount,
+          equals(0),
+          reason: 'Callback should not be called on setup by default',
+        );
+        expect(
+          callbackValue,
+          equals(0),
+          reason: 'Callback value should remain unchanged on setup',
+        );
       });
 
       test('should call listener callback when state changes', () {
@@ -58,12 +67,21 @@ void main() {
         notifier.updateState('third');
 
         // Assert: Callback should be called for each update
-        expect(callbackCallCount, equals(3),
-            reason: 'Callback should be called for each state update');
-        expect(callbackValue, equals('third'),
-            reason: 'Callback should receive the latest value');
-        expect(receivedValues, equals(['first', 'second', 'third']),
-            reason: 'Callback should receive all values in order');
+        expect(
+          callbackCallCount,
+          equals(3),
+          reason: 'Callback should be called for each state update',
+        );
+        expect(
+          callbackValue,
+          equals('third'),
+          reason: 'Callback should receive the latest value',
+        );
+        expect(
+          receivedValues,
+          equals(['first', 'second', 'third']),
+          reason: 'Callback should receive all values in order',
+        );
       });
 
       test('should handle List values correctly in listener callback', () {
@@ -90,8 +108,9 @@ void main() {
 
       test('should handle Map values correctly in listener callback', () {
         // Setup: Create ReactiveNotifier with Map value
-        final notifier =
-            ReactiveNotifier<Map<String, dynamic>>(() => {'key': 'value'});
+        final notifier = ReactiveNotifier<Map<String, dynamic>>(
+          () => {'key': 'value'},
+        );
         var callbackCallCount = 0;
         Map<String, dynamic>? receivedMap;
 
@@ -108,34 +127,40 @@ void main() {
         expect(receivedMap, equals({'newKey': 'newValue', 'count': 123}));
       });
 
-      test('should handle custom object values correctly in listener callback',
-          () {
-        // Setup: Create ReactiveNotifier with custom object
-        final notifier = ReactiveNotifier<TestModel>(
-            () => TestModel(id: 1, name: 'initial'));
-        var callbackCallCount = 0;
-        TestModel? receivedModel;
+      test(
+        'should handle custom object values correctly in listener callback',
+        () {
+          // Setup: Create ReactiveNotifier with custom object
+          final notifier = ReactiveNotifier<TestModel>(
+            () => TestModel(id: 1, name: 'initial'),
+          );
+          var callbackCallCount = 0;
+          TestModel? receivedModel;
 
-        final returnedValue = notifier.listen((value) {
-          callbackCallCount++;
-          receivedModel = value;
-        });
+          final returnedValue = notifier.listen((value) {
+            callbackCallCount++;
+            receivedModel = value;
+          });
 
-        // Assert: Initial value should be returned correctly
-        expect(returnedValue.id, equals(1));
-        expect(returnedValue.name, equals('initial'));
+          // Assert: Initial value should be returned correctly
+          expect(returnedValue.id, equals(1));
+          expect(returnedValue.name, equals('initial'));
 
-        // Act: Update with new custom object
-        final newModel = TestModel(id: 2, name: 'updated');
-        notifier.updateState(newModel);
+          // Act: Update with new custom object
+          final newModel = TestModel(id: 2, name: 'updated');
+          notifier.updateState(newModel);
 
-        // Assert: Callback should receive new custom object
-        expect(callbackCallCount, equals(1));
-        expect(receivedModel?.id, equals(2));
-        expect(receivedModel?.name, equals('updated'));
-        expect(identical(receivedModel, newModel), isTrue,
-            reason: 'Should maintain object reference');
-      });
+          // Assert: Callback should receive new custom object
+          expect(callbackCallCount, equals(1));
+          expect(receivedModel?.id, equals(2));
+          expect(receivedModel?.name, equals('updated'));
+          expect(
+            identical(receivedModel, newModel),
+            isTrue,
+            reason: 'Should maintain object reference',
+          );
+        },
+      );
 
       test('should handle nullable values correctly in listener callback', () {
         // Setup: Create ReactiveNotifier with nullable value
@@ -164,40 +189,53 @@ void main() {
       });
 
       test(
-          'should replace previous listener when listen() is called multiple times',
-          () {
-        // Setup: Create ReactiveNotifier
-        final notifier = ReactiveNotifier<int>(() => 0);
-        var firstCallbackCount = 0;
-        var secondCallbackCount = 0;
-        var firstCallbackValue = 0;
-        var secondCallbackValue = 0;
+        'should replace previous listener when listen() is called multiple times',
+        () {
+          // Setup: Create ReactiveNotifier
+          final notifier = ReactiveNotifier<int>(() => 0);
+          var firstCallbackCount = 0;
+          var secondCallbackCount = 0;
+          var firstCallbackValue = 0;
+          var secondCallbackValue = 0;
 
-        // Act: Setup first listener
-        notifier.listen((value) {
-          firstCallbackCount++;
-          firstCallbackValue = value;
-        });
+          // Act: Setup first listener
+          notifier.listen((value) {
+            firstCallbackCount++;
+            firstCallbackValue = value;
+          });
 
-        // Act: Setup second listener (should replace first)
-        notifier.listen((value) {
-          secondCallbackCount++;
-          secondCallbackValue = value;
-        });
+          // Act: Setup second listener (should replace first)
+          notifier.listen((value) {
+            secondCallbackCount++;
+            secondCallbackValue = value;
+          });
 
-        // Act: Update state
-        notifier.updateState(100);
+          // Act: Update state
+          notifier.updateState(100);
 
-        // Assert: Only second listener should be called
-        expect(firstCallbackCount, equals(0),
-            reason: 'First listener should be replaced and not called');
-        expect(secondCallbackCount, equals(1),
-            reason: 'Second listener should be called');
-        expect(firstCallbackValue, equals(0),
-            reason: 'First listener should not receive updates');
-        expect(secondCallbackValue, equals(100),
-            reason: 'Second listener should receive updates');
-      });
+          // Assert: Only second listener should be called
+          expect(
+            firstCallbackCount,
+            equals(0),
+            reason: 'First listener should be replaced and not called',
+          );
+          expect(
+            secondCallbackCount,
+            equals(1),
+            reason: 'Second listener should be called',
+          );
+          expect(
+            firstCallbackValue,
+            equals(0),
+            reason: 'First listener should not receive updates',
+          );
+          expect(
+            secondCallbackValue,
+            equals(100),
+            reason: 'Second listener should receive updates',
+          );
+        },
+      );
 
       test('should work correctly with silent updates', () {
         // Setup: Create ReactiveNotifier and setup listener
@@ -217,12 +255,21 @@ void main() {
         notifier.updateSilently(50); // Should NOT trigger callback
 
         // Assert: Only regular updates should trigger callback
-        expect(callbackCallCount, equals(2),
-            reason: 'Only regular updates should trigger listen() callback');
-        expect(receivedValues, equals([20, 40]),
-            reason: 'Callback should only receive values from regular updates');
-        expect(notifier.notifier, equals(50),
-            reason: 'Final state should include silent updates');
+        expect(
+          callbackCallCount,
+          equals(2),
+          reason: 'Only regular updates should trigger listen() callback',
+        );
+        expect(
+          receivedValues,
+          equals([20, 40]),
+          reason: 'Callback should only receive values from regular updates',
+        );
+        expect(
+          notifier.notifier,
+          equals(50),
+          reason: 'Final state should include silent updates',
+        );
       });
 
       test('should work correctly with transform methods', () {
@@ -239,7 +286,8 @@ void main() {
         // Act: Mix transform methods
         notifier.transformState((v) => v * 2); // 5 -> 10 (should trigger)
         notifier.transformStateSilently(
-            (v) => v + 5); // 10 -> 15 (should NOT trigger)
+          (v) => v + 5,
+        ); // 10 -> 15 (should NOT trigger)
         notifier.transformState((v) => v * 3); // 15 -> 45 (should trigger)
 
         // Assert: Only non-silent transforms should trigger callback
@@ -274,12 +322,21 @@ void main() {
         notifier.updateState(300);
 
         // Assert: Callback should not be called after stopListening()
-        expect(callbackCallCount, equals(1),
-            reason: 'Callback should not be called after stopListening()');
-        expect(lastReceivedValue, equals(100),
-            reason: 'Last received value should remain unchanged');
-        expect(notifier.notifier, equals(300),
-            reason: 'State should still update normally');
+        expect(
+          callbackCallCount,
+          equals(1),
+          reason: 'Callback should not be called after stopListening()',
+        );
+        expect(
+          lastReceivedValue,
+          equals(100),
+          reason: 'Last received value should remain unchanged',
+        );
+        expect(
+          notifier.notifier,
+          equals(300),
+          reason: 'State should still update normally',
+        );
       });
 
       test('should handle multiple stopListening() calls safely', () {
@@ -326,10 +383,16 @@ void main() {
         notifier.updateState(100);
 
         // Assert: Only new listener should be called
-        expect(firstCallbackCount, equals(0),
-            reason: 'First listener should be stopped');
-        expect(secondCallbackCount, equals(1),
-            reason: 'New listener should work normally');
+        expect(
+          firstCallbackCount,
+          equals(0),
+          reason: 'First listener should be stopped',
+        );
+        expect(
+          secondCallbackCount,
+          equals(1),
+          reason: 'New listener should work normally',
+        );
       });
     });
 
@@ -361,8 +424,10 @@ void main() {
 
         // Assert: Dependent notifier should be updated through cross-communication
         expect(listenerCallCount, equals(2));
-        expect(receivedTransformations,
-            equals(['transformed_20', 'transformed_30']));
+        expect(
+          receivedTransformations,
+          equals(['transformed_20', 'transformed_30']),
+        );
         expect(dependentNotifier.notifier, equals('transformed_30'));
       });
 

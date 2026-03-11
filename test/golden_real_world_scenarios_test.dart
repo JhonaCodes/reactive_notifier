@@ -31,12 +31,7 @@ class CartItem {
     required this.quantity,
   });
 
-  CartItem copyWith({
-    String? id,
-    String? name,
-    double? price,
-    int? quantity,
-  }) {
+  CartItem copyWith({String? id, String? name, double? price, int? quantity}) {
     return CartItem(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -53,11 +48,7 @@ class ShoppingCart {
   final double discount;
   final double tax;
 
-  ShoppingCart({
-    this.items = const [],
-    this.discount = 0.0,
-    this.tax = 0.0,
-  });
+  ShoppingCart({this.items = const [], this.discount = 0.0, this.tax = 0.0});
 
   ShoppingCart copyWith({
     List<CartItem>? items,
@@ -173,8 +164,9 @@ mixin ShoppingCartService {
 
   static void addItem(CartItem item) {
     cart.transformState((currentCart) {
-      final existingIndex =
-          currentCart.items.indexWhere((i) => i.id == item.id);
+      final existingIndex = currentCart.items.indexWhere(
+        (i) => i.id == item.id,
+      );
       if (existingIndex >= 0) {
         final items = List<CartItem>.from(currentCart.items);
         items[existingIndex] = items[existingIndex].copyWith(
@@ -182,9 +174,7 @@ mixin ShoppingCartService {
         );
         return currentCart.copyWith(items: items);
       } else {
-        return currentCart.copyWith(
-          items: [...currentCart.items, item],
-        );
+        return currentCart.copyWith(items: [...currentCart.items, item]);
       }
     });
   }
@@ -215,8 +205,9 @@ mixin ShoppingCartService {
 }
 
 mixin UserService {
-  static final ReactiveNotifier<User?> currentUser =
-      ReactiveNotifier<User?>(() => null);
+  static final ReactiveNotifier<User?> currentUser = ReactiveNotifier<User?>(
+    () => null,
+  );
 
   static void login(User user) {
     currentUser.updateState(user);
@@ -232,17 +223,19 @@ mixin UserService {
 }
 
 mixin ThemeService {
-  static final ReactiveNotifier<AppTheme> theme =
-      ReactiveNotifier<AppTheme>(() => AppTheme(
-            isDark: false,
-            primaryColor: Colors.blue,
-            fontFamily: 'System',
-            fontSize: 16.0,
-          ));
+  static final ReactiveNotifier<AppTheme> theme = ReactiveNotifier<AppTheme>(
+    () => AppTheme(
+      isDark: false,
+      primaryColor: Colors.blue,
+      fontFamily: 'System',
+      fontSize: 16.0,
+    ),
+  );
 
   static void toggleTheme() {
-    theme
-        .transformState((current) => current.copyWith(isDark: !current.isDark));
+    theme.transformState(
+      (current) => current.copyWith(isDark: !current.isDark),
+    );
   }
 
   static void updatePrimaryColor(Color color) {
@@ -256,21 +249,25 @@ mixin ThemeService {
 
 mixin SettingsService {
   static final ReactiveNotifier<AppSettings> settings =
-      ReactiveNotifier<AppSettings>(() => AppSettings(
-            notifications: true,
-            autoSync: true,
-            language: 'en',
-            volume: 0.5,
-          ));
+      ReactiveNotifier<AppSettings>(
+        () => AppSettings(
+          notifications: true,
+          autoSync: true,
+          language: 'en',
+          volume: 0.5,
+        ),
+      );
 
   static void toggleNotifications() {
     settings.transformState(
-        (current) => current.copyWith(notifications: !current.notifications));
+      (current) => current.copyWith(notifications: !current.notifications),
+    );
   }
 
   static void toggleAutoSync() {
     settings.transformState(
-        (current) => current.copyWith(autoSync: !current.autoSync));
+      (current) => current.copyWith(autoSync: !current.autoSync),
+    );
   }
 
   static void updateLanguage(String language) {
@@ -312,10 +309,7 @@ class ShoppingCartWidget extends StatelessWidget {
                 children: [
                   const Text(
                     'Shopping Cart',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -341,54 +335,51 @@ class ShoppingCartWidget extends StatelessWidget {
                 const Center(
                   child: Text(
                     'Your cart is empty',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 )
               else
                 Column(
                   children: [
-                    ...cart.items.map((item) => Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[50],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.name,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                    ...cart.items.map(
+                      (item) => Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    Text(
-                                      '\$${item.price.toStringAsFixed(2)} x ${item.quantity}',
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                  Text(
+                                    '\$${item.price.toStringAsFixed(2)} x ${item.quantity}',
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                ],
                               ),
-                              Text(
-                                '\$${item.total.toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            ),
+                            Text(
+                              '\$${item.total.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                            ],
-                          ),
-                        )),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                     const Divider(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -444,11 +435,7 @@ class UserProfileWidget extends StatelessWidget {
           child: user == null
               ? const Column(
                   children: [
-                    Icon(
-                      Icons.person_outline,
-                      size: 48,
-                      color: Colors.grey,
-                    ),
+                    Icon(Icons.person_outline, size: 48, color: Colors.grey),
                     SizedBox(height: 16),
                     Text(
                       'Not logged in',
@@ -460,9 +447,7 @@ class UserProfileWidget extends StatelessWidget {
                     SizedBox(height: 8),
                     Text(
                       'Please log in to access your profile',
-                      style: TextStyle(
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(color: Colors.grey),
                     ),
                   ],
                 )
@@ -491,9 +476,7 @@ class UserProfileWidget extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       user.email,
-                      style: const TextStyle(
-                        color: Colors.grey,
-                      ),
+                      style: const TextStyle(color: Colors.grey),
                     ),
                     const SizedBox(height: 8),
                     if (user.isVerified)
@@ -662,10 +645,7 @@ class SettingsWidget extends StatelessWidget {
             children: [
               const Text(
                 'App Settings',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               _buildSettingRow(
@@ -696,10 +676,7 @@ class SettingsWidget extends StatelessWidget {
                         color: Colors.orange.withAlpha(100),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
-                        Icons.language,
-                        color: Colors.orange,
-                      ),
+                      child: const Icon(Icons.language, color: Colors.orange),
                     ),
                     const SizedBox(width: 12),
                     const Text(
@@ -736,10 +713,7 @@ class SettingsWidget extends StatelessWidget {
                         color: Colors.purple.withAlpha(100),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
-                        Icons.volume_up,
-                        color: Colors.purple,
-                      ),
+                      child: const Icon(Icons.volume_up, color: Colors.purple),
                     ),
                     const SizedBox(width: 12),
                     const Text(
@@ -788,25 +762,16 @@ class SettingsWidget extends StatelessWidget {
               color: color.withAlpha(100),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              icon,
-              color: color,
-            ),
+            child: Icon(icon, color: color),
           ),
           const SizedBox(width: 12),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
           const Spacer(),
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 4,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               color: value ? Colors.green : Colors.grey,
               borderRadius: BorderRadius.circular(12),
@@ -832,18 +797,22 @@ void main() {
       ReactiveNotifier.cleanup();
       ShoppingCartService.cart.updateSilently(ShoppingCart());
       UserService.currentUser.updateSilently(null);
-      ThemeService.theme.updateSilently(AppTheme(
-        isDark: false,
-        primaryColor: Colors.blue,
-        fontFamily: 'System',
-        fontSize: 16.0,
-      ));
-      SettingsService.settings.updateSilently(AppSettings(
-        notifications: true,
-        autoSync: true,
-        language: 'en',
-        volume: 0.5,
-      ));
+      ThemeService.theme.updateSilently(
+        AppTheme(
+          isDark: false,
+          primaryColor: Colors.blue,
+          fontFamily: 'System',
+          fontSize: 16.0,
+        ),
+      );
+      SettingsService.settings.updateSilently(
+        AppSettings(
+          notifications: true,
+          autoSync: true,
+          language: 'en',
+          volume: 0.5,
+        ),
+      );
     });
 
     tearDown(() {
@@ -864,9 +833,7 @@ void main() {
               child: MaterialApp(
                 home: Scaffold(
                   backgroundColor: Colors.grey[100],
-                  body: const Center(
-                    child: ShoppingCartWidget(),
-                  ),
+                  body: const Center(child: ShoppingCartWidget()),
                 ),
               ),
             ),
@@ -880,18 +847,12 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           // Add items to cart
-          ShoppingCartService.addItem(CartItem(
-            id: '1',
-            name: 'iPhone 15',
-            price: 999.99,
-            quantity: 1,
-          ));
-          ShoppingCartService.addItem(CartItem(
-            id: '2',
-            name: 'AirPods Pro',
-            price: 249.99,
-            quantity: 2,
-          ));
+          ShoppingCartService.addItem(
+            CartItem(id: '1', name: 'iPhone 15', price: 999.99, quantity: 1),
+          );
+          ShoppingCartService.addItem(
+            CartItem(id: '2', name: 'AirPods Pro', price: 249.99, quantity: 2),
+          );
 
           return GoldenTestGroup(
             scenarioConstraints:
@@ -902,9 +863,7 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     backgroundColor: Colors.grey[100],
-                    body: const Center(
-                      child: ShoppingCartWidget(),
-                    ),
+                    body: const Center(child: ShoppingCartWidget()),
                   ),
                 ),
               ),
@@ -928,9 +887,7 @@ void main() {
               child: MaterialApp(
                 home: Scaffold(
                   backgroundColor: Colors.grey[100],
-                  body: const Center(
-                    child: UserProfileWidget(),
-                  ),
+                  body: const Center(child: UserProfileWidget()),
                 ),
               ),
             ),
@@ -944,12 +901,14 @@ void main() {
         constraints: ReactiveNotifierAlchemistConfig.mobileConstraints,
         builder: () {
           // Log in a user
-          UserService.login(User(
-            id: '1',
-            name: 'John Doe',
-            email: 'john.doe@example.com',
-            isVerified: true,
-          ));
+          UserService.login(
+            User(
+              id: '1',
+              name: 'John Doe',
+              email: 'john.doe@example.com',
+              isVerified: true,
+            ),
+          );
 
           return GoldenTestGroup(
             scenarioConstraints:
@@ -960,9 +919,7 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     backgroundColor: Colors.grey[100],
-                    body: const Center(
-                      child: UserProfileWidget(),
-                    ),
+                    body: const Center(child: UserProfileWidget()),
                   ),
                 ),
               ),
@@ -986,9 +943,7 @@ void main() {
               child: MaterialApp(
                 home: Scaffold(
                   backgroundColor: Colors.grey[100],
-                  body: const Center(
-                    child: ThemePreviewWidget(),
-                  ),
+                  body: const Center(child: ThemePreviewWidget()),
                 ),
               ),
             ),
@@ -1015,9 +970,7 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     backgroundColor: Colors.grey[100],
-                    body: const Center(
-                      child: ThemePreviewWidget(),
-                    ),
+                    body: const Center(child: ThemePreviewWidget()),
                   ),
                 ),
               ),
@@ -1045,12 +998,14 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Reset to default settings
-                        SettingsService.settings.updateSilently(AppSettings(
-                          notifications: true,
-                          autoSync: true,
-                          language: 'en',
-                          volume: 0.5,
-                        ));
+                        SettingsService.settings.updateSilently(
+                          AppSettings(
+                            notifications: true,
+                            autoSync: true,
+                            language: 'en',
+                            volume: 0.5,
+                          ),
+                        );
                         return const Center(child: SettingsWidget());
                       },
                     ),
@@ -1065,12 +1020,14 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Turn off notifications
-                        SettingsService.settings.updateSilently(AppSettings(
-                          notifications: false,
-                          autoSync: true,
-                          language: 'en',
-                          volume: 0.5,
-                        ));
+                        SettingsService.settings.updateSilently(
+                          AppSettings(
+                            notifications: false,
+                            autoSync: true,
+                            language: 'en',
+                            volume: 0.5,
+                          ),
+                        );
                         return const Center(child: SettingsWidget());
                       },
                     ),
@@ -1085,12 +1042,14 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Change language and volume
-                        SettingsService.settings.updateSilently(AppSettings(
-                          notifications: false,
-                          autoSync: true,
-                          language: 'es',
-                          volume: 0.85,
-                        ));
+                        SettingsService.settings.updateSilently(
+                          AppSettings(
+                            notifications: false,
+                            autoSync: true,
+                            language: 'es',
+                            volume: 0.85,
+                          ),
+                        );
                         return const Center(child: SettingsWidget());
                       },
                     ),
@@ -1105,12 +1064,14 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Fully customized settings
-                        SettingsService.settings.updateSilently(AppSettings(
-                          notifications: false,
-                          autoSync: false,
-                          language: 'fr',
-                          volume: 0.25,
-                        ));
+                        SettingsService.settings.updateSilently(
+                          AppSettings(
+                            notifications: false,
+                            autoSync: false,
+                            language: 'fr',
+                            volume: 0.25,
+                          ),
+                        );
                         return const Center(child: SettingsWidget());
                       },
                     ),
@@ -1138,19 +1099,22 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     backgroundColor: Colors.grey[100],
-                    appBar:
-                        AppBar(title: const Text('Dashboard - Fresh Start')),
+                    appBar: AppBar(
+                      title: const Text('Dashboard - Fresh Start'),
+                    ),
                     body: Builder(
                       builder: (context) {
                         // Reset all states
                         ShoppingCartService.cart.updateSilently(ShoppingCart());
                         UserService.currentUser.updateSilently(null);
-                        ThemeService.theme.updateSilently(AppTheme(
-                          isDark: false,
-                          primaryColor: Colors.blue,
-                          fontFamily: 'System',
-                          fontSize: 16.0,
-                        ));
+                        ThemeService.theme.updateSilently(
+                          AppTheme(
+                            isDark: false,
+                            primaryColor: Colors.blue,
+                            fontFamily: 'System',
+                            fontSize: 16.0,
+                          ),
+                        );
                         return const SingleChildScrollView(
                           padding: EdgeInsets.all(16),
                           child: Column(
@@ -1177,12 +1141,14 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Log in user
-                        UserService.currentUser.updateSilently(User(
-                          id: '1',
-                          name: 'Alice Johnson',
-                          email: 'alice@example.com',
-                          isVerified: true,
-                        ));
+                        UserService.currentUser.updateSilently(
+                          User(
+                            id: '1',
+                            name: 'Alice Johnson',
+                            email: 'alice@example.com',
+                            isVerified: true,
+                          ),
+                        );
                         return const SingleChildScrollView(
                           padding: EdgeInsets.all(16),
                           child: Column(
@@ -1209,28 +1175,32 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Add items to cart and switch theme
-                        ShoppingCartService.cart.updateSilently(ShoppingCart(
-                          items: [
-                            CartItem(
-                              id: '1',
-                              name: 'MacBook Pro',
-                              price: 1999.99,
-                              quantity: 1,
-                            ),
-                            CartItem(
-                              id: '2',
-                              name: 'iPhone 15',
-                              price: 999.99,
-                              quantity: 1,
-                            ),
-                          ],
-                        ));
-                        ThemeService.theme.updateSilently(AppTheme(
-                          isDark: true,
-                          primaryColor: Colors.purple,
-                          fontFamily: 'System',
-                          fontSize: 18.0,
-                        ));
+                        ShoppingCartService.cart.updateSilently(
+                          ShoppingCart(
+                            items: [
+                              CartItem(
+                                id: '1',
+                                name: 'MacBook Pro',
+                                price: 1999.99,
+                                quantity: 1,
+                              ),
+                              CartItem(
+                                id: '2',
+                                name: 'iPhone 15',
+                                price: 999.99,
+                                quantity: 1,
+                              ),
+                            ],
+                          ),
+                        );
+                        ThemeService.theme.updateSilently(
+                          AppTheme(
+                            isDark: true,
+                            primaryColor: Colors.purple,
+                            fontFamily: 'System',
+                            fontSize: 18.0,
+                          ),
+                        );
                         return const SingleChildScrollView(
                           padding: EdgeInsets.all(16),
                           child: Column(
@@ -1254,40 +1224,45 @@ void main() {
                   home: Scaffold(
                     backgroundColor: Colors.grey[100],
                     appBar: AppBar(
-                        title: const Text('Dashboard - Full Experience')),
+                      title: const Text('Dashboard - Full Experience'),
+                    ),
                     body: Builder(
                       builder: (context) {
                         // Full cart with premium user
-                        UserService.currentUser.updateSilently(User(
-                          id: '1',
-                          name: 'Premium User',
-                          email: 'premium@example.com',
-                          isVerified: true,
-                        ));
-                        ShoppingCartService.cart.updateSilently(ShoppingCart(
-                          items: [
-                            CartItem(
-                              id: '1',
-                              name: 'MacBook Pro',
-                              price: 1999.99,
-                              quantity: 1,
-                            ),
-                            CartItem(
-                              id: '2',
-                              name: 'iPhone 15',
-                              price: 999.99,
-                              quantity: 2,
-                            ),
-                            CartItem(
-                              id: '3',
-                              name: 'AirPods Pro',
-                              price: 249.99,
-                              quantity: 1,
-                            ),
-                          ],
-                          discount: 0.1, // 10% discount
-                          tax: 0.08, // 8% tax
-                        ));
+                        UserService.currentUser.updateSilently(
+                          User(
+                            id: '1',
+                            name: 'Premium User',
+                            email: 'premium@example.com',
+                            isVerified: true,
+                          ),
+                        );
+                        ShoppingCartService.cart.updateSilently(
+                          ShoppingCart(
+                            items: [
+                              CartItem(
+                                id: '1',
+                                name: 'MacBook Pro',
+                                price: 1999.99,
+                                quantity: 1,
+                              ),
+                              CartItem(
+                                id: '2',
+                                name: 'iPhone 15',
+                                price: 999.99,
+                                quantity: 2,
+                              ),
+                              CartItem(
+                                id: '3',
+                                name: 'AirPods Pro',
+                                price: 249.99,
+                                quantity: 1,
+                              ),
+                            ],
+                            discount: 0.1, // 10% discount
+                            tax: 0.08, // 8% tax
+                          ),
+                        );
                         return const SingleChildScrollView(
                           padding: EdgeInsets.all(16),
                           child: Column(

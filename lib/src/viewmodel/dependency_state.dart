@@ -34,9 +34,9 @@ class DependencyState {
     required bool isSetup,
     required Set<ReactiveNotifier> changed,
     required Map<ReactiveNotifier, dynamic> snapshots,
-  })  : _isSetup = isSetup,
-        _changed = changed,
-        _snapshots = snapshots;
+  }) : _isSetup = isSetup,
+       _changed = changed,
+       _snapshots = snapshots;
 
   /// Registers a dependency (during setup) or reacts to its change (during reaction).
   ///
@@ -49,7 +49,9 @@ class DependencyState {
   /// During reaction: only calls callback if [notifier] is in the changed set,
   /// providing the previous snapshot and the new current value.
   void on<T>(
-      ReactiveNotifier notifier, void Function(T previous, T current) callback) {
+    ReactiveNotifier notifier,
+    void Function(T previous, T current) callback,
+  ) {
     if (_isSetup) {
       // Setup phase: register dependency, snapshot, execute callback
       final current = _extractValue<T>(notifier);

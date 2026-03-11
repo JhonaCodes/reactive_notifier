@@ -11,10 +11,7 @@ class TestUserState {
   const TestUserState({required this.name, required this.age});
 
   TestUserState copyWith({String? name, int? age}) {
-    return TestUserState(
-      name: name ?? this.name,
-      age: age ?? this.age,
-    );
+    return TestUserState(name: name ?? this.name, age: age ?? this.age);
   }
 }
 
@@ -51,7 +48,7 @@ class OrderViewModel extends ViewModel<TestOrderState> {
   final bool shouldListenToUser;
 
   OrderViewModel({this.shouldListenToUser = false})
-      : super(const TestOrderState(orderId: '', items: []));
+    : super(const TestOrderState(orderId: '', items: []));
 
   @override
   void init() {
@@ -72,15 +69,13 @@ class OrderViewModel extends ViewModel<TestOrderState> {
   }
 
   void _updateOrderForUser(TestUserState user) {
-    transformState((state) => state.copyWith(
-          orderId: 'ORDER-${user.name}-${user.age}',
-        ));
+    transformState(
+      (state) => state.copyWith(orderId: 'ORDER-${user.name}-${user.age}'),
+    );
   }
 
   void addItem(String item) {
-    transformState((state) => state.copyWith(
-          items: [...state.items, item],
-        ));
+    transformState((state) => state.copyWith(items: [...state.items, item]));
   }
 }
 
@@ -103,13 +98,15 @@ mixin OrderService {
 
   static ReactiveNotifier<OrderViewModel> get orderState {
     _orderState ??= ReactiveNotifier<OrderViewModel>(
-        () => OrderViewModel(shouldListenToUser: true));
+      () => OrderViewModel(shouldListenToUser: true),
+    );
     return _orderState!;
   }
 
   static ReactiveNotifier<OrderViewModel> createSimple() {
     return ReactiveNotifier<OrderViewModel>(
-        () => OrderViewModel(shouldListenToUser: false));
+      () => OrderViewModel(shouldListenToUser: false),
+    );
   }
 
   static void reset() {
@@ -130,8 +127,10 @@ void main() {
       final orderVM = OrderViewModel();
 
       // OrderVM should have 1 listener (from init)
-      expect(orderVM.activeListenerCount,
-          equals(0)); // Init hasn't been called yet manually
+      expect(
+        orderVM.activeListenerCount,
+        equals(0),
+      ); // Init hasn't been called yet manually
 
       // Manually set up listening
       userVM.listenVM((userData) {
@@ -200,32 +199,34 @@ void main() {
       expect(orderVM.data.items, contains('Widget A'));
     });
 
-    test('Circular reference prevention - ViewModels listening to each other',
-        () {
-      final userVM = UserService.userState.notifier;
-      final orderVM = OrderService.orderState.notifier;
+    test(
+      'Circular reference prevention - ViewModels listening to each other',
+      () {
+        final userVM = UserService.userState.notifier;
+        final orderVM = OrderService.orderState.notifier;
 
-      // This is a potential circular reference scenario:
-      // OrderVM already listens to UserVM (from init)
-      // Now we make UserVM listen to OrderVM
+        // This is a potential circular reference scenario:
+        // OrderVM already listens to UserVM (from init)
+        // Now we make UserVM listen to OrderVM
 
-      userVM.listenVM((userData) {
-        // UserVM reacts to its own changes (not recommended but should not crash)
-      });
+        userVM.listenVM((userData) {
+          // UserVM reacts to its own changes (not recommended but should not crash)
+        });
 
-      orderVM.listenVM((orderData) {
-        // OrderVM listens to itself + UserVM (from init)
-      });
+        orderVM.listenVM((orderData) {
+          // OrderVM listens to itself + UserVM (from init)
+        });
 
-      // Should not cause infinite loops or crashes
-      userVM.updateAge(35);
-      orderVM.addItem('Widget B');
+        // Should not cause infinite loops or crashes
+        userVM.updateAge(35);
+        orderVM.addItem('Widget B');
 
-      // Verify states are correct
-      expect(userVM.data.age, equals(35));
-      expect(orderVM.data.items, contains('Widget B'));
-      expect(orderVM.data.orderId, equals('ORDER-John-35'));
-    });
+        // Verify states are correct
+        expect(userVM.data.age, equals(35));
+        expect(orderVM.data.items, contains('Widget B'));
+        expect(orderVM.data.orderId, equals('ORDER-John-35'));
+      },
+    );
 
     test('Listener cleanup prevents memory leaks on service destruction', () {
       // Create fresh services

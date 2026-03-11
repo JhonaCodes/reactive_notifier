@@ -17,8 +17,9 @@ class SimpleCountedWidget extends StatelessWidget {
 }
 
 mixin SimpleDataService {
-  static final ReactiveNotifier<String> instance =
-      ReactiveNotifier<String>(() => 'initial');
+  static final ReactiveNotifier<String> instance = ReactiveNotifier<String>(
+    () => 'initial',
+  );
 
   static void updateData(String value) {
     instance.updateState(value);
@@ -48,8 +49,9 @@ void main() {
                       SimpleCountedWidget(text: 'Reactive: ${context.data}'),
                 ),
                 // This widget is preserved and should not rebuild
-                const SimpleCountedWidget(text: 'Preserved')
-                    .keep('preserved_key'),
+                const SimpleCountedWidget(
+                  text: 'Preserved',
+                ).keep('preserved_key'),
                 // This widget doesn't depend on data but is in the same tree
                 const SimpleCountedWidget(text: 'Static'),
               ],
@@ -84,8 +86,9 @@ void main() {
                 return Column(
                   children: [
                     Text('Data: ${context.data}'),
-                    const SimpleCountedWidget(text: 'Preserved')
-                        .keep('test_key'),
+                    const SimpleCountedWidget(
+                      text: 'Preserved',
+                    ).keep('test_key'),
                   ],
                 );
               },

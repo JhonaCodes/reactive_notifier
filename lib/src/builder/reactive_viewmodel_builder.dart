@@ -14,10 +14,8 @@ class ReactiveViewModelBuilder<VM, T> extends StatefulWidget {
   final ViewModel<T> viewmodel;
 
   /// Builder function that creates the widget tree
-  final Widget Function(
-    T viewmodel,
-    Widget Function(Widget child) keep,
-  )? builder;
+  final Widget Function(T viewmodel, Widget Function(Widget child) keep)?
+  builder;
 
   /// Builds the widget based on the current [ViewModel] state.
   ///
@@ -36,14 +34,16 @@ class ReactiveViewModelBuilder<VM, T> extends StatefulWidget {
 
     /// Function used to wrap widgets that should remain stable across rebuilds.
     Widget Function(Widget child) keep,
-  )? build;
+  )?
+  build;
 
   /// Constructor that ensures either notifier or viewmodel is provided
   const ReactiveViewModelBuilder({
     super.key,
     required this.viewmodel,
     @Deprecated(
-        "Use 'build' instead. 'builder' will be removed in version 3.0.0.")
+      "Use 'build' instead. 'builder' will be removed in version 3.0.0.",
+    )
     this.builder,
     this.build,
   });

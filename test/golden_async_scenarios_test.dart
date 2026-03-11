@@ -23,11 +23,7 @@ class ApiResponse<T> {
   final String? message;
   final int statusCode;
 
-  ApiResponse({
-    required this.data,
-    this.message,
-    required this.statusCode,
-  });
+  ApiResponse({required this.data, this.message, required this.statusCode});
 }
 
 class Product {
@@ -166,12 +162,14 @@ class FileUploadViewModel extends AsyncViewModelImpl<UploadProgress> {
 
     for (int i = 0; i <= totalBytes; i += (totalBytes / 10).round()) {
       await Future.delayed(const Duration(milliseconds: 100));
-      updateState(UploadProgress(
-        fileName: fileName,
-        totalBytes: totalBytes,
-        uploadedBytes: i,
-        status: i >= totalBytes ? 'Complete' : 'Uploading...',
-      ));
+      updateState(
+        UploadProgress(
+          fileName: fileName,
+          totalBytes: totalBytes,
+          uploadedBytes: i,
+          status: i >= totalBytes ? 'Complete' : 'Uploading...',
+        ),
+      );
     }
   }
 
@@ -187,22 +185,14 @@ class SearchViewModel extends AsyncViewModelImpl<SearchResult> {
 
   @override
   Future<SearchResult> init() async {
-    return SearchResult(
-      products: [],
-      query: '',
-      totalResults: 0,
-      page: 1,
-    );
+    return SearchResult(products: [], query: '', totalResults: 0, page: 1);
   }
 
   Future<void> search(String query) async {
     if (query.isEmpty) {
-      updateState(SearchResult(
-        products: [],
-        query: '',
-        totalResults: 0,
-        page: 1,
-      ));
+      updateState(
+        SearchResult(products: [], query: '', totalResults: 0, page: 1),
+      );
       return;
     }
 
@@ -213,12 +203,9 @@ class SearchViewModel extends AsyncViewModelImpl<SearchResult> {
 
     // Simulate no results
     if (query.toLowerCase() == 'xyz') {
-      updateState(SearchResult(
-        products: [],
-        query: query,
-        totalResults: 0,
-        page: 1,
-      ));
+      updateState(
+        SearchResult(products: [], query: query, totalResults: 0, page: 1),
+      );
       return;
     }
 
@@ -248,12 +235,14 @@ class SearchViewModel extends AsyncViewModelImpl<SearchResult> {
       ),
     ];
 
-    updateState(SearchResult(
-      products: mockProducts,
-      query: query,
-      totalResults: mockProducts.length,
-      page: 1,
-    ));
+    updateState(
+      SearchResult(
+        products: mockProducts,
+        query: query,
+        totalResults: mockProducts.length,
+        page: 1,
+      ),
+    );
   }
 }
 
@@ -273,21 +262,25 @@ class NetworkStatusViewModel extends AsyncViewModelImpl<NetworkStatus> {
   Future<void> simulateDisconnection() async {
     loadingState();
     await Future.delayed(const Duration(milliseconds: 200));
-    updateState(NetworkStatus(
-      isConnected: false,
-      connectionType: 'None',
-      signalStrength: 0.0,
-    ));
+    updateState(
+      NetworkStatus(
+        isConnected: false,
+        connectionType: 'None',
+        signalStrength: 0.0,
+      ),
+    );
   }
 
   Future<void> simulateReconnection() async {
     loadingState();
     await Future.delayed(const Duration(milliseconds: 500));
-    updateState(NetworkStatus(
-      isConnected: true,
-      connectionType: 'Mobile',
-      signalStrength: 0.6,
-    ));
+    updateState(
+      NetworkStatus(
+        isConnected: true,
+        connectionType: 'Mobile',
+        signalStrength: 0.6,
+      ),
+    );
   }
 }
 
@@ -334,11 +327,7 @@ class ProductListWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 48,
-              color: Colors.red,
-            ),
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
             Text(
               'Error: $error',
@@ -415,11 +404,7 @@ class FileUploadWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 48,
-              color: Colors.red,
-            ),
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
             const SizedBox(height: 16),
             Text(
               'Upload failed: $error',
@@ -439,18 +424,11 @@ class FileUploadWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.upload_file,
-              size: 64,
-              color: Colors.blue,
-            ),
+            const Icon(Icons.upload_file, size: 64, color: Colors.blue),
             const SizedBox(height: 24),
             Text(
               progress.fileName,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             LinearProgressIndicator(
@@ -463,10 +441,7 @@ class FileUploadWidget extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               '${progress.percentage.toStringAsFixed(1)}%',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -513,10 +488,7 @@ class SearchWidget extends StatelessWidget {
               ),
               Text(
                 '3 results',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.grey, fontSize: 12),
               ),
             ],
           ),
@@ -546,7 +518,8 @@ class SearchWidget extends StatelessWidget {
                   ),
                   title: Text(product['name'] as String),
                   subtitle: Text(
-                      '\$${(product['price'] as double).toStringAsFixed(2)}'),
+                    '\$${(product['price'] as double).toStringAsFixed(2)}',
+                  ),
                   trailing: const Icon(Icons.chevron_right),
                 ),
               );
@@ -580,11 +553,7 @@ class NetworkStatusWidget extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.wifi,
-            size: 48,
-            color: Colors.green,
-          ),
+          const Icon(Icons.wifi, size: 48, color: Colors.green),
           const SizedBox(height: 16),
           const Text(
             'Connected',
@@ -597,18 +566,12 @@ class NetworkStatusWidget extends StatelessWidget {
           const SizedBox(height: 8),
           const Text(
             'WiFi',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
           const SizedBox(height: 16),
           const Text(
             'Signal Strength',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey),
           ),
           const SizedBox(height: 8),
           LinearProgressIndicator(
@@ -617,13 +580,7 @@ class NetworkStatusWidget extends StatelessWidget {
             valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
           ),
           const SizedBox(height: 4),
-          const Text(
-            '80%',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-            ),
-          ),
+          const Text('80%', style: TextStyle(fontSize: 12, color: Colors.grey)),
         ],
       ),
     );
@@ -683,24 +640,23 @@ void main() {
                     appBar: AppBar(title: const Text('Products - Loading')),
                     body:
                         ReactiveAsyncBuilder<ProductsViewModel, List<Product>>(
-                      notifier: ProductService.products.notifier,
-                      onLoading: () => const Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircularProgressIndicator(),
-                            SizedBox(height: 16),
-                            Text('Loading products...'),
-                          ],
+                          notifier: ProductService.products.notifier,
+                          onLoading: () => const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 16),
+                                Text('Loading products...'),
+                              ],
+                            ),
+                          ),
+                          onError: (error, stack) => const Center(
+                            child: Text('Error loading products'),
+                          ),
+                          onData: (products, vm, keep) =>
+                              const Center(child: Text('Products loaded')),
                         ),
-                      ),
-                      onError: (error, stack) => const Center(
-                        child: Text('Error loading products'),
-                      ),
-                      onData: (products, vm, keep) => const Center(
-                        child: Text('Products loaded'),
-                      ),
-                    ),
                   ),
                 ),
               ),
@@ -753,8 +709,10 @@ void main() {
                       builder: (context) {
                         // Trigger error state
                         ProductService.products.notifier.transformStateSilently(
-                            (_) => AsyncState.error(
-                                'Network connection failed. Please check your internet connection and try again.'));
+                          (_) => AsyncState.error(
+                            'Network connection failed. Please check your internet connection and try again.',
+                          ),
+                        );
                         return const ProductListWidget();
                       },
                     ),
@@ -785,13 +743,14 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set initial ready state
-                        FileUploadService.upload.notifier
-                            .updateSilently(UploadProgress(
-                          fileName: 'presentation.pptx',
-                          totalBytes: 2048000,
-                          uploadedBytes: 0,
-                          status: 'Ready to upload',
-                        ));
+                        FileUploadService.upload.notifier.updateSilently(
+                          UploadProgress(
+                            fileName: 'presentation.pptx',
+                            totalBytes: 2048000,
+                            uploadedBytes: 0,
+                            status: 'Ready to upload',
+                          ),
+                        );
                         return const FileUploadWidget();
                       },
                     ),
@@ -806,13 +765,14 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set starting upload state
-                        FileUploadService.upload.notifier
-                            .updateSilently(UploadProgress(
-                          fileName: 'presentation.pptx',
-                          totalBytes: 2048000,
-                          uploadedBytes: 204800,
-                          status: 'Uploading...',
-                        ));
+                        FileUploadService.upload.notifier.updateSilently(
+                          UploadProgress(
+                            fileName: 'presentation.pptx',
+                            totalBytes: 2048000,
+                            uploadedBytes: 204800,
+                            status: 'Uploading...',
+                          ),
+                        );
                         return const FileUploadWidget();
                       },
                     ),
@@ -827,13 +787,14 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set mid-upload progress
-                        FileUploadService.upload.notifier
-                            .updateSilently(UploadProgress(
-                          fileName: 'presentation.pptx',
-                          totalBytes: 2048000,
-                          uploadedBytes: 1433600,
-                          status: 'Uploading...',
-                        ));
+                        FileUploadService.upload.notifier.updateSilently(
+                          UploadProgress(
+                            fileName: 'presentation.pptx',
+                            totalBytes: 2048000,
+                            uploadedBytes: 1433600,
+                            status: 'Uploading...',
+                          ),
+                        );
                         return const FileUploadWidget();
                       },
                     ),
@@ -848,13 +809,14 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set completed upload
-                        FileUploadService.upload.notifier
-                            .updateSilently(UploadProgress(
-                          fileName: 'presentation.pptx',
-                          totalBytes: 2048000,
-                          uploadedBytes: 2048000,
-                          status: 'Upload complete! ✅',
-                        ));
+                        FileUploadService.upload.notifier.updateSilently(
+                          UploadProgress(
+                            fileName: 'presentation.pptx',
+                            totalBytes: 2048000,
+                            uploadedBytes: 2048000,
+                            status: 'Upload complete! ✅',
+                          ),
+                        );
                         return const FileUploadWidget();
                       },
                     ),
@@ -885,13 +847,14 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set empty search state
-                        SearchService.search.notifier
-                            .updateSilently(SearchResult(
-                          products: [],
-                          query: '',
-                          totalResults: 0,
-                          page: 1,
-                        ));
+                        SearchService.search.notifier.updateSilently(
+                          SearchResult(
+                            products: [],
+                            query: '',
+                            totalResults: 0,
+                            page: 1,
+                          ),
+                        );
                         return const SearchWidget();
                       },
                     ),
@@ -907,7 +870,8 @@ void main() {
                       builder: (context) {
                         // Set loading state
                         SearchService.search.notifier.transformStateSilently(
-                            (_) => AsyncState.loading());
+                          (_) => AsyncState.loading(),
+                        );
                         return const SearchWidget();
                       },
                     ),
@@ -922,38 +886,39 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set search results
-                        SearchService.search.notifier
-                            .updateSilently(SearchResult(
-                          products: [
-                            Product(
-                              id: '1',
-                              name: 'MacBook Pro laptop',
-                              price: 1999.99,
-                              imageUrl: 'https://example.com/macbook.jpg',
-                              rating: 4.8,
-                              reviews: 1234,
-                            ),
-                            Product(
-                              id: '2',
-                              name: 'ThinkPad laptop',
-                              price: 1299.99,
-                              imageUrl: 'https://example.com/thinkpad.jpg',
-                              rating: 4.6,
-                              reviews: 892,
-                            ),
-                            Product(
-                              id: '3',
-                              name: 'Gaming laptop',
-                              price: 1599.99,
-                              imageUrl: 'https://example.com/gaming.jpg',
-                              rating: 4.7,
-                              reviews: 567,
-                            ),
-                          ],
-                          query: 'laptop',
-                          totalResults: 3,
-                          page: 1,
-                        ));
+                        SearchService.search.notifier.updateSilently(
+                          SearchResult(
+                            products: [
+                              Product(
+                                id: '1',
+                                name: 'MacBook Pro laptop',
+                                price: 1999.99,
+                                imageUrl: 'https://example.com/macbook.jpg',
+                                rating: 4.8,
+                                reviews: 1234,
+                              ),
+                              Product(
+                                id: '2',
+                                name: 'ThinkPad laptop',
+                                price: 1299.99,
+                                imageUrl: 'https://example.com/thinkpad.jpg',
+                                rating: 4.6,
+                                reviews: 892,
+                              ),
+                              Product(
+                                id: '3',
+                                name: 'Gaming laptop',
+                                price: 1599.99,
+                                imageUrl: 'https://example.com/gaming.jpg',
+                                rating: 4.7,
+                                reviews: 567,
+                              ),
+                            ],
+                            query: 'laptop',
+                            totalResults: 3,
+                            page: 1,
+                          ),
+                        );
                         return const SearchWidget();
                       },
                     ),
@@ -968,13 +933,14 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set no results state
-                        SearchService.search.notifier
-                            .updateSilently(SearchResult(
-                          products: [],
-                          query: 'nonexistent123',
-                          totalResults: 0,
-                          page: 1,
-                        ));
+                        SearchService.search.notifier.updateSilently(
+                          SearchResult(
+                            products: [],
+                            query: 'nonexistent123',
+                            totalResults: 0,
+                            page: 1,
+                          ),
+                        );
                         return const SearchWidget();
                       },
                     ),
@@ -1005,12 +971,13 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set strong WiFi connection
-                        NetworkService.status.notifier
-                            .updateSilently(NetworkStatus(
-                          isConnected: true,
-                          connectionType: 'WiFi',
-                          signalStrength: 0.95,
-                        ));
+                        NetworkService.status.notifier.updateSilently(
+                          NetworkStatus(
+                            isConnected: true,
+                            connectionType: 'WiFi',
+                            signalStrength: 0.95,
+                          ),
+                        );
                         return const Center(child: NetworkStatusWidget());
                       },
                     ),
@@ -1025,12 +992,13 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set weak mobile connection
-                        NetworkService.status.notifier
-                            .updateSilently(NetworkStatus(
-                          isConnected: true,
-                          connectionType: 'Mobile Data',
-                          signalStrength: 0.25,
-                        ));
+                        NetworkService.status.notifier.updateSilently(
+                          NetworkStatus(
+                            isConnected: true,
+                            connectionType: 'Mobile Data',
+                            signalStrength: 0.25,
+                          ),
+                        );
                         return const Center(child: NetworkStatusWidget());
                       },
                     ),
@@ -1046,7 +1014,8 @@ void main() {
                       builder: (context) {
                         // Set loading state
                         NetworkService.status.notifier.transformStateSilently(
-                            (_) => AsyncState.loading());
+                          (_) => AsyncState.loading(),
+                        );
                         return const Center(child: NetworkStatusWidget());
                       },
                     ),
@@ -1061,12 +1030,13 @@ void main() {
                     body: Builder(
                       builder: (context) {
                         // Set disconnected state
-                        NetworkService.status.notifier
-                            .updateSilently(NetworkStatus(
-                          isConnected: false,
-                          connectionType: 'None',
-                          signalStrength: 0.0,
-                        ));
+                        NetworkService.status.notifier.updateSilently(
+                          NetworkStatus(
+                            isConnected: false,
+                            connectionType: 'None',
+                            signalStrength: 0.0,
+                          ),
+                        );
                         return const Center(child: NetworkStatusWidget());
                       },
                     ),

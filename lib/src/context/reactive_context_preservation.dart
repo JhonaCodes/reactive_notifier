@@ -117,8 +117,9 @@ class _PreservationRegistry {
     if (_preservedWidgets.length < _maxCacheSize) return;
 
     final now = DateTime.now();
-    final cutoffTime =
-        now.subtract(const Duration(minutes: _cleanupIntervalMinutes));
+    final cutoffTime = now.subtract(
+      const Duration(minutes: _cleanupIntervalMinutes),
+    );
 
     // Remove old entries
     final keysToRemove = _lastAccessed.entries
@@ -137,8 +138,9 @@ class _PreservationRegistry {
       final sortedByAccess = _lastAccessed.entries.toList()
         ..sort((a, b) => a.value.compareTo(b.value));
 
-      final toRemove =
-          sortedByAccess.take(_maxCacheSize ~/ 2).map((e) => e.key);
+      final toRemove = sortedByAccess
+          .take(_maxCacheSize ~/ 2)
+          .map((e) => e.key);
       for (final key in toRemove) {
         _preservedWidgets.remove(key);
         _widgetBuildCounts.remove(key);
@@ -148,7 +150,9 @@ class _PreservationRegistry {
 
     assert(() {
       if (!ReactiveNotifier.debugLogging) return true;
-      log('[ReactiveContext] Cleaned up preservation cache. Size: ${_preservedWidgets.length}');
+      log(
+        '[ReactiveContext] Cleaned up preservation cache. Size: ${_preservedWidgets.length}',
+      );
       return true;
     }());
   }
@@ -161,12 +165,12 @@ class _PreservationRegistry {
       'averageBuildCount': _widgetBuildCounts.values.isEmpty
           ? 0
           : _widgetBuildCounts.values.reduce((a, b) => a + b) /
-              _widgetBuildCounts.length,
+                _widgetBuildCounts.length,
       'oldestPreservedWidget': _lastAccessed.values.isEmpty
           ? null
           : _lastAccessed.values
-              .reduce((a, b) => a.isBefore(b) ? a : b)
-              .toString(),
+                .reduce((a, b) => a.isBefore(b) ? a : b)
+                .toString(),
       'cacheUtilization':
           '${((_preservedWidgets.length / _maxCacheSize) * 100).toStringAsFixed(1)}%',
     };
@@ -197,10 +201,7 @@ class _PreservationRegistry {
 class _PreservedWidget extends StatefulWidget {
   final Widget child;
 
-  const _PreservedWidget({
-    super.key,
-    required this.child,
-  });
+  const _PreservedWidget({super.key, required this.child});
 
   @override
   State<_PreservedWidget> createState() => _PreservedWidgetState();
@@ -245,7 +246,9 @@ class _PreservedWidgetState extends State<_PreservedWidget> {
   Widget build(BuildContext context) {
     assert(() {
       if (!ReactiveNotifier.debugLogging) return true;
-      log('[ReactiveContext] Building preserved widget: ${widget.key} (build #$_buildCount)');
+      log(
+        '[ReactiveContext] Building preserved widget: ${widget.key} (build #$_buildCount)',
+      );
       return true;
     }());
 

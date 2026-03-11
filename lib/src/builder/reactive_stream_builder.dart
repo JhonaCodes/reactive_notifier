@@ -28,7 +28,8 @@ class ReactiveStreamBuilder<VM, T> extends StatefulWidget {
     /// Function to prevent unnecessary widget rebuilds.
     /// Wrap stable child widgets with this to preserve identity across builds.
     Widget Function(Widget child) keep,
-  ) onData;
+  )
+  onData;
   final Widget Function()? onLoading;
   final Widget Function(Object error)? onError;
   final Widget Function()? onEmpty;

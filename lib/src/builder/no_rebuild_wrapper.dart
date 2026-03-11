@@ -27,7 +27,9 @@ class NoRebuildWrapperState extends State<NoRebuildWrapper> {
     if (oldWidget.child != widget.child) {
       assert(() {
         if (!ReactiveNotifier.debugLogging) return true;
-        log('Rebuild on keep old key: ${oldWidget.key.hashCode}  new key: ${widget.key.hashCode}');
+        log(
+          'Rebuild on keep old key: ${oldWidget.key.hashCode}  new key: ${widget.key.hashCode}',
+        );
         return true;
       }());
       _child = widget.child;

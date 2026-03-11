@@ -25,18 +25,21 @@ class SimpleTestViewModel extends AsyncViewModelImpl<List<String>> {
 
   // Expose transform methods for testing
   void testTransformDataState(
-      List<String>? Function(List<String>? data) transformer) {
+    List<String>? Function(List<String>? data) transformer,
+  ) {
     transformDataState(transformer);
   }
 
   void testTransformDataStateSilently(
-      List<String>? Function(List<String>? data) transformer) {
+    List<String>? Function(List<String>? data) transformer,
+  ) {
     transformDataStateSilently(transformer);
   }
 
   void testTransformStateSilently(
-      AsyncState<List<String>> Function(AsyncState<List<String>> state)
-          transformer) {
+    AsyncState<List<String>> Function(AsyncState<List<String>> state)
+    transformer,
+  ) {
     transformStateSilently(transformer);
   }
 }
@@ -58,7 +61,8 @@ class SimpleCounterViewModel extends AsyncViewModelImpl<int> {
   }
 
   void testTransformStateSilently(
-      AsyncState<int> Function(AsyncState<int> state) transformer) {
+    AsyncState<int> Function(AsyncState<int> state) transformer,
+  ) {
     transformStateSilently(transformer);
   }
 }
@@ -98,10 +102,7 @@ class SimpleListWidget extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Items: ${items.length}',
-            style: TextStyle(
-              fontSize: 14,
-              color: color.withValues(alpha: 700),
-            ),
+            style: TextStyle(fontSize: 14, color: color.withValues(alpha: 700)),
           ),
           const SizedBox(height: 16),
           if (items.isEmpty)
@@ -112,39 +113,39 @@ class SimpleListWidget extends StatelessWidget {
               ),
             )
           else
-            ...items.map((item) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: color.withValues(alpha: 300),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: color,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          item,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
+            ...items.map(
+              (item) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: color.withValues(alpha: 300)),
                   ),
-                )),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        item,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -286,8 +287,9 @@ void main() {
                 name: '1. Empty List',
                 child: MaterialApp(
                   home: Scaffold(
-                    appBar:
-                        AppBar(title: const Text('transformDataState - Empty')),
+                    appBar: AppBar(
+                      title: const Text('transformDataState - Empty'),
+                    ),
                     body: const Center(
                       child: SimpleListWidget(
                         items: [],
@@ -303,7 +305,8 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     appBar: AppBar(
-                        title: const Text('transformDataState - Single')),
+                      title: const Text('transformDataState - Single'),
+                    ),
                     body: const Center(
                       child: SimpleListWidget(
                         items: ['Item 1'],
@@ -319,7 +322,8 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     appBar: AppBar(
-                        title: const Text('transformDataState - Multiple')),
+                      title: const Text('transformDataState - Multiple'),
+                    ),
                     body: const Center(
                       child: SimpleListWidget(
                         items: ['Item 1', 'Item 2', 'Item 3'],
@@ -335,14 +339,15 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     appBar: AppBar(
-                        title: const Text('transformDataState - Transformed')),
+                      title: const Text('transformDataState - Transformed'),
+                    ),
                     body: const Center(
                       child: SimpleListWidget(
                         items: [
                           'Item 1',
                           'Item 2',
                           'Item 3',
-                          'Added via transform'
+                          'Added via transform',
                         ],
                         title: 'transformDataState',
                         color: Colors.blue,
@@ -372,8 +377,8 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     appBar: AppBar(
-                        title:
-                            const Text('transformDataStateSilently - Empty')),
+                      title: const Text('transformDataStateSilently - Empty'),
+                    ),
                     body: const Center(
                       child: SimpleListWidget(
                         items: [],
@@ -389,8 +394,8 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     appBar: AppBar(
-                        title:
-                            const Text('transformDataStateSilently - Initial')),
+                      title: const Text('transformDataStateSilently - Initial'),
+                    ),
                     body: const Center(
                       child: SimpleListWidget(
                         items: ['First', 'Second'],
@@ -406,8 +411,8 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     appBar: AppBar(
-                        title:
-                            const Text('transformDataStateSilently - Added')),
+                      title: const Text('transformDataStateSilently - Added'),
+                    ),
                     body: const Center(
                       child: SimpleListWidget(
                         items: ['First', 'Second', 'Third (silent)'],
@@ -423,7 +428,8 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     appBar: AppBar(
-                        title: const Text('transformDataStateSilently - Full')),
+                      title: const Text('transformDataStateSilently - Full'),
+                    ),
                     body: const Center(
                       child: SimpleListWidget(
                         items: [
@@ -431,7 +437,7 @@ void main() {
                           'Second',
                           'Third (silent)',
                           'Fourth (silent)',
-                          'Fifth (silent)'
+                          'Fifth (silent)',
                         ],
                         title: 'transformDataStateSilently',
                         color: Colors.green,
@@ -461,7 +467,8 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     appBar: AppBar(
-                        title: const Text('transformStateSilently - Initial')),
+                      title: const Text('transformStateSilently - Initial'),
+                    ),
                     body: const Center(
                       child: SimpleStateWidget(
                         state: 'Initial',
@@ -477,7 +484,8 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     appBar: AppBar(
-                        title: const Text('transformStateSilently - Loading')),
+                      title: const Text('transformStateSilently - Loading'),
+                    ),
                     body: const Center(
                       child: SimpleStateWidget(
                         state: 'Loading',
@@ -493,7 +501,8 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     appBar: AppBar(
-                        title: const Text('transformStateSilently - Success')),
+                      title: const Text('transformStateSilently - Success'),
+                    ),
                     body: const Center(
                       child: SimpleStateWidget(
                         state: 'Success',
@@ -509,7 +518,8 @@ void main() {
                 child: MaterialApp(
                   home: Scaffold(
                     appBar: AppBar(
-                        title: const Text('transformStateSilently - Error')),
+                      title: const Text('transformStateSilently - Error'),
+                    ),
                     body: const Center(
                       child: SimpleStateWidget(
                         state: 'Error',

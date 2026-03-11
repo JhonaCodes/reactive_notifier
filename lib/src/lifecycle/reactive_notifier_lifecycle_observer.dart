@@ -45,7 +45,9 @@ class ReactiveNotifierLifecycleObserver with WidgetsBindingObserver {
       final cleaned = ReactiveNotifier.garbageCollectUnused();
 
       assert(() {
-        log('[ReactiveNotifier] Background cleanup completed. Cleaned: $cleaned');
+        log(
+          '[ReactiveNotifier] Background cleanup completed. Cleaned: $cleaned',
+        );
         return true;
       }());
     } catch (e) {

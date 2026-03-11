@@ -26,15 +26,26 @@ void main() {
         final viewModel = TestViewModel();
 
         // Assert: Should be initialized correctly
-        expect(viewModel.data.name, equals('initialized'),
-            reason: 'init() should have been called and set initial state');
-        expect(viewModel.data.count, equals(1),
-            reason: 'init() should set initial count');
-        expect(viewModel.initCallCount, equals(1),
-            reason: 'init() should be called exactly once');
-        expect(viewModel.hasInitializedListenerExecution, isTrue,
-            reason:
-                'Listener execution flag should be true after initialization');
+        expect(
+          viewModel.data.name,
+          equals('initialized'),
+          reason: 'init() should have been called and set initial state',
+        );
+        expect(
+          viewModel.data.count,
+          equals(1),
+          reason: 'init() should set initial count',
+        );
+        expect(
+          viewModel.initCallCount,
+          equals(1),
+          reason: 'init() should be called exactly once',
+        );
+        expect(
+          viewModel.hasInitializedListenerExecution,
+          isTrue,
+          reason: 'Listener execution flag should be true after initialization',
+        );
       });
 
       test('should handle setupListeners and removeListeners correctly', () {
@@ -42,9 +53,11 @@ void main() {
         final viewModel = TestViewModel();
 
         // Assert: setupListeners should have been called during initialization
-        expect(viewModel.setupListenersCallCount, equals(1),
-            reason:
-                'setupListeners should be called once during initialization');
+        expect(
+          viewModel.setupListenersCallCount,
+          equals(1),
+          reason: 'setupListeners should be called once during initialization',
+        );
 
         // Act: Manually call removeListeners
         viewModel.removeListeners();
@@ -63,8 +76,11 @@ void main() {
         viewModel.updateState(TestData(name: 'update3', count: 3));
 
         // Assert: Update count should be tracked (this is internal, we verify via behavior)
-        expect(viewModel.data.name, equals('update3'),
-            reason: 'State should be updated to latest value');
+        expect(
+          viewModel.data.name,
+          equals('update3'),
+          reason: 'State should be updated to latest value',
+        );
         expect(viewModel.data.count, equals(3));
       });
 
@@ -79,17 +95,26 @@ void main() {
         viewModel.dispose();
 
         // Assert: Should be marked as disposed
-        expect(viewModel.isDisposed, isTrue,
-            reason: 'ViewModel should be marked as disposed');
-        expect(viewModel.removeListenersCallCount, equals(1),
-            reason: 'removeListeners should be called during dispose');
+        expect(
+          viewModel.isDisposed,
+          isTrue,
+          reason: 'ViewModel should be marked as disposed',
+        );
+        expect(
+          viewModel.removeListenersCallCount,
+          equals(1),
+          reason: 'removeListeners should be called during dispose',
+        );
       });
 
       test('should reinitialize after dispose when accessed', () {
         // Setup: Create test ViewModel
         final viewModel = TestViewModel();
-        expect(viewModel.initCallCount, equals(1),
-            reason: 'Initial init() call');
+        expect(
+          viewModel.initCallCount,
+          equals(1),
+          reason: 'Initial init() call',
+        );
 
         // Act: Dispose the ViewModel
         viewModel.dispose();
@@ -99,10 +124,16 @@ void main() {
         final afterDisposeData = viewModel.data;
 
         // Assert: Should be reinitialized
-        expect(viewModel.isDisposed, isFalse,
-            reason: 'ViewModel should be reinitialized');
-        expect(afterDisposeData.name, equals('initialized'),
-            reason: 'Data should be reinitialized to init() state');
+        expect(
+          viewModel.isDisposed,
+          isFalse,
+          reason: 'ViewModel should be reinitialized',
+        );
+        expect(
+          afterDisposeData.name,
+          equals('initialized'),
+          reason: 'Data should be reinitialized to init() state',
+        );
         // Note: Depending on implementation, init might or might not be called again
         // Let's just verify the state is correct rather than the call count
       });
@@ -127,80 +158,99 @@ void main() {
         // Assert: State should be updated and listeners notified
         expect(viewModel.data.name, equals('updated'));
         expect(viewModel.data.count, equals(100));
-        expect(listenerCallCount, equals(1),
-            reason: 'Listeners should be notified');
+        expect(
+          listenerCallCount,
+          equals(1),
+          reason: 'Listeners should be notified',
+        );
         expect(receivedData?.name, equals('updated'));
       });
 
       test(
-          'should update state without notifying listeners with updateSilently()',
-          () {
-        // Setup: Create test ViewModel and add listener
-        final viewModel = TestViewModel();
-        var listenerCallCount = 0;
+        'should update state without notifying listeners with updateSilently()',
+        () {
+          // Setup: Create test ViewModel and add listener
+          final viewModel = TestViewModel();
+          var listenerCallCount = 0;
 
-        viewModel.addListener(() {
-          listenerCallCount++;
-        });
+          viewModel.addListener(() {
+            listenerCallCount++;
+          });
 
-        // Act: Update state silently
-        final newData = TestData(name: 'silent_update', count: 200);
-        viewModel.updateSilently(newData);
+          // Act: Update state silently
+          final newData = TestData(name: 'silent_update', count: 200);
+          viewModel.updateSilently(newData);
 
-        // Assert: State should be updated but listeners NOT notified
-        expect(viewModel.data.name, equals('silent_update'));
-        expect(viewModel.data.count, equals(200));
-        expect(listenerCallCount, equals(0),
-            reason: 'Listeners should NOT be notified with updateSilently');
-      });
-
-      test('should transform state and notify listeners with transformState()',
-          () {
-        // Setup: Create test ViewModel and add listener
-        final viewModel = TestViewModel();
-        var listenerCallCount = 0;
-        final receivedNames = <String>[];
-
-        viewModel.addListener(() {
-          listenerCallCount++;
-          receivedNames.add(viewModel.data.name);
-        });
-
-        // Act: Transform state
-        viewModel.transformState((currentData) => TestData(
-            name: '${currentData.name}_transformed',
-            count: currentData.count * 10));
-
-        // Assert: State should be transformed and listeners notified
-        expect(viewModel.data.name, equals('initialized_transformed'));
-        expect(viewModel.data.count, equals(10)); // 1 * 10
-        expect(listenerCallCount, equals(1));
-        expect(receivedNames, equals(['initialized_transformed']));
-      });
+          // Assert: State should be updated but listeners NOT notified
+          expect(viewModel.data.name, equals('silent_update'));
+          expect(viewModel.data.count, equals(200));
+          expect(
+            listenerCallCount,
+            equals(0),
+            reason: 'Listeners should NOT be notified with updateSilently',
+          );
+        },
+      );
 
       test(
-          'should transform state without notifying listeners with transformStateSilently()',
-          () {
-        // Setup: Create test ViewModel and add listener
-        final viewModel = TestViewModel();
-        var listenerCallCount = 0;
+        'should transform state and notify listeners with transformState()',
+        () {
+          // Setup: Create test ViewModel and add listener
+          final viewModel = TestViewModel();
+          var listenerCallCount = 0;
+          final receivedNames = <String>[];
 
-        viewModel.addListener(() {
-          listenerCallCount++;
-        });
+          viewModel.addListener(() {
+            listenerCallCount++;
+            receivedNames.add(viewModel.data.name);
+          });
 
-        // Act: Transform state silently
-        viewModel.transformStateSilently((currentData) => TestData(
-            name: '${currentData.name}_silent_transform',
-            count: currentData.count + 999));
+          // Act: Transform state
+          viewModel.transformState(
+            (currentData) => TestData(
+              name: '${currentData.name}_transformed',
+              count: currentData.count * 10,
+            ),
+          );
 
-        // Assert: State should be transformed but listeners NOT notified
-        expect(viewModel.data.name, equals('initialized_silent_transform'));
-        expect(viewModel.data.count, equals(1000)); // 1 + 999
-        expect(listenerCallCount, equals(0),
+          // Assert: State should be transformed and listeners notified
+          expect(viewModel.data.name, equals('initialized_transformed'));
+          expect(viewModel.data.count, equals(10)); // 1 * 10
+          expect(listenerCallCount, equals(1));
+          expect(receivedNames, equals(['initialized_transformed']));
+        },
+      );
+
+      test(
+        'should transform state without notifying listeners with transformStateSilently()',
+        () {
+          // Setup: Create test ViewModel and add listener
+          final viewModel = TestViewModel();
+          var listenerCallCount = 0;
+
+          viewModel.addListener(() {
+            listenerCallCount++;
+          });
+
+          // Act: Transform state silently
+          viewModel.transformStateSilently(
+            (currentData) => TestData(
+              name: '${currentData.name}_silent_transform',
+              count: currentData.count + 999,
+            ),
+          );
+
+          // Assert: State should be transformed but listeners NOT notified
+          expect(viewModel.data.name, equals('initialized_silent_transform'));
+          expect(viewModel.data.count, equals(1000)); // 1 + 999
+          expect(
+            listenerCallCount,
+            equals(0),
             reason:
-                'Listeners should NOT be notified with transformStateSilently');
-      });
+                'Listeners should NOT be notified with transformStateSilently',
+          );
+        },
+      );
 
       test('should handle complex state transformations', () {
         // Setup: Create test ViewModel
@@ -208,11 +258,14 @@ void main() {
 
         // Act: Chain multiple transformations
         viewModel.transformState(
-            (data) => TestData(name: data.name, count: data.count + 10));
-        viewModel.transformStateSilently((data) =>
-            TestData(name: '${data.name}_step1', count: data.count * 2));
-        viewModel.transformState((data) =>
-            TestData(name: '${data.name}_step2', count: data.count - 5));
+          (data) => TestData(name: data.name, count: data.count + 10),
+        );
+        viewModel.transformStateSilently(
+          (data) => TestData(name: '${data.name}_step1', count: data.count * 2),
+        );
+        viewModel.transformState(
+          (data) => TestData(name: '${data.name}_step2', count: data.count - 5),
+        );
 
         // Assert: All transformations should be applied correctly
         expect(viewModel.data.name, equals('initialized_step1_step2'));
@@ -230,22 +283,33 @@ void main() {
         final currentValue = dependentViewModel.listenToSource(sourceViewModel);
 
         // Assert: Should receive current value and setup listener
-        expect(currentValue.name, equals('initialized'),
-            reason: 'listenVM should return current value');
         expect(
-            dependentViewModel.receivedSourceData?.name, equals('initialized'),
-            reason: 'Dependent ViewModel should receive current source data');
+          currentValue.name,
+          equals('initialized'),
+          reason: 'listenVM should return current value',
+        );
+        expect(
+          dependentViewModel.receivedSourceData?.name,
+          equals('initialized'),
+          reason: 'Dependent ViewModel should receive current source data',
+        );
 
         // Act: Update source ViewModel
-        sourceViewModel
-            .updateState(TestData(name: 'source_updated', count: 500));
+        sourceViewModel.updateState(
+          TestData(name: 'source_updated', count: 500),
+        );
 
         // Assert: Dependent ViewModel should receive update
-        expect(dependentViewModel.receivedSourceData?.name,
-            equals('source_updated'));
+        expect(
+          dependentViewModel.receivedSourceData?.name,
+          equals('source_updated'),
+        );
         expect(dependentViewModel.receivedSourceData?.count, equals(500));
-        expect(dependentViewModel.sourceUpdateCount, equals(2),
-            reason: 'Should receive initial + update = 2 calls');
+        expect(
+          dependentViewModel.sourceUpdateCount,
+          equals(2),
+          reason: 'Should receive initial + update = 2 calls',
+        );
       });
 
       test('should stop reactive communication with stopListeningVM()', () {
@@ -258,8 +322,10 @@ void main() {
 
         // Act: Update source to verify communication works
         sourceViewModel.updateState(TestData(name: 'before_stop', count: 100));
-        expect(dependentViewModel.sourceUpdateCount,
-            greaterThanOrEqualTo(1)); // At least one update
+        expect(
+          dependentViewModel.sourceUpdateCount,
+          greaterThanOrEqualTo(1),
+        ); // At least one update
 
         // Act: Stop listening
         dependentViewModel.stopListeningToSource();
@@ -270,13 +336,19 @@ void main() {
 
         // Assert: Basic verification that stopListening was called
         // Note: The exact behavior may vary based on implementation details
-        expect(sourceViewModel.data.name, equals('after_stop'),
-            reason: 'Source should be updated regardless of listeners');
         expect(
-            dependentViewModel.sourceUpdateCount,
-            anyOf(equals(countBeforeSecondUpdate),
-                greaterThan(countBeforeSecondUpdate)),
-            reason: 'Update count should be consistent');
+          sourceViewModel.data.name,
+          equals('after_stop'),
+          reason: 'Source should be updated regardless of listeners',
+        );
+        expect(
+          dependentViewModel.sourceUpdateCount,
+          anyOf(
+            equals(countBeforeSecondUpdate),
+            greaterThan(countBeforeSecondUpdate),
+          ),
+          reason: 'Update count should be consistent',
+        );
       });
 
       test('should handle multiple ViewModel listeners simultaneously', () {
@@ -293,10 +365,16 @@ void main() {
         sourceViewModel.updateState(TestData(name: 'multi_update', count: 777));
 
         // Assert: Both dependents should be listening (basic verification)
-        expect(dependent1.sourceUpdateCount, greaterThanOrEqualTo(1),
-            reason: 'First dependent should receive at least one update');
-        expect(dependent2.sourceUpdateCount, greaterThanOrEqualTo(1),
-            reason: 'Second dependent should receive at least one update');
+        expect(
+          dependent1.sourceUpdateCount,
+          greaterThanOrEqualTo(1),
+          reason: 'First dependent should receive at least one update',
+        );
+        expect(
+          dependent2.sourceUpdateCount,
+          greaterThanOrEqualTo(1),
+          reason: 'Second dependent should receive at least one update',
+        );
 
         // Verify the source was actually updated
         expect(sourceViewModel.data.name, equals('multi_update'));
@@ -323,8 +401,11 @@ void main() {
 
         // Assert: Should be properly cleaned up
         expect(viewModel.isDisposed, isTrue);
-        expect(viewModel.removeListenersCallCount, equals(1),
-            reason: 'removeListeners should be called during dispose');
+        expect(
+          viewModel.removeListenersCallCount,
+          equals(1),
+          reason: 'removeListeners should be called during dispose',
+        );
       });
 
       test('should handle cleanState without dispose', () {
@@ -334,10 +415,16 @@ void main() {
 
         // Note: cleanState() may not work as expected due to _createEmptyState() visibility
         // For now, let's test that the ViewModel remains functional
-        expect(viewModel.isDisposed, isFalse,
-            reason: 'ViewModel should not be disposed');
-        expect(viewModel.data.name, equals('modified'),
-            reason: 'State should be as updated');
+        expect(
+          viewModel.isDisposed,
+          isFalse,
+          reason: 'ViewModel should not be disposed',
+        );
+        expect(
+          viewModel.data.name,
+          equals('modified'),
+          reason: 'State should be as updated',
+        );
         expect(viewModel.data.count, equals(999));
       });
     });
@@ -365,8 +452,11 @@ void main() {
         // Assert: Should handle gracefully
         expect(viewModel.data.name, equals(''));
         expect(viewModel.data.count, equals(-1));
-        expect(() => viewModel.data, returnsNormally,
-            reason: 'Should handle edge case states gracefully');
+        expect(
+          () => viewModel.data,
+          returnsNormally,
+          reason: 'Should handle edge case states gracefully',
+        );
       });
     });
   });
@@ -408,15 +498,17 @@ class TestViewModel extends ViewModel<TestData> {
   }
 
   @override
-  Future<void> setupListeners(
-      {List<String> currentListeners = const []}) async {
+  Future<void> setupListeners({
+    List<String> currentListeners = const [],
+  }) async {
     setupListenersCallCount++;
     await super.setupListeners(currentListeners: currentListeners);
   }
 
   @override
-  Future<void> removeListeners(
-      {List<String> currentListeners = const []}) async {
+  Future<void> removeListeners({
+    List<String> currentListeners = const [],
+  }) async {
     removeListenersCallCount++;
     await super.removeListeners(currentListeners: currentListeners);
   }
@@ -428,7 +520,7 @@ class DependentTestViewModel extends ViewModel<TestData> {
   int sourceUpdateCount = 0;
 
   DependentTestViewModel()
-      : super(TestData(name: 'dependent_initial', count: 0));
+    : super(TestData(name: 'dependent_initial', count: 0));
 
   @override
   void init() {
@@ -442,9 +534,12 @@ class DependentTestViewModel extends ViewModel<TestData> {
       sourceUpdateCount++;
       receivedSourceData = sourceData;
       // React to source changes by updating our own state
-      updateState(TestData(
+      updateState(
+        TestData(
           name: 'dependent_reacting_to_${sourceData.name}',
-          count: sourceData.count + 1000));
+          count: sourceData.count + 1000,
+        ),
+      );
     }, callOnInit: true); // Call immediately to get current state
   }
 

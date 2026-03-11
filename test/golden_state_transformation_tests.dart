@@ -25,10 +25,12 @@ void main() {
       ReactiveNotifier.cleanup();
     });
 
-    final shoppingCartState =
-        ReactiveNotifier<ShoppingCartViewModel>(() => ShoppingCartViewModel());
-    final calculatorState =
-        ReactiveNotifier<CalculatorViewModel>(() => CalculatorViewModel());
+    final shoppingCartState = ReactiveNotifier<ShoppingCartViewModel>(
+      () => ShoppingCartViewModel(),
+    );
+    final calculatorState = ReactiveNotifier<CalculatorViewModel>(
+      () => CalculatorViewModel(),
+    );
     final formState = ReactiveNotifier<FormViewModel>(() => FormViewModel());
 
     group('updateState vs updateSilently Comparison', () {
@@ -47,103 +49,113 @@ void main() {
                     title: const Text('updateState() Method'),
                     backgroundColor: Colors.blue,
                   ),
-                  body: ReactiveViewModelBuilder<ShoppingCartViewModel,
-                      ShoppingCartModel>(
-                    viewmodel: shoppingCartState.notifier,
-                    build: (cart, viewmodel, keep) {
-                      return Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Shopping Cart (updateState)',
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 16),
-                            Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                  body:
+                      ReactiveViewModelBuilder<
+                        ShoppingCartViewModel,
+                        ShoppingCartModel
+                      >(
+                        viewmodel: shoppingCartState.notifier,
+                        build: (cart, viewmodel, keep) {
+                          return Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Shopping Cart (updateState)',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Card(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        const Text('Items in Cart:'),
-                                        Text(
-                                          '${cart.items.length}',
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text('Items in Cart:'),
+                                            Text(
+                                              '${cart.items.length}',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text('Total Price:'),
+                                            Text(
+                                              '\$${cart.totalPrice.toStringAsFixed(2)}',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18,
+                                                color: Colors.green,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text('Update Count:'),
+                                            Text('${viewmodel.updateCount}'),
+                                          ],
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text('Total Price:'),
-                                        Text(
-                                          '\$${cart.totalPrice.toStringAsFixed(2)}',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18,
-                                            color: Colors.green,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    // This will immediately trigger a rebuild
+                                    viewmodel.addItem('New Item', 9.99);
+                                  },
+                                  child: const Text('Add Item (updateState)'),
+                                ),
+                                const SizedBox(height: 16),
+                                Expanded(
+                                  child: ListView.builder(
+                                    itemCount: cart.items.length,
+                                    itemBuilder: (context, index) {
+                                      final item = cart.items[index];
+                                      return Card(
+                                        child: ListTile(
+                                          leading: const Icon(
+                                            Icons.shopping_cart,
+                                          ),
+                                          title: Text(item.name),
+                                          subtitle: Text(
+                                            '\$${item.price.toStringAsFixed(2)}',
+                                          ),
+                                          trailing: IconButton(
+                                            icon: const Icon(Icons.remove),
+                                            onPressed: () =>
+                                                viewmodel.removeItem(index),
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text('Update Count:'),
-                                        Text('${viewmodel.updateCount}'),
-                                      ],
-                                    ),
-                                  ],
+                                      );
+                                    },
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: () {
-                                // This will immediately trigger a rebuild
-                                viewmodel.addItem('New Item', 9.99);
-                              },
-                              child: const Text('Add Item (updateState)'),
-                            ),
-                            const SizedBox(height: 16),
-                            Expanded(
-                              child: ListView.builder(
-                                itemCount: cart.items.length,
-                                itemBuilder: (context, index) {
-                                  final item = cart.items[index];
-                                  return Card(
-                                    child: ListTile(
-                                      leading: const Icon(Icons.shopping_cart),
-                                      title: Text(item.name),
-                                      subtitle: Text(
-                                          '\$${item.price.toStringAsFixed(2)}'),
-                                      trailing: IconButton(
-                                        icon: const Icon(Icons.remove),
-                                        onPressed: () =>
-                                            viewmodel.removeItem(index),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                          );
+                        },
+                      ),
                 ),
               ),
             ),
@@ -166,8 +178,7 @@ void main() {
                     title: const Text('updateSilently() Method'),
                     backgroundColor: Colors.orange,
                   ),
-                  body: ReactiveViewModelBuilder<ShoppingCartViewModel,
-                      ShoppingCartModel>(
+                  body: ReactiveViewModelBuilder<ShoppingCartViewModel, ShoppingCartModel>(
                     viewmodel: shoppingCartState.notifier,
                     build: (cart, viewmodel, keep) {
                       return Padding(
@@ -178,7 +189,9 @@ void main() {
                             const Text(
                               'Shopping Cart (updateSilently)',
                               style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Card(
@@ -191,7 +204,8 @@ void main() {
                                     const Text(
                                       'Displayed State (last build):',
                                       style: TextStyle(
-                                          fontWeight: FontWeight.bold),
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
@@ -208,7 +222,8 @@ void main() {
                                       children: [
                                         const Text('Total Price:'),
                                         Text(
-                                            '\$${cart.totalPrice.toStringAsFixed(2)}'),
+                                          '\$${cart.totalPrice.toStringAsFixed(2)}',
+                                        ),
                                       ],
                                     ),
                                   ],
@@ -226,7 +241,8 @@ void main() {
                                     const Text(
                                       'Actual Internal State:',
                                       style: TextStyle(
-                                          fontWeight: FontWeight.bold),
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
@@ -243,7 +259,8 @@ void main() {
                                       children: [
                                         const Text('Internal Total:'),
                                         Text(
-                                            '\$${viewmodel.data.totalPrice.toStringAsFixed(2)}'),
+                                          '\$${viewmodel.data.totalPrice.toStringAsFixed(2)}',
+                                        ),
                                       ],
                                     ),
                                   ],
@@ -257,12 +274,16 @@ void main() {
                                   onPressed: () {
                                     // This will NOT trigger a rebuild
                                     viewmodel.addItemSilently(
-                                        'Silent Item', 15.99);
+                                      'Silent Item',
+                                      15.99,
+                                    );
                                   },
                                   style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.orange),
-                                  child:
-                                      const Text('Add Item (updateSilently)'),
+                                    backgroundColor: Colors.orange,
+                                  ),
+                                  child: const Text(
+                                    'Add Item (updateSilently)',
+                                  ),
                                 ),
                                 const SizedBox(width: 16),
                                 ElevatedButton(
@@ -271,7 +292,8 @@ void main() {
                                     viewmodel.forceUpdate();
                                   },
                                   style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blue),
+                                    backgroundColor: Colors.blue,
+                                  ),
                                   child: const Text('Force Update'),
                                 ),
                               ],
@@ -305,143 +327,160 @@ void main() {
                     title: const Text('transformState() Method'),
                     backgroundColor: Colors.green,
                   ),
-                  body: ReactiveViewModelBuilder<CalculatorViewModel,
-                      CalculatorModel>(
-                    viewmodel: calculatorState.notifier,
-                    build: (calc, viewmodel, keep) {
-                      return Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Calculator (transformState)',
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 16),
-                            Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                  body:
+                      ReactiveViewModelBuilder<
+                        CalculatorViewModel,
+                        CalculatorModel
+                      >(
+                        viewmodel: calculatorState.notifier,
+                        build: (calc, viewmodel, keep) {
+                          return Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Calculator (transformState)',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Card(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text('Current Value:'),
+                                            Text(
+                                              '${calc.currentValue}',
+                                              style: const TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text('Operations:'),
+                                            Text('${calc.operationCount}'),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text('History:'),
+                                            Text(
+                                              '${calc.history.length} entries',
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text('Status:'),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: calc.isValid
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                calc.isValid
+                                                    ? 'Valid'
+                                                    : 'Invalid',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
                                   children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text('Current Value:'),
-                                        Text(
-                                          '${calc.currentValue}',
-                                          style: const TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
+                                    ElevatedButton(
+                                      onPressed: () => viewmodel.add(10),
+                                      child: const Text('Add 10'),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text('Operations:'),
-                                        Text('${calc.operationCount}'),
-                                      ],
+                                    ElevatedButton(
+                                      onPressed: () => viewmodel.multiply(2),
+                                      child: const Text('Multiply by 2'),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text('History:'),
-                                        Text('${calc.history.length} entries'),
-                                      ],
+                                    ElevatedButton(
+                                      onPressed: () => viewmodel.subtract(5),
+                                      child: const Text('Subtract 5'),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text('Status:'),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: calc.isValid
-                                                ? Colors.green
-                                                : Colors.red,
-                                            borderRadius:
-                                                BorderRadius.circular(4),
-                                          ),
-                                          child: Text(
-                                            calc.isValid ? 'Valid' : 'Invalid',
-                                            style: const TextStyle(
-                                                color: Colors.white),
-                                          ),
-                                        ),
-                                      ],
+                                    ElevatedButton(
+                                      onPressed: () => viewmodel.divide(3),
+                                      child: const Text('Divide by 3'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () => viewmodel.clear(),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red,
+                                      ),
+                                      child: const Text('Clear'),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                ElevatedButton(
-                                  onPressed: () => viewmodel.add(10),
-                                  child: const Text('Add 10'),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Recent History:',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                                ElevatedButton(
-                                  onPressed: () => viewmodel.multiply(2),
-                                  child: const Text('Multiply by 2'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () => viewmodel.subtract(5),
-                                  child: const Text('Subtract 5'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () => viewmodel.divide(3),
-                                  child: const Text('Divide by 3'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () => viewmodel.clear(),
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red),
-                                  child: const Text('Clear'),
+                                const SizedBox(height: 8),
+                                Expanded(
+                                  child: ListView.builder(
+                                    itemCount: calc.history.length,
+                                    itemBuilder: (context, index) {
+                                      final entry = calc.history[index];
+                                      return Card(
+                                        child: ListTile(
+                                          leading: const Icon(Icons.history),
+                                          title: Text(entry),
+                                          subtitle: Text('Step ${index + 1}'),
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Recent History:',
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                            Expanded(
-                              child: ListView.builder(
-                                itemCount: calc.history.length,
-                                itemBuilder: (context, index) {
-                                  final entry = calc.history[index];
-                                  return Card(
-                                    child: ListTile(
-                                      leading: const Icon(Icons.history),
-                                      title: Text(entry),
-                                      subtitle: Text('Step ${index + 1}'),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                          );
+                        },
+                      ),
                 ),
               ),
             ),
@@ -464,8 +503,7 @@ void main() {
                     title: const Text('transformStateSilently() Method'),
                     backgroundColor: Colors.purple,
                   ),
-                  body: ReactiveViewModelBuilder<CalculatorViewModel,
-                      CalculatorModel>(
+                  body: ReactiveViewModelBuilder<CalculatorViewModel, CalculatorModel>(
                     viewmodel: calculatorState.notifier,
                     build: (calc, viewmodel, keep) {
                       return Padding(
@@ -476,7 +514,9 @@ void main() {
                             const Text(
                               'Calculator (transformStateSilently)',
                               style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Card(
@@ -489,7 +529,8 @@ void main() {
                                     const Text(
                                       'Displayed State (last build):',
                                       style: TextStyle(
-                                          fontWeight: FontWeight.bold),
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
@@ -523,7 +564,8 @@ void main() {
                                     const Text(
                                       'Actual Internal State:',
                                       style: TextStyle(
-                                          fontWeight: FontWeight.bold),
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                     const SizedBox(height: 8),
                                     Row(
@@ -540,7 +582,8 @@ void main() {
                                       children: [
                                         const Text('Internal Operations:'),
                                         Text(
-                                            '${viewmodel.data.operationCount}'),
+                                          '${viewmodel.data.operationCount}',
+                                        ),
                                       ],
                                     ),
                                   ],
@@ -555,21 +598,24 @@ void main() {
                                 ElevatedButton(
                                   onPressed: () => viewmodel.addSilently(20),
                                   style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.purple),
+                                    backgroundColor: Colors.purple,
+                                  ),
                                   child: const Text('Add 20 (Silent)'),
                                 ),
                                 ElevatedButton(
                                   onPressed: () =>
                                       viewmodel.multiplySilently(3),
                                   style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.purple),
+                                    backgroundColor: Colors.purple,
+                                  ),
                                   child: const Text('Multiply by 3 (Silent)'),
                                 ),
                                 ElevatedButton(
                                   onPressed: () =>
                                       viewmodel.commitSilentChanges(),
                                   style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blue),
+                                    backgroundColor: Colors.blue,
+                                  ),
                                   child: const Text('Commit Changes'),
                                 ),
                               ],
@@ -627,7 +673,9 @@ void main() {
                             const Text(
                               'Registration Form',
                               style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Card(
@@ -666,8 +714,8 @@ void main() {
                                         labelText: 'Confirm Password',
                                         errorText:
                                             form.confirmPasswordError.isNotEmpty
-                                                ? form.confirmPasswordError
-                                                : null,
+                                            ? form.confirmPasswordError
+                                            : null,
                                         border: const OutlineInputBorder(),
                                       ),
                                       obscureText: true,
@@ -714,11 +762,14 @@ void main() {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                        'Email: ${form.email.isEmpty ? 'Empty' : form.email}'),
+                                      'Email: ${form.email.isEmpty ? 'Empty' : form.email}',
+                                    ),
                                     Text(
-                                        'Password Strength: ${form.passwordStrength}'),
+                                      'Password Strength: ${form.passwordStrength}',
+                                    ),
                                     Text(
-                                        'Validation Count: ${form.validationCount}'),
+                                      'Validation Count: ${form.validationCount}',
+                                    ),
                                   ],
                                 ),
                               ),
@@ -731,10 +782,12 @@ void main() {
                                     ? () => viewmodel.submitForm()
                                     : null,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      form.isValid ? Colors.teal : Colors.grey,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
+                                  backgroundColor: form.isValid
+                                      ? Colors.teal
+                                      : Colors.grey,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                 ),
                                 child: const Text(
                                   'Submit Registration',
@@ -785,7 +838,7 @@ class ShoppingCartModel {
 
 class ShoppingCartViewModel extends ViewModel<ShoppingCartModel> {
   ShoppingCartViewModel()
-      : super(ShoppingCartModel(items: [], totalPrice: 0.0));
+    : super(ShoppingCartModel(items: [], totalPrice: 0.0));
 
   int _updateCount = 0;
   int get updateCount => _updateCount;
@@ -800,7 +853,7 @@ class ShoppingCartViewModel extends ViewModel<ShoppingCartModel> {
     transformState((current) {
       final newItems = [
         ...current.items,
-        ShoppingCartItem(name: name, price: price)
+        ShoppingCartItem(name: name, price: price),
       ];
       final newTotal = newItems.fold(0.0, (sum, item) => sum + item.price);
       return ShoppingCartModel(items: newItems, totalPrice: newTotal);
@@ -812,7 +865,7 @@ class ShoppingCartViewModel extends ViewModel<ShoppingCartModel> {
     transformStateSilently((current) {
       final newItems = [
         ...current.items,
-        ShoppingCartItem(name: name, price: price)
+        ShoppingCartItem(name: name, price: price),
       ];
       final newTotal = newItems.fold(0.0, (sum, item) => sum + item.price);
       return ShoppingCartModel(items: newItems, totalPrice: newTotal);
@@ -864,12 +917,14 @@ class CalculatorModel {
 
 class CalculatorViewModel extends ViewModel<CalculatorModel> {
   CalculatorViewModel()
-      : super(CalculatorModel(
+    : super(
+        CalculatorModel(
           currentValue: 0.0,
           operationCount: 0,
           history: [],
           isValid: true,
-        ));
+        ),
+      );
 
   @override
   void init() {
@@ -877,68 +932,83 @@ class CalculatorViewModel extends ViewModel<CalculatorModel> {
   }
 
   void add(double value) {
-    transformState((current) => current.copyWith(
-          currentValue: current.currentValue + value,
-          operationCount: current.operationCount + 1,
-          history: [...current.history, 'Added $value'],
-          isValid: true,
-        ));
+    transformState(
+      (current) => current.copyWith(
+        currentValue: current.currentValue + value,
+        operationCount: current.operationCount + 1,
+        history: [...current.history, 'Added $value'],
+        isValid: true,
+      ),
+    );
   }
 
   void multiply(double value) {
-    transformState((current) => current.copyWith(
-          currentValue: current.currentValue * value,
-          operationCount: current.operationCount + 1,
-          history: [...current.history, 'Multiplied by $value'],
-          isValid: true,
-        ));
+    transformState(
+      (current) => current.copyWith(
+        currentValue: current.currentValue * value,
+        operationCount: current.operationCount + 1,
+        history: [...current.history, 'Multiplied by $value'],
+        isValid: true,
+      ),
+    );
   }
 
   void subtract(double value) {
-    transformState((current) => current.copyWith(
-          currentValue: current.currentValue - value,
-          operationCount: current.operationCount + 1,
-          history: [...current.history, 'Subtracted $value'],
-          isValid: true,
-        ));
+    transformState(
+      (current) => current.copyWith(
+        currentValue: current.currentValue - value,
+        operationCount: current.operationCount + 1,
+        history: [...current.history, 'Subtracted $value'],
+        isValid: true,
+      ),
+    );
   }
 
   void divide(double value) {
-    transformState((current) => current.copyWith(
-          currentValue:
-              value != 0 ? current.currentValue / value : current.currentValue,
-          operationCount: current.operationCount + 1,
-          history: [
-            ...current.history,
-            value != 0 ? 'Divided by $value' : 'Division by zero attempted'
-          ],
-          isValid: value != 0,
-        ));
+    transformState(
+      (current) => current.copyWith(
+        currentValue: value != 0
+            ? current.currentValue / value
+            : current.currentValue,
+        operationCount: current.operationCount + 1,
+        history: [
+          ...current.history,
+          value != 0 ? 'Divided by $value' : 'Division by zero attempted',
+        ],
+        isValid: value != 0,
+      ),
+    );
   }
 
   void clear() {
-    transformState((current) => CalculatorModel(
-          currentValue: 0.0,
-          operationCount: 0,
-          history: [],
-          isValid: true,
-        ));
+    transformState(
+      (current) => CalculatorModel(
+        currentValue: 0.0,
+        operationCount: 0,
+        history: [],
+        isValid: true,
+      ),
+    );
   }
 
   void addSilently(double value) {
-    transformStateSilently((current) => current.copyWith(
-          currentValue: current.currentValue + value,
-          operationCount: current.operationCount + 1,
-          history: [...current.history, 'Added $value (silent)'],
-        ));
+    transformStateSilently(
+      (current) => current.copyWith(
+        currentValue: current.currentValue + value,
+        operationCount: current.operationCount + 1,
+        history: [...current.history, 'Added $value (silent)'],
+      ),
+    );
   }
 
   void multiplySilently(double value) {
-    transformStateSilently((current) => current.copyWith(
-          currentValue: current.currentValue * value,
-          operationCount: current.operationCount + 1,
-          history: [...current.history, 'Multiplied by $value (silent)'],
-        ));
+    transformStateSilently(
+      (current) => current.copyWith(
+        currentValue: current.currentValue * value,
+        operationCount: current.operationCount + 1,
+        history: [...current.history, 'Multiplied by $value (silent)'],
+      ),
+    );
   }
 
   void commitSilentChanges() {
@@ -996,7 +1066,8 @@ class FormModel {
 
 class FormViewModel extends ViewModel<FormModel> {
   FormViewModel()
-      : super(FormModel(
+    : super(
+        FormModel(
           email: '',
           password: '',
           confirmPassword: '',
@@ -1006,7 +1077,8 @@ class FormViewModel extends ViewModel<FormModel> {
           isValid: false,
           passwordStrength: 'None',
           validationCount: 0,
-        ));
+        ),
+      );
 
   @override
   void init() {
@@ -1041,8 +1113,10 @@ class FormViewModel extends ViewModel<FormModel> {
 
   void updateConfirmPassword(String confirmPassword) {
     transformState((current) {
-      final confirmError =
-          _validateConfirmPassword(current.password, confirmPassword);
+      final confirmError = _validateConfirmPassword(
+        current.password,
+        confirmPassword,
+      );
       return current.copyWith(
         confirmPassword: confirmPassword,
         confirmPasswordError: confirmError,
@@ -1054,7 +1128,8 @@ class FormViewModel extends ViewModel<FormModel> {
 
   void _validateForm() {
     transformState((current) {
-      final isValid = current.emailError.isEmpty &&
+      final isValid =
+          current.emailError.isEmpty &&
           current.passwordError.isEmpty &&
           current.confirmPasswordError.isEmpty &&
           current.email.isNotEmpty &&
@@ -1090,8 +1165,9 @@ class FormViewModel extends ViewModel<FormModel> {
   }
 
   void submitForm() {
-    transformState((current) => current.copyWith(
-          validationCount: current.validationCount + 1,
-        ));
+    transformState(
+      (current) =>
+          current.copyWith(validationCount: current.validationCount + 1),
+    );
   }
 }

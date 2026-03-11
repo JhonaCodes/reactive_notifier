@@ -30,9 +30,10 @@ class ReactiveInheritedContext<T>
     final inherited = maybeOf<T>(context);
     if (inherited == null) {
       throw FlutterError(
-          'ReactiveInheritedContext.of<$T>() called with a context that does not contain a ReactiveInheritedContext<$T>.\n'
-          'No ReactiveInheritedContext<$T> ancestor could be found starting from the context that was passed to ReactiveInheritedContext.of<$T>().\n'
-          'The context used was: $context');
+        'ReactiveInheritedContext.of<$T>() called with a context that does not contain a ReactiveInheritedContext<$T>.\n'
+        'No ReactiveInheritedContext<$T> ancestor could be found starting from the context that was passed to ReactiveInheritedContext.of<$T>().\n'
+        'The context used was: $context',
+      );
     }
     return inherited.notifier!.notifier;
   }
@@ -127,14 +128,17 @@ Notifier: ${notifier.runtimeType}
 
   /// Try to find an existing ReactiveInheritedContext in the widget tree
   static ReactiveInheritedContext<T>? findExistingContext<T>(
-      BuildContext context) {
+    BuildContext context,
+  ) {
     return ReactiveInheritedContext.maybeOf<T>(context);
   }
 
   /// Attempt to inject ReactiveInheritedContext into the widget tree
   /// This is a complex operation that tries to modify the widget tree dynamically
   static bool tryInjectContext<T>(
-      BuildContext context, ReactiveInheritedContext<T> reactiveContext) {
+    BuildContext context,
+    ReactiveInheritedContext<T> reactiveContext,
+  ) {
     try {
       // This is a conceptual implementation
       // In practice, dynamic widget tree injection is very complex in Flutter

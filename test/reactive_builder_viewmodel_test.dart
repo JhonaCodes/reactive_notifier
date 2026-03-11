@@ -51,8 +51,9 @@ void main() {
       expect(capturedState, equals('initial'));
     });
 
-    testWidgets('should update when state changes',
-        (WidgetTester tester) async {
+    testWidgets('should update when state changes', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(
         MaterialApp(
@@ -141,8 +142,9 @@ void main() {
     //   expect(find.text('update3'), findsOneWidget);
     // });
 
-    testWidgets('should cleanup properly when disposed',
-        (WidgetTester tester) async {
+    testWidgets('should cleanup properly when disposed', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       final key = GlobalKey();
 

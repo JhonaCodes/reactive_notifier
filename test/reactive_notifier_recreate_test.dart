@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 import 'package:reactive_notifier/src/viewmodel/viewmodel_impl.dart';
@@ -33,8 +32,11 @@ void main() {
 
         // Verify initial creation
         expect(state.notifier, equals(0));
-        expect(creationCount, equals(1),
-            reason: 'Factory should be called once on creation');
+        expect(
+          creationCount,
+          equals(1),
+          reason: 'Factory should be called once on creation',
+        );
 
         // Modify the state
         state.updateState(100);
@@ -44,12 +46,21 @@ void main() {
         final newValue = state.recreate();
 
         // Assert: Should have fresh value
-        expect(newValue, equals(0),
-            reason: 'Recreated value should be the factory result');
-        expect(state.notifier, equals(0),
-            reason: 'Notifier should reflect the new value');
-        expect(creationCount, equals(2),
-            reason: 'Factory should be called again on recreate');
+        expect(
+          newValue,
+          equals(0),
+          reason: 'Recreated value should be the factory result',
+        );
+        expect(
+          state.notifier,
+          equals(0),
+          reason: 'Notifier should reflect the new value',
+        );
+        expect(
+          creationCount,
+          equals(2),
+          reason: 'Factory should be called again on recreate',
+        );
       });
 
       test('should recreate with fresh String value', () {
@@ -82,16 +93,19 @@ void main() {
         // Recreate
         final newValue = state.recreate();
 
-        expect(newValue, equals([1, 2, 3]),
-            reason: 'Should have fresh list');
+        expect(newValue, equals([1, 2, 3]), reason: 'Should have fresh list');
         expect(state.notifier, equals([1, 2, 3]));
-        expect(identical(state.notifier, newValue), isTrue,
-            reason: 'notifier should reference the recreated instance');
+        expect(
+          identical(state.notifier, newValue),
+          isTrue,
+          reason: 'notifier should reference the recreated instance',
+        );
       });
 
       test('should recreate with fresh Map value', () {
-        final state =
-            ReactiveNotifier<Map<String, int>>(() => {'count': 0, 'items': 0});
+        final state = ReactiveNotifier<Map<String, int>>(
+          () => {'count': 0, 'items': 0},
+        );
 
         // Modify the map
         state.updateState({'count': 10, 'items': 5, 'extra': 99});
@@ -116,8 +130,11 @@ void main() {
         // Recreate
         state.recreate();
 
-        expect(state.notifier, isNull,
-            reason: 'Should return to null as per factory');
+        expect(
+          state.notifier,
+          isNull,
+          reason: 'Should return to null as per factory',
+        );
       });
     });
 
@@ -143,16 +160,23 @@ void main() {
         final newVM = notifier.recreate();
 
         // Assert: Fresh ViewModel with initial state
-        expect(newVM.data, equals(0),
-            reason: 'New ViewModel should have fresh init() state');
+        expect(
+          newVM.data,
+          equals(0),
+          reason: 'New ViewModel should have fresh init() state',
+        );
         expect(notifier.notifier.data, equals(0));
-        expect(vmCreationCount, equals(2),
-            reason: 'Factory should be called again');
+        expect(
+          vmCreationCount,
+          equals(2),
+          reason: 'Factory should be called again',
+        );
       });
 
       test('should call init() on recreated ViewModel', () {
         final notifier = ReactiveNotifier<InitTrackingViewModel>(
-            () => InitTrackingViewModel());
+          () => InitTrackingViewModel(),
+        );
 
         // First init called
         expect(notifier.notifier.initCallCount, equals(1));
@@ -163,16 +187,23 @@ void main() {
         // Recreate - should create new ViewModel with fresh init()
         notifier.recreate();
 
-        expect(notifier.notifier.initCallCount, equals(1),
-            reason:
-                'New ViewModel instance has its own initCallCount starting at 1');
-        expect(notifier.notifier.data, equals('initialized'),
-            reason: 'init() should set the initial state');
+        expect(
+          notifier.notifier.initCallCount,
+          equals(1),
+          reason:
+              'New ViewModel instance has its own initCallCount starting at 1',
+        );
+        expect(
+          notifier.notifier.data,
+          equals('initialized'),
+          reason: 'init() should set the initial state',
+        );
       });
 
       test('should not preserve listeners from old ViewModel', () {
-        final notifier =
-            ReactiveNotifier<CounterViewModel>(() => CounterViewModel());
+        final notifier = ReactiveNotifier<CounterViewModel>(
+          () => CounterViewModel(),
+        );
 
         // Add external listener to old ViewModel
         var listenerCallCount = 0;
@@ -228,27 +259,35 @@ void main() {
 
         // Assert: Fresh AsyncViewModel
         expect(newVM.hasData, isTrue);
-        expect(newVM.data, equals('async_data_2'),
-            reason: 'New async VM should load fresh data');
+        expect(
+          newVM.data,
+          equals('async_data_2'),
+          reason: 'New async VM should load fresh data',
+        );
         expect(vmCreationCount, equals(2));
       });
 
-      test('should reset AsyncViewModel to initial state during recreate',
-          () async {
-        final notifier = ReactiveNotifier<TestAsyncVM>(() => TestAsyncVM());
+      test(
+        'should reset AsyncViewModel to initial state during recreate',
+        () async {
+          final notifier = ReactiveNotifier<TestAsyncVM>(() => TestAsyncVM());
 
-        // Wait for initial load
-        await Future.delayed(const Duration(milliseconds: 50));
-        expect(notifier.notifier.hasData, isTrue);
+          // Wait for initial load
+          await Future.delayed(const Duration(milliseconds: 50));
+          expect(notifier.notifier.hasData, isTrue);
 
-        // Recreate and check immediately (before new async load completes)
-        notifier.recreate();
+          // Recreate and check immediately (before new async load completes)
+          notifier.recreate();
 
-        // The new ViewModel starts in initial/loading state
-        // depending on loadOnInit behavior
-        expect(notifier.notifier.isLoading || notifier.notifier.hasData, isTrue,
-            reason: 'Should be in loading or success state');
-      });
+          // The new ViewModel starts in initial/loading state
+          // depending on loadOnInit behavior
+          expect(
+            notifier.notifier.isLoading || notifier.notifier.hasData,
+            isTrue,
+            reason: 'Should be in loading or success state',
+          );
+        },
+      );
     });
 
     group('Infinite Loop Protection', () {
@@ -263,46 +302,56 @@ void main() {
 
         // After successful recreate, isRecreating should be false
         notifier.recreate();
-        expect(notifier.isRecreating, isFalse,
-            reason: 'isRecreating should be reset after completion');
+        expect(
+          notifier.isRecreating,
+          isFalse,
+          reason: 'isRecreating should be reset after completion',
+        );
       });
 
       test(
-          'should protect against recursive recreate calls via ViewModel that tries to recreate',
-          () {
-        // We need to create the notifier first, then assign the callback
-        // that references it to avoid LateInitializationError
-        var isRecreatingDuringInit = false;
-        ReactiveNotifier<RecursiveRecreateViewModel>? notifierRef;
+        'should protect against recursive recreate calls via ViewModel that tries to recreate',
+        () {
+          // We need to create the notifier first, then assign the callback
+          // that references it to avoid LateInitializationError
+          var isRecreatingDuringInit = false;
+          ReactiveNotifier<RecursiveRecreateViewModel>? notifierRef;
 
-        final notifier = ReactiveNotifier<RecursiveRecreateViewModel>(
-          () => RecursiveRecreateViewModel(() {
-            // This callback simulates trying to call recreate from init
-            // We'll verify the guard works by checking isRecreating
-            if (notifierRef != null && notifierRef!.isRecreating) {
-              isRecreatingDuringInit = true;
-            }
-          }),
-        );
+          final notifier = ReactiveNotifier<RecursiveRecreateViewModel>(
+            () => RecursiveRecreateViewModel(() {
+              // This callback simulates trying to call recreate from init
+              // We'll verify the guard works by checking isRecreating
+              if (notifierRef != null && notifierRef.isRecreating) {
+                isRecreatingDuringInit = true;
+              }
+            }),
+          );
 
-        // Store reference for use in callback
-        notifierRef = notifier;
+          // Store reference for use in callback
+          notifierRef = notifier;
 
-        // Normal creation should work
-        expect(notifier.notifier.data, equals('initialized'));
-        expect(isRecreatingDuringInit, isFalse,
-            reason: 'isRecreating should be false during initial creation');
+          // Normal creation should work
+          expect(notifier.notifier.data, equals('initialized'));
+          expect(
+            isRecreatingDuringInit,
+            isFalse,
+            reason: 'isRecreating should be false during initial creation',
+          );
 
-        // Now recreate - the ViewModel's callback will check isRecreating
-        notifier.recreate();
+          // Now recreate - the ViewModel's callback will check isRecreating
+          notifier.recreate();
 
-        // During recreation, isRecreating should have been true
-        expect(isRecreatingDuringInit, isTrue,
-            reason: 'isRecreating should be true during recreate');
+          // During recreation, isRecreating should have been true
+          expect(
+            isRecreatingDuringInit,
+            isTrue,
+            reason: 'isRecreating should be true during recreate',
+          );
 
-        // but after completion it should be false
-        expect(notifier.isRecreating, isFalse);
-      });
+          // but after completion it should be false
+          expect(notifier.isRecreating, isFalse);
+        },
+      );
 
       test('should throw StateError when recreating disposed notifier', () {
         final notifier = ReactiveNotifier<int>(() => 0);
@@ -312,12 +361,15 @@ void main() {
 
         // Attempt to recreate should throw
         expect(
-            () => notifier.recreate(),
-            throwsA(isA<StateError>().having(
+          () => notifier.recreate(),
+          throwsA(
+            isA<StateError>().having(
               (e) => e.message,
               'message',
               contains('disposed'),
-            )));
+            ),
+          ),
+        );
       });
     });
 
@@ -333,8 +385,11 @@ void main() {
         });
 
         // Initial value
-        expect(listenerCallCount, equals(0),
-            reason: 'Listener not called on add');
+        expect(
+          listenerCallCount,
+          equals(0),
+          reason: 'Listener not called on add',
+        );
 
         // Modify state
         notifier.updateState(50);
@@ -345,10 +400,16 @@ void main() {
         notifier.recreate();
 
         // Listener should be notified with new value
-        expect(listenerCallCount, equals(2),
-            reason: 'Listener should be called after recreate');
-        expect(lastReceivedValue, equals(0),
-            reason: 'Should receive the recreated value');
+        expect(
+          listenerCallCount,
+          equals(2),
+          reason: 'Listener should be called after recreate',
+        );
+        expect(
+          lastReceivedValue,
+          equals(0),
+          reason: 'Should receive the recreated value',
+        );
       });
 
       test('should notify multiple listeners after recreate', () {
@@ -380,10 +441,7 @@ void main() {
 
     group('recreate() with Auto-Dispose', () {
       test('should preserve reference count after recreate', () {
-        final notifier = ReactiveNotifier<int>(
-          () => 0,
-          autoDispose: true,
-        );
+        final notifier = ReactiveNotifier<int>(() => 0, autoDispose: true);
 
         // Add references
         notifier.addReference('widget_1');
@@ -404,10 +462,7 @@ void main() {
       });
 
       test('should cancel scheduled dispose after recreate', () {
-        final notifier = ReactiveNotifier<int>(
-          () => 0,
-          autoDispose: true,
-        );
+        final notifier = ReactiveNotifier<int>(() => 0, autoDispose: true);
 
         // Add and remove reference to schedule dispose
         notifier.addReference('temp_widget');
@@ -417,8 +472,11 @@ void main() {
         // Recreate should reset the dispose schedule flag
         notifier.recreate();
 
-        expect(notifier.isScheduledForDispose, isFalse,
-            reason: 'Dispose schedule should be cancelled after recreate');
+        expect(
+          notifier.isScheduledForDispose,
+          isFalse,
+          reason: 'Dispose schedule should be cancelled after recreate',
+        );
       });
     });
 
@@ -439,8 +497,11 @@ void main() {
 
         // Modify child
         childState.updateState(10);
-        expect(parentListenerCalls, equals(1),
-            reason: 'Parent should be notified when child changes');
+        expect(
+          parentListenerCalls,
+          equals(1),
+          reason: 'Parent should be notified when child changes',
+        );
 
         // Recreate child
         childState.recreate();
@@ -450,8 +511,11 @@ void main() {
         // 1. Child's internal notifyListeners() call
         // 2. Parent notification loop in recreate()
         // We verify parent was notified at least once more than before
-        expect(parentListenerCalls, greaterThanOrEqualTo(2),
-            reason: 'Parent should be notified when child is recreated');
+        expect(
+          parentListenerCalls,
+          greaterThanOrEqualTo(2),
+          reason: 'Parent should be notified when child is recreated',
+        );
         expect(childState.notifier, equals(0));
       });
     });
@@ -478,8 +542,11 @@ void main() {
         notifier.recreate();
 
         // Should have new object with different properties
-        expect(notifier.notifier.id, isNot(equals(firstId)),
-            reason: 'New object should have different timestamp-based ID');
+        expect(
+          notifier.notifier.id,
+          isNot(equals(firstId)),
+          reason: 'New object should have different timestamp-based ID',
+        );
       });
 
       test('should handle multiple consecutive recreates', () {
@@ -516,8 +583,11 @@ void main() {
         // Recreate
         notifier.recreate();
 
-        expect(notifier.notifier, equals(0),
-            reason: 'Should reset regardless of silent update');
+        expect(
+          notifier.notifier,
+          equals(0),
+          reason: 'Should reset regardless of silent update',
+        );
       });
 
       test('should handle recreate after transform', () {
@@ -530,8 +600,11 @@ void main() {
         // Recreate
         notifier.recreate();
 
-        expect(notifier.notifier, equals(['a', 'b']),
-            reason: 'Should reset to factory result');
+        expect(
+          notifier.notifier,
+          equals(['a', 'b']),
+          reason: 'Should reset to factory result',
+        );
       });
 
       test('should return the new state from recreate()', () {
@@ -541,17 +614,24 @@ void main() {
 
         final result = notifier.recreate();
 
-        expect(result, equals(42),
-            reason: 'recreate() should return the new state');
-        expect(result, equals(notifier.notifier),
-            reason: 'Returned value should match notifier');
+        expect(
+          result,
+          equals(42),
+          reason: 'recreate() should return the new state',
+        );
+        expect(
+          result,
+          equals(notifier.notifier),
+          reason: 'Returned value should match notifier',
+        );
       });
     });
 
     group('recreate() Memory Management', () {
       test('should properly clean up old ViewModel references', () {
-        final notifier =
-            ReactiveNotifier<CounterViewModel>(() => CounterViewModel());
+        final notifier = ReactiveNotifier<CounterViewModel>(
+          () => CounterViewModel(),
+        );
 
         final oldVM = notifier.notifier;
         expect(oldVM.isDisposed, isFalse);
@@ -562,8 +642,11 @@ void main() {
         final newVM = notifier.notifier;
 
         // Old and new should be different instances
-        expect(identical(oldVM, newVM), isFalse,
-            reason: 'Should be different ViewModel instances');
+        expect(
+          identical(oldVM, newVM),
+          isFalse,
+          reason: 'Should be different ViewModel instances',
+        );
 
         // New VM should not be disposed
         expect(newVM.isDisposed, isFalse);
@@ -635,11 +718,7 @@ class ComplexObject {
   final String name;
   final Map<String, dynamic> data;
 
-  ComplexObject({
-    required this.id,
-    required this.name,
-    required this.data,
-  });
+  ComplexObject({required this.id, required this.name, required this.data});
 
   @override
   bool operator ==(Object other) =>

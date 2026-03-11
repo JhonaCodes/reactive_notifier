@@ -27,12 +27,15 @@ void main() {
       ReactiveNotifier.cleanup();
     });
 
-    final performanceState =
-        ReactiveNotifier<PerformanceViewModel>(() => PerformanceViewModel());
+    final performanceState = ReactiveNotifier<PerformanceViewModel>(
+      () => PerformanceViewModel(),
+    );
     final networkState = ReactiveNotifier<NetworkSimulatorViewModel>(
-        () => NetworkSimulatorViewModel());
+      () => NetworkSimulatorViewModel(),
+    );
     final errorState = ReactiveNotifier<ErrorHandlingViewModel>(
-        () => ErrorHandlingViewModel());
+      () => ErrorHandlingViewModel(),
+    );
 
     group('Performance Scenarios', () {
       goldenTest(
@@ -50,8 +53,7 @@ void main() {
                     title: const Text('Performance Test'),
                     backgroundColor: Colors.deepPurple,
                   ),
-                  body: ReactiveViewModelBuilder<PerformanceViewModel,
-                      PerformanceModel>(
+                  body: ReactiveViewModelBuilder<PerformanceViewModel, PerformanceModel>(
                     viewmodel: performanceState.notifier,
                     build: (perf, viewmodel, keep) {
                       return Padding(
@@ -62,7 +64,9 @@ void main() {
                             const Text(
                               'Performance Metrics',
                               style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Card(
@@ -112,20 +116,24 @@ void main() {
                                         const Text('Performance:'),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
                                           decoration: BoxDecoration(
                                             color: perf.isPerformant
                                                 ? Colors.green
                                                 : Colors.orange,
-                                            borderRadius:
-                                                BorderRadius.circular(4),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
                                           ),
                                           child: Text(
                                             perf.isPerformant
                                                 ? 'Optimal'
                                                 : 'Degraded',
                                             style: const TextStyle(
-                                                color: Colors.white),
+                                              color: Colors.white,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -156,25 +164,29 @@ void main() {
                                 ElevatedButton(
                                   onPressed: () => viewmodel.stopUpdates(),
                                   style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red),
+                                    backgroundColor: Colors.red,
+                                  ),
                                   child: const Text('Stop Updates'),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
-                            keep(const Card(
-                              child: Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: Text(
-                                  'This widget never rebuilds during performance tests.\n'
-                                  'It serves as a control to verify that non-rebuilding widgets\n'
-                                  'remain stable during rapid state changes.',
-                                  style: TextStyle(
+                            keep(
+                              const Card(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Text(
+                                    'This widget never rebuilds during performance tests.\n'
+                                    'It serves as a control to verify that non-rebuilding widgets\n'
+                                    'remain stable during rapid state changes.',
+                                    style: TextStyle(
                                       fontSize: 12,
-                                      fontStyle: FontStyle.italic),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            )),
+                            ),
                           ],
                         ),
                       );
@@ -202,142 +214,166 @@ void main() {
                     title: const Text('Memory Pressure Test'),
                     backgroundColor: Colors.orange,
                   ),
-                  body: ReactiveViewModelBuilder<PerformanceViewModel,
-                      PerformanceModel>(
-                    viewmodel: performanceState.notifier,
-                    build: (perf, viewmodel, keep) {
-                      return Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Memory Usage Simulation',
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 16),
-                            Card(
-                              color: Colors.orange[50],
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
+                  body:
+                      ReactiveViewModelBuilder<
+                        PerformanceViewModel,
+                        PerformanceModel
+                      >(
+                        viewmodel: performanceState.notifier,
+                        build: (perf, viewmodel, keep) {
+                          return Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Memory Usage Simulation',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Card(
+                                  color: Colors.orange[50],
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        const Text('Memory Objects:'),
-                                        Text('${perf.memoryObjects.length}'),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text('Est. Memory Usage:'),
-                                        Text(
-                                            '${(perf.memoryObjects.length * 0.001).toStringAsFixed(3)} MB'),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text('Memory Status:'),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: perf.memoryObjects.length <
-                                                    10000
-                                                ? Colors.green
-                                                : Colors.red,
-                                            borderRadius:
-                                                BorderRadius.circular(4),
-                                          ),
-                                          child: Text(
-                                            perf.memoryObjects.length < 10000
-                                                ? 'Normal'
-                                                : 'High',
-                                            style: const TextStyle(
-                                                color: Colors.white),
-                                          ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text('Memory Objects:'),
+                                            Text(
+                                              '${perf.memoryObjects.length}',
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text('Est. Memory Usage:'),
+                                            Text(
+                                              '${(perf.memoryObjects.length * 0.001).toStringAsFixed(3)} MB',
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text('Memory Status:'),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    perf.memoryObjects.length <
+                                                        10000
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                perf.memoryObjects.length <
+                                                        10000
+                                                    ? 'Normal'
+                                                    : 'High',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                LinearProgressIndicator(
+                                  value: (perf.memoryObjects.length / 50000.0)
+                                      .clamp(0.0, 1.0),
+                                  backgroundColor: Colors.grey[300],
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    perf.memoryObjects.length < 10000
+                                        ? Colors.green
+                                        : Colors.red,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: [
+                                    ElevatedButton(
+                                      onPressed: () =>
+                                          viewmodel.allocateMemory(1000),
+                                      child: const Text('Allocate 1K Objects'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () =>
+                                          viewmodel.allocateMemory(10000),
+                                      child: const Text('Allocate 10K Objects'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () => viewmodel.clearMemory(),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red,
+                                      ),
+                                      child: const Text('Clear Memory'),
+                                    ),
                                   ],
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            LinearProgressIndicator(
-                              value: (perf.memoryObjects.length / 50000.0)
-                                  .clamp(0.0, 1.0),
-                              backgroundColor: Colors.grey[300],
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                perf.memoryObjects.length < 10000
-                                    ? Colors.green
-                                    : Colors.red,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                ElevatedButton(
-                                  onPressed: () =>
-                                      viewmodel.allocateMemory(1000),
-                                  child: const Text('Allocate 1K Objects'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () =>
-                                      viewmodel.allocateMemory(10000),
-                                  child: const Text('Allocate 10K Objects'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () => viewmodel.clearMemory(),
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red),
-                                  child: const Text('Clear Memory'),
+                                const SizedBox(height: 16),
+                                Expanded(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: ListView.builder(
+                                      itemCount:
+                                          (perf.memoryObjects.length / 1000)
+                                              .ceil(),
+                                      itemBuilder: (context, index) {
+                                        final startIndex = index * 1000;
+                                        final endIndex = (startIndex + 1000)
+                                            .clamp(
+                                              0,
+                                              perf.memoryObjects.length,
+                                            );
+                                        return ListTile(
+                                          leading: const Icon(Icons.memory),
+                                          title: Text(
+                                            'Memory Block ${index + 1}',
+                                          ),
+                                          subtitle: Text(
+                                            'Objects ${startIndex + 1} - $endIndex',
+                                          ),
+                                          trailing: Text(
+                                            '${endIndex - startIndex} items',
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
-                            Expanded(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: ListView.builder(
-                                  itemCount:
-                                      (perf.memoryObjects.length / 1000).ceil(),
-                                  itemBuilder: (context, index) {
-                                    final startIndex = index * 1000;
-                                    final endIndex = (startIndex + 1000)
-                                        .clamp(0, perf.memoryObjects.length);
-                                    return ListTile(
-                                      leading: const Icon(Icons.memory),
-                                      title: Text('Memory Block ${index + 1}'),
-                                      subtitle: Text(
-                                          'Objects ${startIndex + 1} - $endIndex'),
-                                      trailing: Text(
-                                          '${endIndex - startIndex} items'),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                          );
+                        },
+                      ),
                 ),
               ),
             ),
@@ -362,167 +398,186 @@ void main() {
                     title: const Text('Network Simulation'),
                     backgroundColor: Colors.red,
                   ),
-                  body: ReactiveAsyncBuilder<NetworkSimulatorViewModel,
-                      NetworkResponse>(
-                    notifier: networkState.notifier,
-                    onLoading: () => const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircularProgressIndicator(),
-                          SizedBox(height: 16),
-                          Text('Connecting to server...'),
-                        ],
-                      ),
-                    ),
-                    onData: (data, viewModel, keep) => Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.green[50],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Row(
-                              children: [
-                                Icon(Icons.check_circle, color: Colors.green),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Connection Successful',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                  body:
+                      ReactiveAsyncBuilder<
+                        NetworkSimulatorViewModel,
+                        NetworkResponse
+                      >(
+                        notifier: networkState.notifier,
+                        onLoading: () => const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(height: 16),
+                              Text('Connecting to server...'),
+                            ],
+                          ),
+                        ),
+                        onData: (data, viewModel, keep) => Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.green[50],
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text('Status Code:'),
-                                      Text('${data.statusCode}'),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text('Response Time:'),
-                                      Text('${data.responseTime}ms'),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text('Data Size:'),
-                                      Text('${data.dataSize} bytes'),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  const Text('Response Data:'),
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      borderRadius: BorderRadius.circular(4),
+                                child: const Row(
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle,
+                                      color: Colors.green,
                                     ),
-                                    child: Text(
-                                      data.responseData,
-                                      style: const TextStyle(
-                                          fontFamily: 'monospace'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    onError: (error, stackTrace) => Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.red[50],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Row(
-                              children: [
-                                Icon(Icons.error, color: Colors.red),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Network Error',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.red),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Error Details:',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    error.toString(),
-                                    style: const TextStyle(color: Colors.red),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  const Text(
-                                    'Retry Attempts:',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                      '${networkState.notifier.data?.retryCount}/3'),
-                                  const SizedBox(height: 16),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: ElevatedButton.icon(
-                                      onPressed: () => networkState.notifier
-                                          .retryConnection(),
-                                      icon: const Icon(Icons.refresh),
-                                      label: const Text('Retry Connection'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.blue,
-                                        foregroundColor: Colors.white,
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Connection Successful',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
+                              const SizedBox(height: 16),
+                              Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text('Status Code:'),
+                                          Text('${data.statusCode}'),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text('Response Time:'),
+                                          Text('${data.responseTime}ms'),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text('Data Size:'),
+                                          Text('${data.dataSize} bytes'),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      const Text('Response Data:'),
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[100],
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          data.responseData,
+                                          style: const TextStyle(
+                                            fontFamily: 'monospace',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
+                        onError: (error, stackTrace) => Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.red[50],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.error, color: Colors.red),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Network Error',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Error Details:',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        error.toString(),
+                                        style: const TextStyle(
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      const Text(
+                                        'Retry Attempts:',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        '${networkState.notifier.data?.retryCount}/3',
+                                      ),
+                                      const SizedBox(height: 16),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton.icon(
+                                          onPressed: () => networkState.notifier
+                                              .retryConnection(),
+                                          icon: const Icon(Icons.refresh),
+                                          label: const Text('Retry Connection'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.blue,
+                                            foregroundColor: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
                 ),
               ),
             ),
@@ -547,178 +602,203 @@ void main() {
                     title: const Text('Error Handling'),
                     backgroundColor: Colors.red,
                   ),
-                  body: ReactiveViewModelBuilder<ErrorHandlingViewModel,
-                      ErrorHandlingModel>(
-                    viewmodel: errorState.notifier,
-                    build: (errorModel, viewmodel, keep) {
-                      return Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Error Handling Simulation',
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 16),
-                            if (errorModel.hasError) ...[
-                              Card(
-                                color: Colors.red[50],
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Row(
+                  body:
+                      ReactiveViewModelBuilder<
+                        ErrorHandlingViewModel,
+                        ErrorHandlingModel
+                      >(
+                        viewmodel: errorState.notifier,
+                        build: (errorModel, viewmodel, keep) {
+                          return Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Error Handling Simulation',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                if (errorModel.hasError) ...[
+                                  Card(
+                                    color: Colors.red[50],
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Icon(Icons.error_outline,
-                                              color: Colors.red),
-                                          SizedBox(width: 8),
+                                          const Row(
+                                            children: [
+                                              Icon(
+                                                Icons.error_outline,
+                                                color: Colors.red,
+                                              ),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                'Error Occurred',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.red,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
                                           Text(
-                                            'Error Occurred',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
+                                            'Error: ${errorModel.errorMessage}',
+                                            style: const TextStyle(
                                               color: Colors.red,
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Error: ${errorModel.errorMessage}',
-                                        style:
-                                            const TextStyle(color: Colors.red),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                          'Error Count: ${errorModel.errorCount}'),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                          'Recovery Attempts: ${errorModel.recoveryAttempts}'),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ] else ...[
-                              Card(
-                                color: Colors.green[50],
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Row(
-                                        children: [
-                                          Icon(Icons.check_circle,
-                                              color: Colors.green),
-                                          SizedBox(width: 8),
+                                          const SizedBox(height: 8),
                                           Text(
-                                            'System Operational',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.green,
-                                            ),
+                                            'Error Count: ${errorModel.errorCount}',
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Recovery Attempts: ${errorModel.recoveryAttempts}',
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                          'Success Operations: ${errorModel.successCount}'),
-                                      const SizedBox(height: 8),
-                                      Text('Uptime: ${errorModel.uptime}'),
-                                    ],
+                                    ),
+                                  ),
+                                ] else ...[
+                                  Card(
+                                    color: Colors.green[50],
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Row(
+                                            children: [
+                                              Icon(
+                                                Icons.check_circle,
+                                                color: Colors.green,
+                                              ),
+                                              SizedBox(width: 8),
+                                              Text(
+                                                'System Operational',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.green,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Success Operations: ${errorModel.successCount}',
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text('Uptime: ${errorModel.uptime}'),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 16),
+                                Card(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'System Status',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text('Current State:'),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: errorModel.hasError
+                                                    ? Colors.red
+                                                    : Colors.green,
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                errorModel.hasError
+                                                    ? 'Error'
+                                                    : 'Healthy',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text('Auto-Recovery:'),
+                                            Switch(
+                                              value: errorModel
+                                                  .autoRecoveryEnabled,
+                                              onChanged: (value) => viewmodel
+                                                  .toggleAutoRecovery(),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                            const SizedBox(height: 16),
-                            Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                const SizedBox(height: 16),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
                                   children: [
-                                    const Text(
-                                      'System Status',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
+                                    ElevatedButton(
+                                      onPressed: () =>
+                                          viewmodel.simulateError(),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.red,
+                                      ),
+                                      child: const Text('Simulate Error'),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text('Current State:'),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: errorModel.hasError
-                                                ? Colors.red
-                                                : Colors.green,
-                                            borderRadius:
-                                                BorderRadius.circular(4),
-                                          ),
-                                          child: Text(
-                                            errorModel.hasError
-                                                ? 'Error'
-                                                : 'Healthy',
-                                            style: const TextStyle(
-                                                color: Colors.white),
-                                          ),
-                                        ),
-                                      ],
+                                    ElevatedButton(
+                                      onPressed: () =>
+                                          viewmodel.performOperation(),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.green,
+                                      ),
+                                      child: const Text('Perform Operation'),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        const Text('Auto-Recovery:'),
-                                        Switch(
-                                          value: errorModel.autoRecoveryEnabled,
-                                          onChanged: (value) =>
-                                              viewmodel.toggleAutoRecovery(),
-                                        ),
-                                      ],
+                                    ElevatedButton(
+                                      onPressed: () => viewmodel.resetSystem(),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.blue,
+                                      ),
+                                      child: const Text('Reset System'),
                                     ),
                                   ],
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                ElevatedButton(
-                                  onPressed: () => viewmodel.simulateError(),
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red),
-                                  child: const Text('Simulate Error'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () => viewmodel.performOperation(),
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.green),
-                                  child: const Text('Perform Operation'),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () => viewmodel.resetSystem(),
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blue),
-                                  child: const Text('Reset System'),
-                                ),
                               ],
                             ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                          );
+                        },
+                      ),
                 ),
               ),
             ),
@@ -754,7 +834,9 @@ void main() {
                             const Text(
                               'Nullable State Management',
                               style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Card(
@@ -817,7 +899,8 @@ void main() {
                                 ElevatedButton(
                                   onPressed: () =>
                                       _NullSafetyTestService.setValue(
-                                          'Hello World'),
+                                        'Hello World',
+                                      ),
                                   child: const Text('Set Value'),
                                 ),
                                 ElevatedButton(
@@ -829,7 +912,8 @@ void main() {
                                   onPressed: () =>
                                       _NullSafetyTestService.setValue(null),
                                   style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.orange),
+                                    backgroundColor: Colors.orange,
+                                  ),
                                   child: const Text('Set Null'),
                                 ),
                               ],
@@ -846,8 +930,9 @@ void main() {
                                 children: [
                                   Text(
                                     'Null Safety Features:',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   SizedBox(height: 8),
                                   Text('✓ Nullable type support'),
@@ -909,13 +994,15 @@ class PerformanceModel {
 
 class PerformanceViewModel extends ViewModel<PerformanceModel> {
   PerformanceViewModel()
-      : super(PerformanceModel(
+    : super(
+        PerformanceModel(
           currentValue: 0,
           updatesPerSecond: 0,
           totalUpdates: 0,
           isPerformant: true,
           memoryObjects: [],
-        ));
+        ),
+      );
 
   @override
   void init() {
@@ -923,25 +1010,28 @@ class PerformanceViewModel extends ViewModel<PerformanceModel> {
   }
 
   void startRapidUpdates() {
-    transformState((current) => current.copyWith(
-          currentValue: 500,
-          updatesPerSecond: 60,
-          totalUpdates: current.totalUpdates + 500,
-          isPerformant: true,
-        ));
+    transformState(
+      (current) => current.copyWith(
+        currentValue: 500,
+        updatesPerSecond: 60,
+        totalUpdates: current.totalUpdates + 500,
+        isPerformant: true,
+      ),
+    );
   }
 
   void stopUpdates() {
-    transformState((current) => current.copyWith(
-          updatesPerSecond: 0,
-          isPerformant: true,
-        ));
+    transformState(
+      (current) => current.copyWith(updatesPerSecond: 0, isPerformant: true),
+    );
   }
 
   void allocateMemory(int count) {
     transformState((current) {
       final newObjects = List.generate(
-          count, (index) => 'Object_${current.memoryObjects.length + index}');
+        count,
+        (index) => 'Object_${current.memoryObjects.length + index}',
+      );
       return current.copyWith(
         memoryObjects: [...current.memoryObjects, ...newObjects],
       );
@@ -949,9 +1039,7 @@ class PerformanceViewModel extends ViewModel<PerformanceModel> {
   }
 
   void clearMemory() {
-    transformState((current) => current.copyWith(
-          memoryObjects: [],
-        ));
+    transformState((current) => current.copyWith(memoryObjects: []));
   }
 }
 
@@ -984,13 +1072,16 @@ class NetworkSimulatorViewModel extends AsyncViewModelImpl<NetworkResponse> {
   void retryConnection() {
     loadingState();
     Future.delayed(const Duration(seconds: 1)).then((_) {
-      updateState(NetworkResponse(
-        statusCode: 200,
-        responseTime: 150,
-        dataSize: 1024,
-        responseData: '{"status": "success", "message": "Connection restored"}',
-        retryCount: (data?.retryCount ?? 0) + 1,
-      ));
+      updateState(
+        NetworkResponse(
+          statusCode: 200,
+          responseTime: 150,
+          dataSize: 1024,
+          responseData:
+              '{"status": "success", "message": "Connection restored"}',
+          retryCount: (data?.retryCount ?? 0) + 1,
+        ),
+      );
     });
   }
 }
@@ -1037,7 +1128,8 @@ class ErrorHandlingModel {
 
 class ErrorHandlingViewModel extends ViewModel<ErrorHandlingModel> {
   ErrorHandlingViewModel()
-      : super(ErrorHandlingModel(
+    : super(
+        ErrorHandlingModel(
           hasError: false,
           errorMessage: '',
           errorCount: 0,
@@ -1045,7 +1137,8 @@ class ErrorHandlingViewModel extends ViewModel<ErrorHandlingModel> {
           successCount: 0,
           uptime: '00:00:00',
           autoRecoveryEnabled: false,
-        ));
+        ),
+      );
 
   @override
   void init() {
@@ -1053,37 +1146,44 @@ class ErrorHandlingViewModel extends ViewModel<ErrorHandlingModel> {
   }
 
   void simulateError() {
-    transformState((current) => current.copyWith(
-          hasError: true,
-          errorMessage: 'Simulated system error occurred',
-          errorCount: current.errorCount + 1,
-        ));
+    transformState(
+      (current) => current.copyWith(
+        hasError: true,
+        errorMessage: 'Simulated system error occurred',
+        errorCount: current.errorCount + 1,
+      ),
+    );
   }
 
   void performOperation() {
-    transformState((current) => current.copyWith(
-          hasError: false,
-          errorMessage: '',
-          successCount: current.successCount + 1,
-        ));
+    transformState(
+      (current) => current.copyWith(
+        hasError: false,
+        errorMessage: '',
+        successCount: current.successCount + 1,
+      ),
+    );
   }
 
   void resetSystem() {
-    transformState((current) => ErrorHandlingModel(
-          hasError: false,
-          errorMessage: '',
-          errorCount: 0,
-          recoveryAttempts: 0,
-          successCount: 0,
-          uptime: '00:00:00',
-          autoRecoveryEnabled: current.autoRecoveryEnabled,
-        ));
+    transformState(
+      (current) => ErrorHandlingModel(
+        hasError: false,
+        errorMessage: '',
+        errorCount: 0,
+        recoveryAttempts: 0,
+        successCount: 0,
+        uptime: '00:00:00',
+        autoRecoveryEnabled: current.autoRecoveryEnabled,
+      ),
+    );
   }
 
   void toggleAutoRecovery() {
-    transformState((current) => current.copyWith(
-          autoRecoveryEnabled: !current.autoRecoveryEnabled,
-        ));
+    transformState(
+      (current) =>
+          current.copyWith(autoRecoveryEnabled: !current.autoRecoveryEnabled),
+    );
   }
 }
 

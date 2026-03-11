@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reactive_notifier/reactive_notifier.dart';
 
@@ -75,7 +73,7 @@ class DependencyTrackingViewModel extends ViewModel<String> {
   final List<String> reactionCalls = [];
 
   DependencyTrackingViewModel(this.countNotifier, [this.labelNotifier])
-      : super('initial');
+    : super('initial');
 
   @override
   void init() {
@@ -144,7 +142,7 @@ class AsyncDependencyTrackingViewModel extends AsyncViewModelImpl<String> {
   final List<String> reactionCalls = [];
 
   AsyncDependencyTrackingViewModel(this.countNotifier)
-      : super(AsyncState.initial(), loadOnInit: false);
+    : super(AsyncState.initial(), loadOnInit: false);
 
   @override
   Future<String> init() async {
@@ -179,15 +177,19 @@ void main() {
   });
 
   group('DependencyState — Setup Phase', () {
-    test('on<T>() registers dependency and executes callback with (current, current)',
-        () {
-      final countNotifier = ReactiveNotifier<int>(() => 5);
-      final vm = DependencyTrackingViewModel(countNotifier);
+    test(
+      'on<T>() registers dependency and executes callback with (current, current)',
+      () {
+        final countNotifier = ReactiveNotifier<int>(() => 5);
+        final vm = DependencyTrackingViewModel(countNotifier);
 
-      expect(vm.setupCalls, contains('count:5'),
-          reason:
-              'Setup callback should be called with current value');
-    });
+        expect(
+          vm.setupCalls,
+          contains('count:5'),
+          reason: 'Setup callback should be called with current value',
+        );
+      },
+    );
 
     test('multiple on<T>() register multiple dependencies', () {
       final countNotifier = ReactiveNotifier<int>(() => 5);
@@ -195,21 +197,27 @@ void main() {
 
       final vm = DependencyTrackingViewModel(countNotifier, labelNotifier);
 
-      expect(vm.setupCalls.length, equals(2),
-          reason: 'Both dependencies should be registered');
+      expect(
+        vm.setupCalls.length,
+        equals(2),
+        reason: 'Both dependencies should be registered',
+      );
       expect(vm.setupCalls, contains('count:5'));
       expect(vm.setupCalls, contains('label:hello'));
     });
 
     test('extracts value from ViewModel<T> correctly (.data)', () {
-      final userNotifier =
-          ReactiveNotifier<SimpleUserViewModel>(() => SimpleUserViewModel());
+      final userNotifier = ReactiveNotifier<SimpleUserViewModel>(
+        () => SimpleUserViewModel(),
+      );
 
       final vm = ViewModelDependencyTracker(userNotifier);
 
-      expect(vm.setupCalls.first, equals('user:guest'),
-          reason:
-              'Should extract UserModel from ViewModel<UserModel> via .data');
+      expect(
+        vm.setupCalls.first,
+        equals('user:guest'),
+        reason: 'Should extract UserModel from ViewModel<UserModel> via .data',
+      );
     });
 
     test('extracts simple type (int, String) correctly', () {
@@ -227,18 +235,24 @@ void main() {
         setupValues.add(current);
       });
 
-      expect(setupValues, [42],
-          reason: 'Should extract int value directly from notifier');
+      expect(setupValues, [
+        42,
+      ], reason: 'Should extract int value directly from notifier');
     });
 
-    test('no override of onDependenciesStateChanged does not break anything',
-        () {
-      final vm = NoDependencyViewModel();
+    test(
+      'no override of onDependenciesStateChanged does not break anything',
+      () {
+        final vm = NoDependencyViewModel();
 
-      expect(vm.data, equals(0),
+        expect(
+          vm.data,
+          equals(0),
           reason:
-              'ViewModel without dependency override should initialize normally');
-    });
+              'ViewModel without dependency override should initialize normally',
+        );
+      },
+    );
   });
 
   group('DependencyState — Reaction Phase', () {
@@ -251,9 +265,12 @@ void main() {
 
       await flushMicrotasks();
 
-      expect(vm.reactionCalls, contains('count:0->10'),
-          reason:
-              'Reaction callback should fire with previous and current values');
+      expect(
+        vm.reactionCalls,
+        contains('count:0->10'),
+        reason:
+            'Reaction callback should fire with previous and current values',
+      );
     });
 
     test('callback does NOT execute if dependency did not change', () async {
@@ -268,8 +285,10 @@ void main() {
       await flushMicrotasks();
 
       expect(
-          vm.reactionCalls.where((c) => c.startsWith('label:')), isEmpty,
-          reason: 'Label callback should not fire when only count changed');
+        vm.reactionCalls.where((c) => c.startsWith('label:')),
+        isEmpty,
+        reason: 'Label callback should not fire when only count changed',
+      );
       expect(vm.reactionCalls, contains('count:0->5'));
     });
 
@@ -281,12 +300,14 @@ void main() {
 
       await flushMicrotasks();
 
-      expect(vm.reactionCalls.first, equals('count:100->200'),
-          reason: 'Previous should be 100 and current should be 200');
+      expect(
+        vm.reactionCalls.first,
+        equals('count:100->200'),
+        reason: 'Previous should be 100 and current should be 200',
+      );
     });
 
-    test('multiple deps change → single notifyListeners (batching)',
-        () async {
+    test('multiple deps change → single notifyListeners (batching)', () async {
       final countNotifier = ReactiveNotifier<int>(() => 0);
       final labelNotifier = ReactiveNotifier<String>(() => 'init');
 
@@ -302,9 +323,12 @@ void main() {
       // Wait for the single batched microtask
       await flushMicrotasks();
 
-      expect(notifyCount, equals(1),
-          reason:
-              'Multiple dependency changes should batch into 1 notifyListeners');
+      expect(
+        notifyCount,
+        equals(1),
+        reason:
+            'Multiple dependency changes should batch into 1 notifyListeners',
+      );
     });
 
     test('snapshot updates after callback', () async {
@@ -319,9 +343,12 @@ void main() {
       countNotifier.updateState(20);
       await flushMicrotasks();
 
-      expect(vm.reactionCalls.last, equals('count:10->20'),
-          reason:
-              'After first change, snapshot should be updated so second change shows correct previous');
+      expect(
+        vm.reactionCalls.last,
+        equals('count:10->20'),
+        reason:
+            'After first change, snapshot should be updated so second change shows correct previous',
+      );
     });
   });
 
@@ -330,9 +357,12 @@ void main() {
       final countNotifier = ReactiveNotifier<int>(() => 5);
       final vm = DependencyTrackingViewModel(countNotifier);
 
-      expect(vm.setupCalls, isNotEmpty,
-          reason:
-              'Dependencies should be set up before init(), so setupCalls should be populated');
+      expect(
+        vm.setupCalls,
+        isNotEmpty,
+        reason:
+            'Dependencies should be set up before init(), so setupCalls should be populated',
+      );
     });
 
     test('cleanup in dispose removes all listeners', () async {
@@ -345,30 +375,34 @@ void main() {
       countNotifier.updateState(99);
       await flushMicrotasks();
 
-      expect(vm.reactionCalls, isEmpty,
-          reason:
-              'After dispose, dependency listeners should be removed — no reactions');
+      expect(
+        vm.reactionCalls,
+        isEmpty,
+        reason:
+            'After dispose, dependency listeners should be removed — no reactions',
+      );
     });
 
-    test('ViewModel with onDependenciesStateChanged + init() works end-to-end',
-        () async {
-      final countNotifier = ReactiveNotifier<int>(() => 0);
-      final vm = DependencyTrackingViewModel(countNotifier);
+    test(
+      'ViewModel with onDependenciesStateChanged + init() works end-to-end',
+      () async {
+        final countNotifier = ReactiveNotifier<int>(() => 0);
+        final vm = DependencyTrackingViewModel(countNotifier);
 
-      // Setup happened
-      expect(vm.setupCalls, isNotEmpty);
+        // Setup happened
+        expect(vm.setupCalls, isNotEmpty);
 
-      // Reaction works
-      countNotifier.updateState(42);
-      await flushMicrotasks();
-      expect(vm.reactionCalls, isNotEmpty);
+        // Reaction works
+        countNotifier.updateState(42);
+        await flushMicrotasks();
+        expect(vm.reactionCalls, isNotEmpty);
 
-      // ViewModel state is valid
-      expect(vm.data, equals('initial'));
-    });
+        // ViewModel state is valid
+        expect(vm.data, equals('initial'));
+      },
+    );
 
-    test('AsyncViewModelImpl with onDependenciesStateChanged works',
-        () async {
+    test('AsyncViewModelImpl with onDependenciesStateChanged works', () async {
       final countNotifier = ReactiveNotifier<int>(() => 0);
       final vm = AsyncDependencyTrackingViewModel(countNotifier);
 
@@ -392,11 +426,13 @@ void main() {
       vm.dispose();
 
       // This should not throw
-      expect(() {
-        countNotifier.updateState(999);
-      }, returnsNormally,
-          reason:
-              'Changing dependency after ViewModel dispose should not crash');
+      expect(
+        () {
+          countNotifier.updateState(999);
+        },
+        returnsNormally,
+        reason: 'Changing dependency after ViewModel dispose should not crash',
+      );
 
       await flushMicrotasks();
       // No crash = test passes
@@ -418,9 +454,12 @@ void main() {
       await flushMicrotasks();
 
       // The dependency batch should fire once with the latest value
-      expect(notifyCount, equals(1),
-          reason:
-              'Multiple rapid changes to same dependency should batch into 1 notify');
+      expect(
+        notifyCount,
+        equals(1),
+        reason:
+            'Multiple rapid changes to same dependency should batch into 1 notify',
+      );
       // The reaction should see the latest value
       expect(vm.reactionCalls.last, contains('->3'));
     });

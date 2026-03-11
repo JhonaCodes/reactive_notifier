@@ -44,7 +44,8 @@ extension ReactiveContextGeneric on BuildContext {
       }
     }
     throw StateError(
-        'No ReactiveNotifier found for type $T. Make sure it\'s registered in a Service mixin.');
+      'No ReactiveNotifier found for type $T. Make sure it\'s registered in a Service mixin.',
+    );
   }
 
   /// Access by key: context.getByKey('languageService')
@@ -53,14 +54,12 @@ extension ReactiveContextGeneric on BuildContext {
     final instances = ReactiveNotifier.getInstances;
     for (final instance in instances) {
       // Search by class name or custom key
-      if (instance.runtimeType
-              .toString()
-              .toLowerCase()
-              .contains(key.toLowerCase()) ||
-          instance.notifier.runtimeType
-              .toString()
-              .toLowerCase()
-              .contains(key.toLowerCase())) {
+      if (instance.runtimeType.toString().toLowerCase().contains(
+            key.toLowerCase(),
+          ) ||
+          instance.notifier.runtimeType.toString().toLowerCase().contains(
+            key.toLowerCase(),
+          )) {
         if (instance.notifier is T) {
           return getReactiveState(instance as ReactiveNotifier<T>);
         }

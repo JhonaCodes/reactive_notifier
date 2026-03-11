@@ -57,8 +57,7 @@ mixin HelperNotifier {
     assert(() {
       if (!ReactiveNotifier.debugLogging) return true;
       final typeStr = typeName ?? T.toString();
-      final actionCapitalized =
-          action[0].toUpperCase() + action.substring(1);
+      final actionCapitalized = action[0].toUpperCase() + action.substring(1);
       final header = '$emoji ViewModel<$typeStr> Listeners $actionCapitalized';
       final divider = '=' * (header.length - 2);
 

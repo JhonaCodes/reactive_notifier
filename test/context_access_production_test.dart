@@ -15,20 +15,24 @@ class ProductionAuthViewModel extends ViewModel<AuthState> {
     // In production scenarios, handle the case where context isn't available initially
     if (!hasContext) {
       // Initialize with a temporary state that indicates context is needed
-      updateSilently(const AuthState(
-        isAuthenticated: false,
-        userTheme: 'waiting_for_context',
-        contextAvailable: false,
-      ));
+      updateSilently(
+        const AuthState(
+          isAuthenticated: false,
+          userTheme: 'waiting_for_context',
+          contextAvailable: false,
+        ),
+      );
       return;
     }
 
     // Initialize with basic state first
-    updateSilently(const AuthState(
-      isAuthenticated: false,
-      userTheme: 'initializing',
-      contextAvailable: true,
-    ));
+    updateSilently(
+      const AuthState(
+        isAuthenticated: false,
+        userTheme: 'initializing',
+        contextAvailable: true,
+      ),
+    );
 
     // Use postFrameCallback for safe context access (PRODUCTION PATTERN)
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -38,18 +42,22 @@ class ProductionAuthViewModel extends ViewModel<AuthState> {
           final theme = Theme.of(requireContext('Riverpod migration'));
           final isDarkMode = theme.brightness == Brightness.dark;
 
-          updateState(AuthState(
-            isAuthenticated: false,
-            userTheme: isDarkMode ? 'dark' : 'light',
-            contextAvailable: true,
-          ));
+          updateState(
+            AuthState(
+              isAuthenticated: false,
+              userTheme: isDarkMode ? 'dark' : 'light',
+              contextAvailable: true,
+            ),
+          );
         } catch (e) {
           // In production, handle context access errors properly
-          updateState(const AuthState(
-            isAuthenticated: false,
-            userTheme: 'error',
-            contextAvailable: false,
-          ));
+          updateState(
+            const AuthState(
+              isAuthenticated: false,
+              userTheme: 'error',
+              contextAvailable: false,
+            ),
+          );
         }
       }
     });
@@ -91,19 +99,11 @@ class ProductionDataViewModel extends AsyncViewModelImpl<UserData> {
       }
     } catch (e) {
       // Return error state data
-      return UserData(
-        name: 'Error: $e',
-        screenWidth: 0,
-        screenHeight: 0,
-      );
+      return UserData(name: 'Error: $e', screenWidth: 0, screenHeight: 0);
     }
 
     // Fallback
-    return UserData(
-      name: 'No context',
-      screenWidth: 0,
-      screenHeight: 0,
-    );
+    return UserData(name: 'No context', screenWidth: 0, screenHeight: 0);
   }
 }
 
@@ -120,10 +120,10 @@ class AuthState {
   });
 
   static AuthState initial() => const AuthState(
-        isAuthenticated: false,
-        userTheme: 'unknown',
-        contextAvailable: false,
-      );
+    isAuthenticated: false,
+    userTheme: 'unknown',
+    contextAvailable: false,
+  );
 }
 
 class UserData {
@@ -143,14 +143,16 @@ mixin ProductionAuthService {
   static ReactiveNotifier<ProductionAuthViewModel>? _instance;
 
   static ReactiveNotifier<ProductionAuthViewModel> get instance {
-    _instance ??=
-        ReactiveNotifier<ProductionAuthViewModel>(ProductionAuthViewModel.new);
+    _instance ??= ReactiveNotifier<ProductionAuthViewModel>(
+      ProductionAuthViewModel.new,
+    );
     return _instance!;
   }
 
   static ReactiveNotifier<ProductionAuthViewModel> createNew() {
-    _instance =
-        ReactiveNotifier<ProductionAuthViewModel>(ProductionAuthViewModel.new);
+    _instance = ReactiveNotifier<ProductionAuthViewModel>(
+      ProductionAuthViewModel.new,
+    );
     return _instance!;
   }
 }
@@ -159,14 +161,16 @@ mixin ProductionDataService {
   static ReactiveNotifier<ProductionDataViewModel>? _instance;
 
   static ReactiveNotifier<ProductionDataViewModel> get instance {
-    _instance ??=
-        ReactiveNotifier<ProductionDataViewModel>(ProductionDataViewModel.new);
+    _instance ??= ReactiveNotifier<ProductionDataViewModel>(
+      ProductionDataViewModel.new,
+    );
     return _instance!;
   }
 
   static ReactiveNotifier<ProductionDataViewModel> createNew() {
-    _instance =
-        ReactiveNotifier<ProductionDataViewModel>(ProductionDataViewModel.new);
+    _instance = ReactiveNotifier<ProductionDataViewModel>(
+      ProductionDataViewModel.new,
+    );
     return _instance!;
   }
 }
@@ -179,8 +183,9 @@ void main() {
       ProductionDataService.createNew();
     });
 
-    testWidgets('ViewModel MUST receive context in production scenario',
-        (tester) async {
+    testWidgets('ViewModel MUST receive context in production scenario', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: ThemeData(brightness: Brightness.dark),
@@ -221,8 +226,9 @@ void main() {
       expect(vm.context, isNotNull);
     });
 
-    testWidgets('AsyncViewModel MUST receive context in production scenario',
-        (tester) async {
+    testWidgets('AsyncViewModel MUST receive context in production scenario', (
+      tester,
+    ) async {
       // Reset service before test
       ProductionDataService.createNew();
 
@@ -287,11 +293,13 @@ void main() {
       // Should fail when trying to access context
       expect(
         () => vm.requireContext('test operation'),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains('BuildContext Required But Not Available'),
-        )),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            contains('BuildContext Required But Not Available'),
+          ),
+        ),
       );
     });
 
@@ -310,8 +318,9 @@ void main() {
       expect(vm.hasContext, isFalse);
     });
 
-    testWidgets('Context cleanup works correctly in production',
-        (tester) async {
+    testWidgets('Context cleanup works correctly in production', (
+      tester,
+    ) async {
       // Build widget with context
       await tester.pumpWidget(
         MaterialApp(
@@ -328,9 +337,9 @@ void main() {
       expect(vm.hasContext, isTrue);
 
       // Remove widget - context should be cleaned up
-      await tester.pumpWidget(const MaterialApp(
-        home: Scaffold(body: Text('No Builder')),
-      ));
+      await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: Text('No Builder'))),
+      );
 
       await tester.pumpAndSettle();
 
@@ -345,12 +354,15 @@ void main() {
           home: Column(
             children: [
               Expanded(
-                child: ReactiveViewModelBuilder<ProductionAuthViewModel,
-                    AuthState>(
-                  viewmodel: ProductionAuthService.instance.notifier,
-                  build: (state, viewModel, keep) =>
-                      Text('Auth: ${state.userTheme}'),
-                ),
+                child:
+                    ReactiveViewModelBuilder<
+                      ProductionAuthViewModel,
+                      AuthState
+                    >(
+                      viewmodel: ProductionAuthService.instance.notifier,
+                      build: (state, viewModel, keep) =>
+                          Text('Auth: ${state.userTheme}'),
+                    ),
               ),
               Expanded(
                 child: ReactiveAsyncBuilder<ProductionDataViewModel, UserData>(
@@ -387,14 +399,16 @@ void main() {
 
       expect(
         () => vm.requireContext('test operation'),
-        throwsA(isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          allOf(
-            contains('BuildContext Required But Not Available'),
-            contains('test operation'),
+        throwsA(
+          isA<StateError>().having(
+            (e) => e.message,
+            'message',
+            allOf(
+              contains('BuildContext Required But Not Available'),
+              contains('test operation'),
+            ),
           ),
-        )),
+        ),
       );
     });
   });

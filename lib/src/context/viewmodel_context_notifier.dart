@@ -21,7 +21,10 @@ class ViewModelContextNotifier {
   /// Internal method called by builders when they mount
   /// Automatically registers context without user intervention
   static void _registerContext(
-      BuildContext context, String builderType, Object? viewModel) {
+    BuildContext context,
+    String builderType,
+    Object? viewModel,
+  ) {
     final vmKey = viewModel?.hashCode ?? 0;
 
     // Handle global context registration (when viewModel is null and builderType indicates global init)
@@ -169,7 +172,10 @@ Total contexts remaining: ${_contexts.length}
   /// Register context for specific ViewModel - used for testing
   /// This is a public method to allow test-specific registrations
   static void registerContextForTesting(
-      BuildContext context, String builderType, Object? viewModel) {
+    BuildContext context,
+    String builderType,
+    Object? viewModel,
+  ) {
     _registerContext(context, builderType, viewModel);
   }
 

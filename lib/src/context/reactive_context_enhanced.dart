@@ -27,7 +27,8 @@ class ReactiveContextEnhanced {
   /// Notifier-specific element tracking prevents cross-rebuilds
   static final Map<ReactiveNotifier, Set<Element>> _markNeedsBuildElements = {};
   static final Map<ReactiveNotifier, bool> _globalListenersSetup = {};
-  static final Map<ReactiveNotifier, VoidCallback> _globalListenerCallbacks = {};
+  static final Map<ReactiveNotifier, VoidCallback> _globalListenerCallbacks =
+      {};
 
   /// Enhanced getState with type-specific rebuild strategy
   static T getReactiveState<T>(
@@ -42,7 +43,9 @@ class ReactiveContextEnhanced {
     if (inheritedWidget != null) {
       assert(() {
         if (!ReactiveNotifier.debugLogging) return true;
-        log('[ReactiveContext] Using InheritedWidget strategy for $T in ${context.widget.runtimeType}');
+        log(
+          '[ReactiveContext] Using InheritedWidget strategy for $T in ${context.widget.runtimeType}',
+        );
         return true;
       }());
       return inheritedWidget.notifier!.notifier;
@@ -51,7 +54,9 @@ class ReactiveContextEnhanced {
     // Strategy 2: Fallback to enhanced markNeedsBuild strategy
     assert(() {
       if (!ReactiveNotifier.debugLogging) return true;
-      log('[ReactiveContext] Using markNeedsBuild strategy for $T in ${context.widget.runtimeType}');
+      log(
+        '[ReactiveContext] Using markNeedsBuild strategy for $T in ${context.widget.runtimeType}',
+      );
       return true;
     }());
 
@@ -87,7 +92,9 @@ class ReactiveContextEnhanced {
         if (elementsForNotifier != null) {
           assert(() {
             if (!ReactiveNotifier.debugLogging) return true;
-            log('[ReactiveContext] Rebuilding ${elementsForNotifier.length} elements for notifier $notifier');
+            log(
+              '[ReactiveContext] Rebuilding ${elementsForNotifier.length} elements for notifier $notifier',
+            );
             return true;
           }());
 
@@ -142,8 +149,8 @@ class ReactiveContextEnhanced {
   static Map<String, dynamic> getEnhancedDebugStatistics() {
     return {
       'notifierSpecificElements': _markNeedsBuildElements.map(
-          (notifier, elements) =>
-              MapEntry(notifier.toString(), elements.length)),
+        (notifier, elements) => MapEntry(notifier.toString(), elements.length),
+      ),
       'globalListenersSetup': _globalListenersSetup.length,
       'registeredNotifierTypes': ReactiveContextRegistry.registeredTypes.length,
       'totalActiveElements': _markNeedsBuildElements.values
@@ -225,6 +232,8 @@ class ReactiveContextBuilder extends StatelessWidget {
 /// @protected - Internal function, use extensions instead
 @protected
 T getReactiveStateEnhanced<T>(
-    BuildContext context, ReactiveNotifier<T> notifier) {
+  BuildContext context,
+  ReactiveNotifier<T> notifier,
+) {
   return ReactiveContextEnhanced.getReactiveState<T>(context, notifier);
 }

@@ -25,10 +25,7 @@ class MockScreenLayout extends StatelessWidget {
         appBar: AppBar(
           title: Text(
             title,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
           ),
           backgroundColor: Colors.blue[600],
           foregroundColor: Colors.white,
@@ -87,7 +84,9 @@ void main() {
                         const Text(
                           'Counter with updateState()',
                           style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
@@ -109,7 +108,9 @@ void main() {
                               const Text(
                                 'Current Value',
                                 style: TextStyle(
-                                    fontSize: 16, color: Colors.black54),
+                                  fontSize: 16,
+                                  color: Colors.black54,
+                                ),
                               ),
                               const SizedBox(height: 8),
                               Text(
@@ -150,8 +151,10 @@ void main() {
                           ),
                           child: const Text(
                             'This button uses updateState() which immediately triggers UI rebuilds and notifies all listeners.',
-                            style:
-                                TextStyle(fontSize: 14, color: Colors.black87),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -187,7 +190,9 @@ void main() {
                         const Text(
                           'Counter with updateSilently()',
                           style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
@@ -209,7 +214,9 @@ void main() {
                               const Text(
                                 'Displayed Value',
                                 style: TextStyle(
-                                    fontSize: 16, color: Colors.black54),
+                                  fontSize: 16,
+                                  color: Colors.black54,
+                                ),
                               ),
                               const SizedBox(height: 8),
                               Text(
@@ -232,7 +239,9 @@ void main() {
                                     const Text(
                                       'Internal Value',
                                       style: TextStyle(
-                                          fontSize: 14, color: Colors.black54),
+                                        fontSize: 14,
+                                        color: Colors.black54,
+                                      ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
@@ -256,14 +265,18 @@ void main() {
                               child: ElevatedButton(
                                 onPressed: () => _CounterTestService
                                     .counterState
-                                    .updateSilently(_CounterTestService
-                                            .counterState.notifier +
-                                        1),
+                                    .updateSilently(
+                                      _CounterTestService
+                                              .counterState
+                                              .notifier +
+                                          1,
+                                    ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.orange,
                                   foregroundColor: Colors.white,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -279,13 +292,15 @@ void main() {
                               child: ElevatedButton(
                                 onPressed: () => _CounterTestService
                                     .counterState
-                                    .updateState(_CounterTestService
-                                        .counterState.notifier),
+                                    .updateState(
+                                      _CounterTestService.counterState.notifier,
+                                    ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
                                   foregroundColor: Colors.white,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -308,8 +323,10 @@ void main() {
                           ),
                           child: const Text(
                             'updateSilently() modifies internal state without triggering UI updates. Use "Force Update" to refresh the display.',
-                            style:
-                                TextStyle(fontSize: 14, color: Colors.black87),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -347,7 +364,9 @@ void main() {
                         const Text(
                           'String with transformState()',
                           style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
@@ -369,7 +388,9 @@ void main() {
                               const Text(
                                 'Current Text',
                                 style: TextStyle(
-                                    fontSize: 16, color: Colors.black54),
+                                  fontSize: 16,
+                                  color: Colors.black54,
+                                ),
                               ),
                               const SizedBox(height: 8),
                               Container(
@@ -402,7 +423,9 @@ void main() {
                                     const Text(
                                       'Length:',
                                       style: TextStyle(
-                                          fontSize: 14, color: Colors.black54),
+                                        fontSize: 14,
+                                        color: Colors.black54,
+                                      ),
                                     ),
                                     Text(
                                       '${value.length}',
@@ -428,8 +451,9 @@ void main() {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.green,
                                   foregroundColor: Colors.white,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -448,8 +472,9 @@ void main() {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.green,
                                   foregroundColor: Colors.white,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -488,8 +513,10 @@ void main() {
                           ),
                           child: const Text(
                             'transformState() applies transformations to the current state and immediately notifies all listeners.',
-                            style:
-                                TextStyle(fontSize: 14, color: Colors.black87),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -525,7 +552,9 @@ void main() {
                         const Text(
                           'String with transformStateSilently()',
                           style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 24),
@@ -547,7 +576,9 @@ void main() {
                               const Text(
                                 'Displayed Text',
                                 style: TextStyle(
-                                    fontSize: 16, color: Colors.black54),
+                                  fontSize: 16,
+                                  color: Colors.black54,
+                                ),
                               ),
                               const SizedBox(height: 8),
                               Container(
@@ -555,8 +586,9 @@ void main() {
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(8),
-                                  border:
-                                      Border.all(color: Colors.purple[200]!),
+                                  border: Border.all(
+                                    color: Colors.purple[200]!,
+                                  ),
                                 ),
                                 child: Text(
                                   '"$value"',
@@ -579,7 +611,9 @@ void main() {
                                     const Text(
                                       'Internal Text',
                                       style: TextStyle(
-                                          fontSize: 14, color: Colors.black54),
+                                        fontSize: 14,
+                                        color: Colors.black54,
+                                      ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
@@ -603,12 +637,14 @@ void main() {
                               child: ElevatedButton(
                                 onPressed: () =>
                                     _StringTestService.transformSilently(
-                                        (current) => '$current*'),
+                                      (current) => '$current*',
+                                    ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.purple,
                                   foregroundColor: Colors.white,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -624,12 +660,14 @@ void main() {
                               child: ElevatedButton(
                                 onPressed: () =>
                                     _StringTestService.transformSilently(
-                                        (current) => current.toUpperCase()),
+                                      (current) => current.toUpperCase(),
+                                    ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.purple,
                                   foregroundColor: Colors.white,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -668,8 +706,10 @@ void main() {
                           ),
                           child: const Text(
                             'transformStateSilently() modifies internal state without triggering UI updates. Use "Show Changes" to display modifications.',
-                            style:
-                                TextStyle(fontSize: 14, color: Colors.black87),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black87,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -688,8 +728,9 @@ void main() {
 
 // Test services for state transformation testing
 mixin _CounterTestService {
-  static final ReactiveNotifier<int> counterState =
-      ReactiveNotifier<int>(() => 0);
+  static final ReactiveNotifier<int> counterState = ReactiveNotifier<int>(
+    () => 0,
+  );
 
   static void incrementCounter(int currentValue) {
     counterState.updateState(currentValue + 1);
@@ -697,8 +738,9 @@ mixin _CounterTestService {
 }
 
 mixin _StringTestService {
-  static final ReactiveNotifier<String> stringState =
-      ReactiveNotifier<String>(() => 'Initial');
+  static final ReactiveNotifier<String> stringState = ReactiveNotifier<String>(
+    () => 'Initial',
+  );
 
   static void transformToUpper() {
     stringState.transformState((current) => current.toUpperCase());

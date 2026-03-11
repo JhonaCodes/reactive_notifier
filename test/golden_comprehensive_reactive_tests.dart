@@ -30,8 +30,9 @@ void main() {
     // Test models for complex state scenarios
     final counterState = ReactiveNotifier<int>(() => 0);
     final userState = ReactiveNotifier<UserViewModel>(() => UserViewModel());
-    final asyncDataState =
-        ReactiveNotifier<DataAsyncViewModel>(() => DataAsyncViewModel());
+    final asyncDataState = ReactiveNotifier<DataAsyncViewModel>(
+      () => DataAsyncViewModel(),
+    );
 
     group('ReactiveBuilder State Updates', () {
       goldenTest(
@@ -55,13 +56,20 @@ void main() {
                           Text(
                             'Counter Value: $value',
                             style: const TextStyle(
-                                fontSize: 24, fontWeight: FontWeight.bold),
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 16),
-                          keep(const Text(
-                            'This widget never rebuilds',
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
-                          )),
+                          keep(
+                            const Text(
+                              'This widget never rebuilds',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
                           const SizedBox(height: 16),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -134,16 +142,18 @@ void main() {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          keep(const Card(
-                            child: Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: Text(
-                                'This card never rebuilds\nregardless of state changes',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 14),
+                          keep(
+                            const Card(
+                              child: Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Text(
+                                  'This card never rebuilds\nregardless of state changes',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 14),
+                                ),
                               ),
                             ),
-                          )),
+                          ),
                         ],
                       );
                     },
@@ -183,13 +193,17 @@ void main() {
                           Text(
                             'Displayed Value: $value',
                             style: const TextStyle(
-                                fontSize: 24, fontWeight: FontWeight.bold),
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           Text(
                             'Actual Internal Value: ${counterState.notifier}',
                             style: const TextStyle(
-                                fontSize: 16, color: Colors.grey),
+                              fontSize: 16,
+                              color: Colors.grey,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           Container(
@@ -250,7 +264,9 @@ void main() {
                                         ? user.name[0].toUpperCase()
                                         : '?',
                                     style: const TextStyle(
-                                        fontSize: 24, color: Colors.white),
+                                      fontSize: 24,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -262,13 +278,16 @@ void main() {
                                       Text(
                                         user.name,
                                         style: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold),
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                       Text(
                                         user.email,
                                         style: const TextStyle(
-                                            fontSize: 16, color: Colors.grey),
+                                          fontSize: 16,
+                                          color: Colors.grey,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -285,8 +304,9 @@ void main() {
                                     const Text(
                                       'Profile Statistics',
                                       style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                     const SizedBox(height: 12),
                                     Row(
@@ -304,21 +324,25 @@ void main() {
                                         const Text('Status:'),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
                                           decoration: BoxDecoration(
                                             color: user.isActive
                                                 ? Colors.green
                                                 : Colors.red,
-                                            borderRadius:
-                                                BorderRadius.circular(4),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
                                           ),
                                           child: Text(
                                             user.isActive
                                                 ? 'Active'
                                                 : 'Inactive',
                                             style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12),
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -328,17 +352,20 @@ void main() {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            keep(const Card(
-                              child: Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: Text(
-                                  'This section never rebuilds\neven when user state changes',
-                                  style: TextStyle(
+                            keep(
+                              const Card(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Text(
+                                    'This section never rebuilds\neven when user state changes',
+                                    style: TextStyle(
                                       fontSize: 14,
-                                      fontStyle: FontStyle.italic),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            )),
+                            ),
                           ],
                         ),
                       );
@@ -390,14 +417,17 @@ void main() {
                               children: [
                                 CircleAvatar(
                                   radius: 30,
-                                  backgroundColor:
-                                      user.isActive ? Colors.green : Colors.red,
+                                  backgroundColor: user.isActive
+                                      ? Colors.green
+                                      : Colors.red,
                                   child: Text(
                                     user.name.isNotEmpty
                                         ? user.name[0].toUpperCase()
                                         : '?',
                                     style: const TextStyle(
-                                        fontSize: 24, color: Colors.white),
+                                      fontSize: 24,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -409,13 +439,16 @@ void main() {
                                       Text(
                                         user.name,
                                         style: const TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold),
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                       Text(
                                         user.email,
                                         style: const TextStyle(
-                                            fontSize: 16, color: Colors.grey),
+                                          fontSize: 16,
+                                          color: Colors.grey,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -432,8 +465,9 @@ void main() {
                                     const Text(
                                       'Profile Statistics',
                                       style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                     const SizedBox(height: 12),
                                     Row(
@@ -451,21 +485,25 @@ void main() {
                                         const Text('Status:'),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
                                           decoration: BoxDecoration(
                                             color: user.isActive
                                                 ? Colors.green
                                                 : Colors.red,
-                                            borderRadius:
-                                                BorderRadius.circular(4),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
                                           ),
                                           child: Text(
                                             user.isActive
                                                 ? 'Active'
                                                 : 'Inactive',
                                             style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12),
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -535,7 +573,9 @@ void main() {
                           Text(
                             'Error: $error',
                             style: const TextStyle(
-                                fontSize: 16, color: Colors.red),
+                              fontSize: 16,
+                              color: Colors.red,
+                            ),
                           ),
                         ],
                       ),
@@ -588,14 +628,17 @@ void main() {
                             color: Colors.green[50],
                             child: Row(
                               children: [
-                                const Icon(Icons.check_circle,
-                                    color: Colors.green),
+                                const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Data loaded successfully (${data.length} items)',
                                   style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ],
                             ),
@@ -605,7 +648,9 @@ void main() {
                               itemCount: data.length,
                               itemBuilder: (context, index) => Card(
                                 margin: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 4),
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
                                 child: ListTile(
                                   leading: CircleAvatar(
                                     backgroundColor: Colors.green,
@@ -613,7 +658,8 @@ void main() {
                                   ),
                                   title: Text(data[index]),
                                   subtitle: Text(
-                                      'Loaded at ${DateTime.now().toString().substring(11, 19)}'),
+                                    'Loaded at ${DateTime.now().toString().substring(11, 19)}',
+                                  ),
                                   trailing: const Icon(Icons.arrow_forward_ios),
                                 ),
                               ),
@@ -661,16 +707,16 @@ void main() {
                         const Center(child: CircularProgressIndicator()),
                     onData: (data, viewModel, keep) => ListView.builder(
                       itemCount: data.length,
-                      itemBuilder: (context, index) => ListTile(
-                        title: Text(data[index]),
-                      ),
+                      itemBuilder: (context, index) =>
+                          ListTile(title: Text(data[index])),
                     ),
                     onError: (error, stackTrace) {
                       // Simulate error state
                       if (error.toString().isEmpty) {
                         Future.microtask(() {
-                          asyncDataState.notifier
-                              .simulateError('Network connection failed');
+                          asyncDataState.notifier.simulateError(
+                            'Network connection failed',
+                          );
                         });
                       }
 
@@ -680,19 +726,26 @@ void main() {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.error_outline,
-                                  color: Colors.red, size: 64),
+                              const Icon(
+                                Icons.error_outline,
+                                color: Colors.red,
+                                size: 64,
+                              ),
                               const SizedBox(height: 16),
                               const Text(
                                 'Oops! Something went wrong',
                                 style: TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.bold),
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 'Error: $error',
                                 style: const TextStyle(
-                                    fontSize: 16, color: Colors.red),
+                                  fontSize: 16,
+                                  color: Colors.red,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: 24),
@@ -752,8 +805,9 @@ void main() {
                                   const Text(
                                     'Counter Component',
                                     style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
@@ -779,51 +833,55 @@ void main() {
                       Expanded(
                         child:
                             ReactiveViewModelBuilder<UserViewModel, UserModel>(
-                          viewmodel: userState.notifier,
-                          build: (user, viewmodel, keep) {
-                            return Container(
-                              padding: const EdgeInsets.all(16),
-                              color: Colors.green[50],
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text(
-                                    'User Component',
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
+                              viewmodel: userState.notifier,
+                              build: (user, viewmodel, keep) {
+                                return Container(
+                                  padding: const EdgeInsets.all(16),
+                                  color: Colors.green[50],
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text(
+                                        'User Component',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'User: ${user.name}',
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
+                                      Text(
+                                        'Login Count: ${user.loginCount}',
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: user.isActive
+                                              ? Colors.green
+                                              : Colors.red,
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          user.isActive
+                                              ? 'Active User'
+                                              : 'Inactive User',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'User: ${user.name}',
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                  Text(
-                                    'Login Count: ${user.loginCount}',
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: user.isActive
-                                          ? Colors.green
-                                          : Colors.red,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      user.isActive
-                                          ? 'Active User'
-                                          : 'Inactive User',
-                                      style:
-                                          const TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+                                );
+                              },
+                            ),
                       ),
                     ],
                   ),
@@ -870,7 +928,9 @@ void main() {
                             const Text(
                               'Performance Test',
                               style: TextStyle(
-                                  fontSize: 24, fontWeight: FontWeight.bold),
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -882,7 +942,8 @@ void main() {
                               value: value / 50.0,
                               backgroundColor: Colors.grey[300],
                               valueColor: const AlwaysStoppedAnimation<Color>(
-                                  Colors.orange),
+                                Colors.orange,
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Text(
@@ -890,18 +951,21 @@ void main() {
                               style: const TextStyle(fontSize: 16),
                             ),
                             const SizedBox(height: 24),
-                            keep(const Card(
-                              child: Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: Text(
-                                  'This widget survives rapid updates\nand never rebuilds',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
+                            keep(
+                              const Card(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: Text(
+                                    'This widget survives rapid updates\nand never rebuilds',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
                                       fontSize: 14,
-                                      fontStyle: FontStyle.italic),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            )),
+                            ),
                           ],
                         ),
                       );
@@ -949,12 +1013,14 @@ class UserModel {
 
 class UserViewModel extends ViewModel<UserModel> {
   UserViewModel()
-      : super(UserModel(
+    : super(
+        UserModel(
           name: 'John Doe',
           email: 'john.doe@example.com',
           isActive: false,
           loginCount: 0,
-        ));
+        ),
+      );
 
   @override
   void init() {
@@ -967,19 +1033,21 @@ class UserViewModel extends ViewModel<UserModel> {
     required bool isActive,
     required int loginCount,
   }) {
-    updateState(UserModel(
-      name: name,
-      email: email,
-      isActive: isActive,
-      loginCount: loginCount,
-    ));
+    updateState(
+      UserModel(
+        name: name,
+        email: email,
+        isActive: isActive,
+        loginCount: loginCount,
+      ),
+    );
   }
 
   void incrementLoginCount() {
-    transformState((current) => current.copyWith(
-          loginCount: current.loginCount + 1,
-          isActive: true,
-        ));
+    transformState(
+      (current) =>
+          current.copyWith(loginCount: current.loginCount + 1, isActive: true),
+    );
   }
 }
 

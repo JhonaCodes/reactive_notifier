@@ -29,7 +29,11 @@ class ReactiveAsyncBuilder<VM, T> extends StatefulWidget {
   /// }
   /// ```
   final Widget Function(
-      T data, VM viewmodel, Widget Function(Widget child) keep)? onData;
+    T data,
+    VM viewmodel,
+    Widget Function(Widget child) keep,
+  )?
+  onData;
   final Widget Function()? onLoading;
   final Widget Function(Object? error, StackTrace? stackTrace)? onError;
   final Widget Function()? onInitial;
@@ -43,7 +47,8 @@ class ReactiveAsyncBuilder<VM, T> extends StatefulWidget {
     /// **Deprecated:** Use [onData] instead.
     /// This field will be removed in version **3.0.0**.
     @Deprecated(
-        "Use 'onData' instead. 'onSuccess' will be removed in version 3.0.0.")
+      "Use 'onData' instead. 'onSuccess' will be removed in version 3.0.0.",
+    )
     this.onSuccess,
     this.onData,
     this.onLoading,
@@ -232,7 +237,7 @@ class ReactiveFutureBuilder<T> extends StatefulWidget {
   /// Optional ReactiveNotifier that will be updated with the data from the Future.
   /// This allows other widgets to react to data changes.
   final ReactiveNotifier<T>?
-      createStateNotifier; // Not sure if we need for AsyncViewmodelImpl, maybe just use ReactiveNotifier
+  createStateNotifier; // Not sure if we need for AsyncViewmodelImpl, maybe just use ReactiveNotifier
 
   /// Controls whether state updates should trigger UI rebuilds.
   /// - If true, updates will notify listeners and trigger rebuilds.

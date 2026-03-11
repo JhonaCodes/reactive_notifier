@@ -27,9 +27,7 @@ class HybridTestData {
 /// Test services for different types
 mixin ServiceA {
   static final ReactiveNotifier<HybridTestData> instance =
-      ReactiveNotifier<HybridTestData>(
-    () => HybridTestData('A', 0),
-  );
+      ReactiveNotifier<HybridTestData>(() => HybridTestData('A', 0));
 
   static void updateData(String value, int counter) {
     instance.updateState(HybridTestData(value, counter));
@@ -38,9 +36,7 @@ mixin ServiceA {
 
 mixin ServiceB {
   static final ReactiveNotifier<HybridTestData> instance =
-      ReactiveNotifier<HybridTestData>(
-    () => HybridTestData('B', 0),
-  );
+      ReactiveNotifier<HybridTestData>(() => HybridTestData('B', 0));
 
   static void updateData(String value, int counter) {
     instance.updateState(HybridTestData(value, counter));
@@ -86,11 +82,13 @@ class HybridTrackingWidget extends StatelessWidget {
       case 'A':
         buildsA++;
         return Text(
-            'A: ${context.dataA.value}-${context.dataA.counter} (Build #$buildsA)');
+          'A: ${context.dataA.value}-${context.dataA.counter} (Build #$buildsA)',
+        );
       case 'B':
         buildsB++;
         return Text(
-            'B: ${context.dataB.value}-${context.dataB.counter} (Build #$buildsB)');
+          'B: ${context.dataB.value}-${context.dataB.counter} (Build #$buildsB)',
+        );
       case 'C':
         buildsC++;
         return Text('C: ${context.dataC} (Build #$buildsC)');
@@ -139,8 +137,9 @@ void main() {
       MultiServiceWidget.resetCounter();
     });
 
-    testWidgets('should prevent cross-rebuilds between different types',
-        (tester) async {
+    testWidgets('should prevent cross-rebuilds between different types', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -185,8 +184,9 @@ void main() {
       expect(HybridTrackingWidget.buildsC, 2);
     });
 
-    testWidgets('should handle widgets using multiple services',
-        (tester) async {
+    testWidgets('should handle widgets using multiple services', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -223,8 +223,9 @@ void main() {
       expect(MultiServiceWidget.builds, 3); // Should rebuild (uses B)
     });
 
-    testWidgets('should handle InheritedWidget strategy correctly',
-        (tester) async {
+    testWidgets('should handle InheritedWidget strategy correctly', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ReactiveContextBuilder(
           forceInheritedFor: [ServiceA.instance, ServiceB.instance],
@@ -264,8 +265,9 @@ void main() {
       expect(HybridTrackingWidget.buildsC, 2);
     });
 
-    testWidgets('should handle rapid state changes efficiently',
-        (tester) async {
+    testWidgets('should handle rapid state changes efficiently', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -337,11 +339,14 @@ void main() {
       expect(HybridTrackingWidget.buildsB, 2);
       expect(HybridTrackingWidget.buildsC, 2);
       expect(
-          MultiServiceWidget.builds, 2); // Rebuilds once due to A or B change
+        MultiServiceWidget.builds,
+        2,
+      ); // Rebuilds once due to A or B change
     });
 
-    testWidgets('should handle widget tree modifications during updates',
-        (tester) async {
+    testWidgets('should handle widget tree modifications during updates', (
+      tester,
+    ) async {
       bool showWidgetA = true;
       bool showWidgetB = true;
 
@@ -395,27 +400,40 @@ void main() {
       await tester.pump();
 
       expect(HybridTrackingWidget.buildsA, 1); // Should not rebuild (hidden)
-      expect(HybridTrackingWidget.buildsB,
-          3); // Rebuilt due to StatefulBuilder toggle + service A update
-      expect(HybridTrackingWidget.buildsC,
-          2); // Rebuilt due to StatefulBuilder toggle
+      expect(
+        HybridTrackingWidget.buildsB,
+        3,
+      ); // Rebuilt due to StatefulBuilder toggle + service A update
+      expect(
+        HybridTrackingWidget.buildsC,
+        2,
+      ); // Rebuilt due to StatefulBuilder toggle
 
       // Show widget A again
       await tester.tap(find.text('Toggle A'));
       await tester.pump();
 
       expect(
-          find.byType(HybridTrackingWidget), findsNWidgets(3)); // A, B, and C
+        find.byType(HybridTrackingWidget),
+        findsNWidgets(3),
+      ); // A, B, and C
       expect(
-          HybridTrackingWidget.buildsA, 2); // Should rebuild with current state
-      expect(HybridTrackingWidget.buildsB,
-          4); // Rebuilt due to StatefulBuilder toggle again
-      expect(HybridTrackingWidget.buildsC,
-          3); // Rebuilt due to StatefulBuilder toggle
+        HybridTrackingWidget.buildsA,
+        2,
+      ); // Should rebuild with current state
+      expect(
+        HybridTrackingWidget.buildsB,
+        4,
+      ); // Rebuilt due to StatefulBuilder toggle again
+      expect(
+        HybridTrackingWidget.buildsC,
+        3,
+      ); // Rebuilt due to StatefulBuilder toggle
     });
 
-    testWidgets('should handle memory cleanup during strategy switching',
-        (tester) async {
+    testWidgets('should handle memory cleanup during strategy switching', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -464,10 +482,14 @@ void main() {
       }
 
       // Should continue working correctly
-      expect(HybridTrackingWidget.buildsA,
-          12); // 6 previous + 1 strategy switch + 5 new
-      expect(HybridTrackingWidget.buildsB,
-          12); // 6 previous + 1 strategy switch + 5 new
+      expect(
+        HybridTrackingWidget.buildsA,
+        12,
+      ); // 6 previous + 1 strategy switch + 5 new
+      expect(
+        HybridTrackingWidget.buildsB,
+        12,
+      ); // 6 previous + 1 strategy switch + 5 new
     });
   });
 }

@@ -21,19 +21,20 @@ void main() {
           GoldenTestScenario(
             name: 'Change value 0',
             child: ReactiveBuilder(
-                notifier: state,
-                build: (value, vm, child) {
-                  return Column(
-                    children: [
-                      Text("Widget that rebuilds $value"),
-                      child(const Text("My widget that doesn't rebuild")),
-                      Text("Widget that rebuilds $value"),
-                    ],
-                  );
-                  // return ListTile(
-                  //   title: Text('ReactiveNotifier.value = $value'),
-                  // );
-                }),
+              notifier: state,
+              build: (value, vm, child) {
+                return Column(
+                  children: [
+                    Text("Widget that rebuilds $value"),
+                    child(const Text("My widget that doesn't rebuild")),
+                    Text("Widget that rebuilds $value"),
+                  ],
+                );
+                // return ListTile(
+                //   title: Text('ReactiveNotifier.value = $value'),
+                // );
+              },
+            ),
           ),
         ],
       ),
@@ -49,23 +50,23 @@ void main() {
           GoldenTestScenario(
             name: 'Change value 200',
             child: ReactiveBuilder<int>(
-                notifier: state,
-                build: (value, vm, child) {
-                  if (value == 0) {
-                    state.updateState(200);
-                  }
-                  return ListTile(
-                    title: Text('ReactiveNotifier.value = $value'),
-                  );
-                }),
+              notifier: state,
+              build: (value, vm, child) {
+                if (value == 0) {
+                  state.updateState(200);
+                }
+                return ListTile(title: Text('ReactiveNotifier.value = $value'));
+              },
+            ),
           ),
         ],
       ),
     );
   });
 
-  testWidgets('ReactiveBuilder does not rebuild non-rebuildable widgets',
-      (WidgetTester tester) async {
+  testWidgets('ReactiveBuilder does not rebuild non-rebuildable widgets', (
+    WidgetTester tester,
+  ) async {
     int rebuildCount = 0;
 
     await tester.pumpWidget(
@@ -80,9 +81,7 @@ void main() {
               return Column(
                 children: [
                   Text("Widget that rebuilds: $value"),
-                  noRebuildable(
-                    const NonRebuildWidget(),
-                  ),
+                  noRebuildable(const NonRebuildWidget()),
                 ],
               );
             },

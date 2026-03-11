@@ -55,8 +55,11 @@ void main() {
 
       final result = notifier();
 
-      expect(result, equals('hello'),
-          reason: 'call() should return the String value');
+      expect(
+        result,
+        equals('hello'),
+        reason: 'call() should return the String value',
+      );
       expect(result, isA<String>());
     });
 
@@ -70,76 +73,97 @@ void main() {
   });
 
   group('call() syntax — ReactiveNotifier<ViewModel<T>>', () {
-    test('ReactiveNotifier<ViewModel<T>> → call() returns T (data from VM)',
-        () {
-      final notifier =
-          ReactiveNotifier<UserViewModel>(() => UserViewModel());
+    test(
+      'ReactiveNotifier<ViewModel<T>> → call() returns T (data from VM)',
+      () {
+        final notifier = ReactiveNotifier<UserViewModel>(() => UserViewModel());
 
-      final result = notifier();
+        final result = notifier();
 
-      // call() on ReactiveNotifier<ViewModel<T>> should return T (the .data)
-      expect(result, isA<UserModel>(),
-          reason: 'call() should unwrap ViewModel to return its data');
-      expect((result as UserModel).name, equals('guest'));
-    });
+        // call() on ReactiveNotifier<ViewModel<T>> should return T (the .data)
+        expect(
+          result,
+          isA<UserModel>(),
+          reason: 'call() should unwrap ViewModel to return its data',
+        );
+        expect((result as UserModel).name, equals('guest'));
+      },
+    );
   });
 
   group('call() syntax — ReactiveNotifierViewModel<VM, T>', () {
     test('ReactiveNotifierViewModel<VM, T> → call() returns T', () {
       final notifier = ReactiveNotifierViewModel<UserViewModel, UserModel>(
-          () => UserViewModel());
+        () => UserViewModel(),
+      );
 
       final result = notifier();
 
-      expect(result, isA<UserModel>(),
-          reason:
-              'call() on ReactiveNotifierViewModel should return T directly');
+      expect(
+        result,
+        isA<UserModel>(),
+        reason: 'call() on ReactiveNotifierViewModel should return T directly',
+      );
       expect(result.name, equals('guest'));
       expect(result.age, equals(0));
     });
 
     test('call() returns current snapshot (not reactive)', () {
       final notifier = ReactiveNotifierViewModel<UserViewModel, UserModel>(
-          () => UserViewModel());
+        () => UserViewModel(),
+      );
 
       // Take snapshot
       final snapshot1 = notifier();
 
       // Modify state
-      notifier.notifier
-          .updateState(const UserModel('Alice', 30));
+      notifier.notifier.updateState(const UserModel('Alice', 30));
 
       // Take another snapshot
       final snapshot2 = notifier();
 
-      expect(snapshot1.name, equals('guest'),
-          reason: 'First snapshot should reflect initial state');
-      expect(snapshot2.name, equals('Alice'),
-          reason: 'Second snapshot should reflect updated state');
+      expect(
+        snapshot1.name,
+        equals('guest'),
+        reason: 'First snapshot should reflect initial state',
+      );
+      expect(
+        snapshot2.name,
+        equals('Alice'),
+        reason: 'Second snapshot should reflect updated state',
+      );
     });
   });
 
   group('call() syntax — ReactiveNotifier<AsyncViewModelImpl<T>>', () {
     test(
-        'ReactiveNotifier<AsyncViewModelImpl<T>> → call() returns T? (data)',
-        () async {
-      final notifier =
-          ReactiveNotifier<ItemsViewModel>(() => ItemsViewModel());
+      'ReactiveNotifier<AsyncViewModelImpl<T>> → call() returns T? (data)',
+      () async {
+        final notifier = ReactiveNotifier<ItemsViewModel>(
+          () => ItemsViewModel(),
+        );
 
-      // Before loading, data is null
-      final resultBeforeLoad = notifier();
-      expect(resultBeforeLoad, isNull,
+        // Before loading, data is null
+        final resultBeforeLoad = notifier();
+        expect(
+          resultBeforeLoad,
+          isNull,
           reason:
-              'call() on unloaded AsyncViewModel should return null (no data yet)');
+              'call() on unloaded AsyncViewModel should return null (no data yet)',
+        );
 
-      // Load data
-      await notifier.notifier.reload();
+        // Load data
+        await notifier.notifier.reload();
 
-      final resultAfterLoad = notifier();
-      expect(resultAfterLoad, isA<List<String>>(),
-          reason: 'call() should return T? after data is loaded');
-      expect((resultAfterLoad as List<String>).length, equals(2));
-    });
+        final resultAfterLoad = notifier();
+        expect(
+          resultAfterLoad,
+          isA<List<String>>(),
+          reason: 'call() should return T? after data is loaded',
+        );
+        expect((resultAfterLoad as List<String>).length, equals(2));
+      },
+    );
   });
 
   group('call() syntax — snapshot behavior', () {
@@ -150,10 +174,16 @@ void main() {
       notifier.updateState(20);
       final snapshot2 = notifier();
 
-      expect(snapshot, equals(10),
-          reason: 'Snapshot taken before update should be 10');
-      expect(snapshot2, equals(20),
-          reason: 'Snapshot taken after update should be 20');
+      expect(
+        snapshot,
+        equals(10),
+        reason: 'Snapshot taken before update should be 10',
+      );
+      expect(
+        snapshot2,
+        equals(20),
+        reason: 'Snapshot taken after update should be 20',
+      );
     });
   });
 }

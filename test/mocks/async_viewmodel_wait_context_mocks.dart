@@ -18,8 +18,11 @@ class TestWaitForContextViewModel extends AsyncViewModelImpl<String> {
     bool loadOnInit = true,
     bool waitForContext = false,
     this.shouldThrowError = false,
-  }) : super(AsyncState.initial(),
-            loadOnInit: loadOnInit, waitForContext: waitForContext);
+  }) : super(
+         AsyncState.initial(),
+         loadOnInit: loadOnInit,
+         waitForContext: waitForContext,
+       );
 
   @override
   Future<String> init() async {
@@ -33,15 +36,17 @@ class TestWaitForContextViewModel extends AsyncViewModelImpl<String> {
   }
 
   @override
-  Future<void> setupListeners(
-      {List<String> currentListeners = const []}) async {
+  Future<void> setupListeners({
+    List<String> currentListeners = const [],
+  }) async {
     setupListenersCallCount++;
     await super.setupListeners(currentListeners: currentListeners);
   }
 
   @override
-  Future<void> removeListeners(
-      {List<String> currentListeners = const []}) async {
+  Future<void> removeListeners({
+    List<String> currentListeners = const [],
+  }) async {
     removeListenersCallCount++;
     await super.removeListeners(currentListeners: currentListeners);
   }
@@ -55,34 +60,34 @@ class TestWaitForContextViewModel extends AsyncViewModelImpl<String> {
 
   // Test helpers to inspect state
   bool isInitial() => match<bool>(
-        initial: () => true,
-        loading: () => false,
-        success: (_) => false,
-        empty: () => false,
-        error: (_, __) => false,
-      );
+    initial: () => true,
+    loading: () => false,
+    success: (_) => false,
+    empty: () => false,
+    error: (_, __) => false,
+  );
 
   bool isSuccess() => match<bool>(
-        initial: () => false,
-        loading: () => false,
-        success: (_) => true,
-        empty: () => false,
-        error: (_, __) => false,
-      );
+    initial: () => false,
+    loading: () => false,
+    success: (_) => true,
+    empty: () => false,
+    error: (_, __) => false,
+  );
 
   bool isEmpty() => match<bool>(
-        initial: () => false,
-        loading: () => false,
-        success: (_) => false,
-        empty: () => true,
-        error: (_, __) => false,
-      );
+    initial: () => false,
+    loading: () => false,
+    success: (_) => false,
+    empty: () => true,
+    error: (_, __) => false,
+  );
 
   bool isError() => match<bool>(
-        initial: () => false,
-        loading: () => false,
-        success: (_) => false,
-        empty: () => false,
-        error: (_, __) => true,
-      );
+    initial: () => false,
+    loading: () => false,
+    success: (_) => false,
+    empty: () => false,
+    error: (_, __) => true,
+  );
 }

@@ -27,22 +27,37 @@ void main() {
         final state2 = ReactiveNotifier(() => 0, key: UniqueKey());
 
         // Assert: Different keys should create different instances
-        expect(identical(state1, state2), false,
-            reason: 'Different keys should create different instances');
-        expect(state1.notifier, 0,
-            reason: 'First instance should have initial value');
-        expect(state2.notifier, 0,
-            reason: 'Second instance should have initial value');
+        expect(
+          identical(state1, state2),
+          false,
+          reason: 'Different keys should create different instances',
+        );
+        expect(
+          state1.notifier,
+          0,
+          reason: 'First instance should have initial value',
+        );
+        expect(
+          state2.notifier,
+          0,
+          reason: 'Second instance should have initial value',
+        );
 
         // Act: Update each instance independently
         state1.updateState(10);
         state2.updateState(20);
 
         // Assert: Instances should maintain independent state
-        expect(state1.notifier, 10,
-            reason: 'First instance should maintain its own state');
-        expect(state2.notifier, 20,
-            reason: 'Second instance should maintain its own state');
+        expect(
+          state1.notifier,
+          10,
+          reason: 'First instance should maintain its own state',
+        );
+        expect(
+          state2.notifier,
+          20,
+          reason: 'Second instance should maintain its own state',
+        );
       });
 
       test('should handle key-based instance management correctly', () {
@@ -54,19 +69,31 @@ void main() {
         final stateB1 = ReactiveNotifier(() => 'B1', key: key2);
 
         // Assert: Different keys should create different instances
-        expect(identical(stateA1, stateB1), false,
-            reason: 'Different keys should create different instances');
+        expect(
+          identical(stateA1, stateB1),
+          false,
+          reason: 'Different keys should create different instances',
+        );
 
         // Test that creating a notifier with duplicate key is prevented
-        expect(() => ReactiveNotifier(() => 'A2', key: key1), throwsStateError,
-            reason:
-                'Creating a notifier with duplicate key should throw StateError');
+        expect(
+          () => ReactiveNotifier(() => 'A2', key: key1),
+          throwsStateError,
+          reason:
+              'Creating a notifier with duplicate key should throw StateError',
+        );
 
         // Verify original instances still work correctly
-        expect(stateA1.notifier, 'A1',
-            reason: 'Original instance should maintain its value');
-        expect(stateB1.notifier, 'B1',
-            reason: 'Original instance should maintain its value');
+        expect(
+          stateA1.notifier,
+          'A1',
+          reason: 'Original instance should maintain its value',
+        );
+        expect(
+          stateB1.notifier,
+          'B1',
+          reason: 'Original instance should maintain its value',
+        );
       });
 
       test('should handle instance lifecycle with keys correctly', () {
@@ -88,14 +115,26 @@ void main() {
         instanceB.updateState(250);
 
         // Assert: Each instance should notify its own listeners
-        expect(listenerACallCount, 1,
-            reason: 'Instance A listener should be called once');
-        expect(listenerBCallCount, 1,
-            reason: 'Instance B listener should be called once');
-        expect(instanceA.notifier, 150,
-            reason: 'Instance A should have updated value');
-        expect(instanceB.notifier, 250,
-            reason: 'Instance B should have updated value');
+        expect(
+          listenerACallCount,
+          1,
+          reason: 'Instance A listener should be called once',
+        );
+        expect(
+          listenerBCallCount,
+          1,
+          reason: 'Instance B listener should be called once',
+        );
+        expect(
+          instanceA.notifier,
+          150,
+          reason: 'Instance A should have updated value',
+        );
+        expect(
+          instanceB.notifier,
+          250,
+          reason: 'Instance B should have updated value',
+        );
       });
     });
 
@@ -115,11 +154,17 @@ void main() {
         state.updateState(42);
 
         // Assert: Listener should be notified with new value
-        expect(notifications, 1,
-            reason: 'Listener should be called once for value change');
+        expect(
+          notifications,
+          1,
+          reason: 'Listener should be called once for value change',
+        );
         expect(state.notifier, 42, reason: 'State should have updated value');
-        expect(lastNotifiedValue, 42,
-            reason: 'Listener should receive updated value');
+        expect(
+          lastNotifiedValue,
+          42,
+          reason: 'Listener should receive updated value',
+        );
       });
 
       test('should not notify if value is the same', () {
@@ -133,10 +178,16 @@ void main() {
         state.updateState(42);
 
         // Assert: Listener should not be notified for same value
-        expect(notifications, 0,
-            reason: 'Listener should not be called when value does not change');
-        expect(state.notifier, 42,
-            reason: 'State value should remain the same');
+        expect(
+          notifications,
+          0,
+          reason: 'Listener should not be called when value does not change',
+        );
+        expect(
+          state.notifier,
+          42,
+          reason: 'State value should remain the same',
+        );
       });
 
       test('should handle multiple value changes correctly', () {
@@ -158,12 +209,21 @@ void main() {
         state.updateState('third'); // Same value - should not notify
 
         // Assert: Only actual changes should trigger notifications
-        expect(totalNotifications, 3,
-            reason: 'Only 3 actual value changes should trigger notifications');
-        expect(valueChanges, ['first', 'second', 'third'],
-            reason: 'Only distinct values should be recorded');
-        expect(state.notifier, 'third',
-            reason: 'Final state should be the last distinct value');
+        expect(
+          totalNotifications,
+          3,
+          reason: 'Only 3 actual value changes should trigger notifications',
+        );
+        expect(valueChanges, [
+          'first',
+          'second',
+          'third',
+        ], reason: 'Only distinct values should be recorded');
+        expect(
+          state.notifier,
+          'third',
+          reason: 'Final state should be the last distinct value',
+        );
       });
     });
 
@@ -173,24 +233,38 @@ void main() {
         final cartState = ReactiveNotifier(() => CartState(0));
         final totalState = ReactiveNotifier(() => TotalState(0.0));
 
-        final orderState =
-            ReactiveNotifier(() => 'order', related: [cartState, totalState]);
+        final orderState = ReactiveNotifier(
+          () => 'order',
+          related: [cartState, totalState],
+        );
 
         // Assert: Should be able to access related states
-        expect(orderState.from<CartState>().items, 0,
-            reason: 'Should access cart state through related states');
-        expect(orderState.from<TotalState>().amount, 0.0,
-            reason: 'Should access total state through related states');
+        expect(
+          orderState.from<CartState>().items,
+          0,
+          reason: 'Should access cart state through related states',
+        );
+        expect(
+          orderState.from<TotalState>().amount,
+          0.0,
+          reason: 'Should access total state through related states',
+        );
 
         // Act: Update related states
         cartState.updateState(CartState(5));
         totalState.updateState(TotalState(99.99));
 
         // Assert: Related state access should reflect updates
-        expect(orderState.from<CartState>().items, 5,
-            reason: 'Related cart state should be updated');
-        expect(orderState.from<TotalState>().amount, 99.99,
-            reason: 'Related total state should be updated');
+        expect(
+          orderState.from<CartState>().items,
+          5,
+          reason: 'Related cart state should be updated',
+        );
+        expect(
+          orderState.from<TotalState>().amount,
+          99.99,
+          reason: 'Related total state should be updated',
+        );
       });
 
       test('should throw error when accessing non-existent related state', () {
@@ -199,11 +273,17 @@ void main() {
 
         // Act & Assert: Should throw error for non-existent related state
         expect(
-            () => state.from<CartState>(),
-            throwsA(isA<StateError>().having((error) => error.message,
-                'message', contains('No Related States Found'))),
-            reason:
-                'Should throw StateError when accessing non-existent related state');
+          () => state.from<CartState>(),
+          throwsA(
+            isA<StateError>().having(
+              (error) => error.message,
+              'message',
+              contains('No Related States Found'),
+            ),
+          ),
+          reason:
+              'Should throw StateError when accessing non-existent related state',
+        );
       });
 
       test('should handle complex related state relationships', () {
@@ -213,18 +293,32 @@ void main() {
         final totalState = ReactiveNotifier(() => TotalState(0.0));
         final discountState = ReactiveNotifier(() => DiscountState(0.0));
 
-        final orderState = ReactiveNotifier(() => OrderState('pending'),
-            related: [userState, cartState, totalState, discountState]);
+        final orderState = ReactiveNotifier(
+          () => OrderState('pending'),
+          related: [userState, cartState, totalState, discountState],
+        );
 
         // Assert: Should access all related states
-        expect(orderState.from<UserState>().name, 'John',
-            reason: 'Should access user state');
-        expect(orderState.from<CartState>().items, 0,
-            reason: 'Should access cart state');
-        expect(orderState.from<TotalState>().amount, 0.0,
-            reason: 'Should access total state');
-        expect(orderState.from<DiscountState>().percentage, 0.0,
-            reason: 'Should access discount state');
+        expect(
+          orderState.from<UserState>().name,
+          'John',
+          reason: 'Should access user state',
+        );
+        expect(
+          orderState.from<CartState>().items,
+          0,
+          reason: 'Should access cart state',
+        );
+        expect(
+          orderState.from<TotalState>().amount,
+          0.0,
+          reason: 'Should access total state',
+        );
+        expect(
+          orderState.from<DiscountState>().percentage,
+          0.0,
+          reason: 'Should access discount state',
+        );
 
         // Act: Update multiple related states
         userState.updateState(UserState('Jane'));
@@ -233,14 +327,26 @@ void main() {
         discountState.updateState(DiscountState(10.0));
 
         // Assert: All related state updates should be accessible
-        expect(orderState.from<UserState>().name, 'Jane',
-            reason: 'User state update should be accessible');
-        expect(orderState.from<CartState>().items, 3,
-            reason: 'Cart state update should be accessible');
-        expect(orderState.from<TotalState>().amount, 150.00,
-            reason: 'Total state update should be accessible');
-        expect(orderState.from<DiscountState>().percentage, 10.0,
-            reason: 'Discount state update should be accessible');
+        expect(
+          orderState.from<UserState>().name,
+          'Jane',
+          reason: 'User state update should be accessible',
+        );
+        expect(
+          orderState.from<CartState>().items,
+          3,
+          reason: 'Cart state update should be accessible',
+        );
+        expect(
+          orderState.from<TotalState>().amount,
+          150.00,
+          reason: 'Total state update should be accessible',
+        );
+        expect(
+          orderState.from<DiscountState>().percentage,
+          10.0,
+          reason: 'Discount state update should be accessible',
+        );
       });
 
       test('should handle related states with key-based access', () {
@@ -248,24 +354,38 @@ void main() {
         final stateA = ReactiveNotifier(() => 'A');
         final stateB = ReactiveNotifier(() => 'B');
 
-        final combined =
-            ReactiveNotifier(() => 'combined', related: [stateA, stateB]);
+        final combined = ReactiveNotifier(
+          () => 'combined',
+          related: [stateA, stateB],
+        );
 
         // Assert: Should access related states by key
-        expect(combined.from<String>(stateA.keyNotifier), 'A',
-            reason: 'Should access state A by key');
-        expect(combined.from<String>(stateB.keyNotifier), 'B',
-            reason: 'Should access state B by key');
+        expect(
+          combined.from<String>(stateA.keyNotifier),
+          'A',
+          reason: 'Should access state A by key',
+        );
+        expect(
+          combined.from<String>(stateB.keyNotifier),
+          'B',
+          reason: 'Should access state B by key',
+        );
 
         // Act: Update related states
         stateA.updateState('A2');
         stateB.updateState('B2');
 
         // Assert: Key-based access should reflect updates
-        expect(combined.from<String>(stateA.keyNotifier), 'A2',
-            reason: 'Key-based access should show updated state A');
-        expect(combined.from<String>(stateB.keyNotifier), 'B2',
-            reason: 'Key-based access should show updated state B');
+        expect(
+          combined.from<String>(stateA.keyNotifier),
+          'A2',
+          reason: 'Key-based access should show updated state A',
+        );
+        expect(
+          combined.from<String>(stateB.keyNotifier),
+          'B2',
+          reason: 'Key-based access should show updated state B',
+        );
       });
     });
 
@@ -275,8 +395,10 @@ void main() {
         final cartState = ReactiveNotifier(() => CartState(0));
         final totalState = ReactiveNotifier(() => TotalState(0.0));
 
-        final orderState =
-            ReactiveNotifier(() => 'initial', related: [cartState, totalState]);
+        final orderState = ReactiveNotifier(
+          () => 'initial',
+          related: [cartState, totalState],
+        );
 
         int notifications = 0;
         final notificationOrder = <String>[];
@@ -299,15 +421,27 @@ void main() {
         totalState.updateState(TotalState(100.0));
 
         // Assert: Related states should be updated and order should notify
-        expect(notifications, 2,
-            reason:
-                'Order state should be notified for each related state update');
-        expect(orderState.from<CartState>().items, 2,
-            reason: 'Cart state should be updated in order state');
-        expect(orderState.from<TotalState>().amount, 100.0,
-            reason: 'Total state should be updated in order state');
-        expect(notificationOrder, ['cart', 'order', 'total', 'order'],
-            reason: 'Notifications should happen in correct order');
+        expect(
+          notifications,
+          2,
+          reason:
+              'Order state should be notified for each related state update',
+        );
+        expect(
+          orderState.from<CartState>().items,
+          2,
+          reason: 'Cart state should be updated in order state',
+        );
+        expect(
+          orderState.from<TotalState>().amount,
+          100.0,
+          reason: 'Total state should be updated in order state',
+        );
+        expect(
+          notificationOrder,
+          ['cart', 'order', 'total', 'order'],
+          reason: 'Notifications should happen in correct order',
+        );
       });
 
       test('should coordinate batch updates in correct order', () {
@@ -317,8 +451,10 @@ void main() {
         final stateA = ReactiveNotifier(() => 'A');
         final stateB = ReactiveNotifier(() => 'B');
 
-        final combined =
-            ReactiveNotifier(() => 'combined', related: [stateA, stateB]);
+        final combined = ReactiveNotifier(
+          () => 'combined',
+          related: [stateA, stateB],
+        );
 
         // Setup: Track update order
         stateA.addListener(() => updates.add('A'));
@@ -326,40 +462,65 @@ void main() {
         combined.addListener(() => updates.add('combined'));
 
         // Assert: Initial state access should work
-        expect(stateA.notifier, 'A',
-            reason: 'State A should have initial value');
-        expect(combined.from<String>(stateA.keyNotifier), 'A',
-            reason: 'Combined should access state A');
+        expect(
+          stateA.notifier,
+          'A',
+          reason: 'State A should have initial value',
+        );
+        expect(
+          combined.from<String>(stateA.keyNotifier),
+          'A',
+          reason: 'Combined should access state A',
+        );
 
-        expect(stateB.notifier, 'B',
-            reason: 'State B should have initial value');
-        expect(combined.from<String>(stateB.keyNotifier), 'B',
-            reason: 'Combined should access state B');
+        expect(
+          stateB.notifier,
+          'B',
+          reason: 'State B should have initial value',
+        );
+        expect(
+          combined.from<String>(stateB.keyNotifier),
+          'B',
+          reason: 'Combined should access state B',
+        );
 
         // Act: Perform coordinated updates
         stateA.updateState('A2');
         expect(stateA.notifier, 'A2', reason: 'State A should be updated');
-        expect(combined.from<String>(stateA.keyNotifier), 'A2',
-            reason: 'Combined should access updated state A');
+        expect(
+          combined.from<String>(stateA.keyNotifier),
+          'A2',
+          reason: 'Combined should access updated state A',
+        );
 
         stateB.updateState('B2');
         expect(stateB.notifier, 'B2', reason: 'State B should be updated');
-        expect(combined.from<String>(stateB.keyNotifier), 'B2',
-            reason: 'Combined should access updated state B');
+        expect(
+          combined.from<String>(stateB.keyNotifier),
+          'B2',
+          reason: 'Combined should access updated state B',
+        );
 
         // Assert: Updates should happen in correct order
         expect(updates.length, 4, reason: 'Should have 4 updates total');
-        expect(updates.last, 'combined',
-            reason: 'Combined state should be notified last');
+        expect(
+          updates.last,
+          'combined',
+          reason: 'Combined state should be notified last',
+        );
       });
 
       test('should handle large batch operations efficiently', () {
         // Setup: Create large batch operation scenario
         final batchStates = List.generate(
-            10, (index) => ReactiveNotifier(() => 'state_$index'));
+          10,
+          (index) => ReactiveNotifier(() => 'state_$index'),
+        );
 
-        final aggregatorState =
-            ReactiveNotifier(() => 'aggregated', related: batchStates);
+        final aggregatorState = ReactiveNotifier(
+          () => 'aggregated',
+          related: batchStates,
+        );
 
         var totalNotifications = 0;
         final notificationTimes = <DateTime>[];
@@ -378,16 +539,24 @@ void main() {
         final duration = endTime.difference(startTime);
 
         // Assert: Batch operations should be efficient
-        expect(totalNotifications, batchStates.length,
-            reason: 'Aggregator should be notified for each batch update');
-        expect(duration.inMilliseconds, lessThan(100),
-            reason: 'Batch operations should complete quickly');
+        expect(
+          totalNotifications,
+          batchStates.length,
+          reason: 'Aggregator should be notified for each batch update',
+        );
+        expect(
+          duration.inMilliseconds,
+          lessThan(100),
+          reason: 'Batch operations should complete quickly',
+        );
 
         // Verify all states are accessible through aggregator
         for (int i = 0; i < batchStates.length; i++) {
-          expect(aggregatorState.from<String>(batchStates[i].keyNotifier),
-              'updated_$i',
-              reason: 'Batch state $i should be accessible through aggregator');
+          expect(
+            aggregatorState.from<String>(batchStates[i].keyNotifier),
+            'updated_$i',
+            reason: 'Batch state $i should be accessible through aggregator',
+          );
         }
       });
     });
@@ -399,10 +568,14 @@ void main() {
 
         // Create a chain of dependent states
         final userState = ReactiveNotifier(() => UserState('John'));
-        final cartState =
-            ReactiveNotifier(() => CartState(0), related: [userState]);
-        final totalState =
-            ReactiveNotifier(() => TotalState(0.0), related: [userState]);
+        final cartState = ReactiveNotifier(
+          () => CartState(0),
+          related: [userState],
+        );
+        final totalState = ReactiveNotifier(
+          () => TotalState(0.0),
+          related: [userState],
+        );
 
         // Setup: Track update chain
         userState.addListener(() => updates.add('user'));
@@ -414,31 +587,43 @@ void main() {
 
         // Assert: Update chain should propagate correctly
         expect(updates.length, 3, reason: 'Should have 3 updates in the chain');
-        expect(updates, containsAllInOrder(['user', 'cart', 'total']),
-            reason: 'Updates should happen in dependency order');
+        expect(
+          updates,
+          containsAllInOrder(['user', 'cart', 'total']),
+          reason: 'Updates should happen in dependency order',
+        );
 
         // Verify state access through related states
-        expect(cartState.from<UserState>().name, 'Jane',
-            reason: 'Cart should access updated user state');
-        expect(totalState.from<UserState>().name, 'Jane',
-            reason: 'Total should access updated user state');
+        expect(
+          cartState.from<UserState>().name,
+          'Jane',
+          reason: 'Cart should access updated user state',
+        );
+        expect(
+          totalState.from<UserState>().name,
+          'Jane',
+          reason: 'Total should access updated user state',
+        );
       });
 
       test('should handle cascading updates with complex business logic', () {
         // Setup: Create business logic scenario with independent states
-        final productState =
-            ReactiveNotifier(() => ProductState('Widget', 10.0));
+        final productState = ReactiveNotifier(
+          () => ProductState('Widget', 10.0),
+        );
         final quantityState = ReactiveNotifier(() => QuantityState(1));
         final discountState = ReactiveNotifier(() => DiscountState(0.0));
 
         // Create calculation state that depends on product, quantity, and discount
         final calculationState = ReactiveNotifier(
-            () => CalculationState(10.0, 0.0, 10.0),
-            related: [productState, quantityState, discountState]);
+          () => CalculationState(10.0, 0.0, 10.0),
+          related: [productState, quantityState, discountState],
+        );
 
         // Create order summary state independently (no related states to avoid circular reference)
-        final orderSummaryState =
-            ReactiveNotifier(() => OrderSummaryState('Order Summary'));
+        final orderSummaryState = ReactiveNotifier(
+          () => OrderSummaryState('Order Summary'),
+        );
 
         var calculationUpdates = 0;
         var summaryUpdates = 0;
@@ -454,8 +639,9 @@ void main() {
           final discountAmount = subtotal * (discount.percentage / 100);
           final total = subtotal - discountAmount;
 
-          calculationState
-              .updateState(CalculationState(subtotal, discountAmount, total));
+          calculationState.updateState(
+            CalculationState(subtotal, discountAmount, total),
+          );
         }
 
         productState.addListener(updateCalculations);
@@ -467,9 +653,12 @@ void main() {
           summaryUpdates++;
           final calc = calculationState.notifier;
           orderSummaryState.updateState(
-              OrderSummaryState('Total: \$${calc.total.toStringAsFixed(2)} '
-                  '(Subtotal: \$${calc.subtotal.toStringAsFixed(2)}, '
-                  'Discount: \$${calc.discountAmount.toStringAsFixed(2)})'));
+            OrderSummaryState(
+              'Total: \$${calc.total.toStringAsFixed(2)} '
+              '(Subtotal: \$${calc.subtotal.toStringAsFixed(2)}, '
+              'Discount: \$${calc.discountAmount.toStringAsFixed(2)})',
+            ),
+          );
         });
 
         // Act: Perform business logic updates
@@ -478,22 +667,40 @@ void main() {
 
         // Assert: Business logic should cascade correctly
         final finalCalc = calculationState.notifier;
-        expect(finalCalc.subtotal, 30.0,
-            reason: 'Subtotal should be 3 * 10.0 = 30.0');
-        expect(finalCalc.discountAmount, 4.5,
-            reason: 'Discount should be 30.0 * 0.15 = 4.5');
-        expect(finalCalc.total, 25.5,
-            reason: 'Total should be 30.0 - 4.5 = 25.5');
+        expect(
+          finalCalc.subtotal,
+          30.0,
+          reason: 'Subtotal should be 3 * 10.0 = 30.0',
+        );
+        expect(
+          finalCalc.discountAmount,
+          4.5,
+          reason: 'Discount should be 30.0 * 0.15 = 4.5',
+        );
+        expect(
+          finalCalc.total,
+          25.5,
+          reason: 'Total should be 30.0 - 4.5 = 25.5',
+        );
 
         // Assert: Order summary should be updated with correct calculation
         final finalSummary = orderSummaryState.notifier;
-        expect(finalSummary.summary, contains('Total: \$25.50'),
-            reason: 'Order summary should reflect final calculation');
+        expect(
+          finalSummary.summary,
+          contains('Total: \$25.50'),
+          reason: 'Order summary should reflect final calculation',
+        );
 
-        expect(calculationUpdates, 2,
-            reason: 'Calculations should update twice (quantity + discount)');
-        expect(summaryUpdates, greaterThan(0),
-            reason: 'Summary should update based on calculations');
+        expect(
+          calculationUpdates,
+          2,
+          reason: 'Calculations should update twice (quantity + discount)',
+        );
+        expect(
+          summaryUpdates,
+          greaterThan(0),
+          reason: 'Summary should update based on calculations',
+        );
       });
     });
   });

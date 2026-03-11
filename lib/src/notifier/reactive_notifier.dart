@@ -60,7 +60,6 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   // O(1) reverse lookup: maps notifier value identity -> ReactiveNotifier container
   static final Map<int, ReactiveNotifier> _notifierToInstance = {};
 
-
   // Factory function storage for recreate() functionality
   final T Function() _createFunction;
 
@@ -68,9 +67,12 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   bool _isRecreating = false;
 
   ReactiveNotifier._(
-      T Function() create, this.related, this.keyNotifier, this.autoDispose)
-      : _createFunction = create,
-        super(create()) {
+    T Function() create,
+    this.related,
+    this.keyNotifier,
+    this.autoDispose,
+  ) : _createFunction = create,
+      super(create()) {
     if (related != null) {
       assert(() {
         if (!ReactiveNotifier.debugLogging) return true;
@@ -85,8 +87,10 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
         child._parents.add(this);
         assert(() {
           if (!ReactiveNotifier.debugLogging) return true;
-          log('➕ Added parent-child relation: $T -> ${child.notifier.runtimeType}',
-              level: 10);
+          log(
+            '➕ Added parent-child relation: $T -> ${child.notifier.runtimeType}',
+            level: 10,
+          );
           return true;
         }());
       });
@@ -99,8 +103,12 @@ class ReactiveNotifier<T> extends NotifierImpl<T> {
   /// - [create]: Function that creates the initial state
   /// - [related]: Optional list of related states
   /// - [key]: Optional key for instance identity
-  factory ReactiveNotifier(T Function() create,
-      {List<ReactiveNotifier>? related, Key? key, bool autoDispose = false}) {
+  factory ReactiveNotifier(
+    T Function() create, {
+    List<ReactiveNotifier>? related,
+    Key? key,
+    bool autoDispose = false,
+  }) {
     key ??= UniqueKey();
 
     assert(() {
@@ -158,8 +166,12 @@ Location: $trace
   ///
   /// Prefer this when you want singleton-like state that should be
   /// automatically cleaned up when unused.
-  static ReactiveNotifier<T> createAutoDispose<T>(T Function() create,
-      {List<ReactiveNotifier>? related, Key? key, Duration? timeout}) {
+  static ReactiveNotifier<T> createAutoDispose<T>(
+    T Function() create, {
+    List<ReactiveNotifier>? related,
+    Key? key,
+    Duration? timeout,
+  }) {
     final instance = ReactiveNotifier<T>(
       create,
       related: related,
@@ -205,8 +217,10 @@ Location: $trace
       // Check for possible notification overflow
       _checkNotificationOverflow();
 
-      log('📝 Updating state for $T: $notifier -> ${newState.runtimeType}',
-          level: 10);
+      log(
+        '📝 Updating state for $T: $notifier -> ${newState.runtimeType}',
+        level: 10,
+      );
 
       _updatingNotifiers.add(this);
 
@@ -247,8 +261,10 @@ Location: $trace
 
       assert(() {
         if (!ReactiveNotifier.debugLogging) return true;
-        log('📝 Updating state silently for $T: $notifier -> ${newState.runtimeType}',
-            level: 10);
+        log(
+          '📝 Updating state silently for $T: $notifier -> ${newState.runtimeType}',
+          level: 10,
+        );
         return true;
       }());
 
@@ -545,8 +561,10 @@ ${_formatNotifierInfo(child)}
   R from<R>([Key? key]) {
     assert(() {
       if (!ReactiveNotifier.debugLogging) return true;
-      log('🔍 Getting related state of type $R from $T${key != null ? ' with key: $key' : ''}',
-          level: 10);
+      log(
+        '🔍 Getting related state of type $R from $T${key != null ? ' with key: $key' : ''}',
+        level: 10,
+      );
       return true;
     }());
 
@@ -662,7 +680,9 @@ Auto-dispose enabled: $autoDispose
   bool _hasInternalViewModelListeners() {
     final value = notifier;
     if (value is ViewModel && value.activeListenerCount > 0) return true;
-    if (value is AsyncViewModelImpl && value.activeListenerCount > 0) return true;
+    if (value is AsyncViewModelImpl && value.activeListenerCount > 0) {
+      return true;
+    }
     return false;
   }
 
@@ -678,8 +698,11 @@ Auto-dispose enabled: $autoDispose
           _isScheduledForDispose = false;
           assert(() {
             if (!ReactiveNotifier.debugLogging) return true;
-            log('[ReactiveNotifier] Auto-dispose deferred for <$T>: '
-                'ViewModel has active listenVM() subscribers.', level: 10);
+            log(
+              '[ReactiveNotifier] Auto-dispose deferred for <$T>: '
+              'ViewModel has active listenVM() subscribers.',
+              level: 10,
+            );
             return true;
           }());
           return;
@@ -1113,9 +1136,14 @@ Location of cleanup request: $trace
     if (_parents.isNotEmpty && !forceCleanup) {
       assert(() {
         if (!ReactiveNotifier.debugLogging) return true;
-        final parentInfo = _parents.map((parent) => '''
+        final parentInfo = _parents
+            .map(
+              (parent) =>
+                  '''
    - ${parent.notifier.runtimeType} (${parent.keyNotifier})
-     ${_getParentLocationInfo(parent)}''').join('\n');
+     ${_getParentLocationInfo(parent)}''',
+            )
+            .join('\n');
 
         final trace = StackTrace.current.toString().split('\n')[1];
         log('''
@@ -1187,7 +1215,8 @@ This will release any resources held by the ViewModel (timers, streams, etc.)
       }());
 
       (notifier as ViewModel).dispose();
-    } else if (notifier is AsyncViewModelImpl && !(notifier as AsyncViewModelImpl).isDisposed) {
+    } else if (notifier is AsyncViewModelImpl &&
+        !(notifier as AsyncViewModelImpl).isDisposed) {
       assert(() {
         if (!ReactiveNotifier.debugLogging) return true;
         log('''
@@ -1235,11 +1264,12 @@ ${_getLocationInfo()}
     return true;
   }
 
-// Helper method to get location information for a parent
+  // Helper method to get location information for a parent
   String _getParentLocationInfo(ReactiveNotifier parent) {
     try {
-      final framePattern =
-          RegExp(r'#\d+\s+([^(]+)\(([^:]+):(\d+)(?::(\d+))?\)');
+      final framePattern = RegExp(
+        r'#\d+\s+([^(]+)\(([^:]+):(\d+)(?::(\d+))?\)',
+      );
       final frames = StackTrace.current.toString().split('\n');
 
       for (final frame in frames) {
@@ -1527,19 +1557,22 @@ Has listeners: $hasListeners
       // Warn if the old ViewModel has active listenVM() subscribers
       assert(() {
         if (!ReactiveNotifier.debugLogging) return true;
-        if (oldNotifier is ViewModel &&
-            oldNotifier.activeListenerCount > 0) {
-          log('[ReactiveNotifier] WARNING: recreate() on ViewModel<$T> with '
-              '${oldNotifier.activeListenerCount} active listenVM() subscribers. '
-              'Those subscribers will stop receiving updates from the new instance.',
-              level: 100);
+        if (oldNotifier is ViewModel && oldNotifier.activeListenerCount > 0) {
+          log(
+            '[ReactiveNotifier] WARNING: recreate() on ViewModel<$T> with '
+            '${oldNotifier.activeListenerCount} active listenVM() subscribers. '
+            'Those subscribers will stop receiving updates from the new instance.',
+            level: 100,
+          );
         }
         if (oldNotifier is AsyncViewModelImpl &&
             oldNotifier.activeListenerCount > 0) {
-          log('[ReactiveNotifier] WARNING: recreate() on AsyncViewModel<$T> with '
-              '${oldNotifier.activeListenerCount} active listenVM() subscribers. '
-              'Those subscribers will stop receiving updates from the new instance.',
-              level: 100);
+          log(
+            '[ReactiveNotifier] WARNING: recreate() on AsyncViewModel<$T> with '
+            '${oldNotifier.activeListenerCount} active listenVM() subscribers. '
+            'Those subscribers will stop receiving updates from the new instance.',
+            level: 100,
+          );
         }
         return true;
       }());
@@ -1818,8 +1851,10 @@ Current ViewModels: ${_instances.length}
             // Silently ignore if method doesn't exist or fails - happens for ViewModel<T> which don't have this method
             assert(() {
               if (!ReactiveNotifier.debugLogging) return true;
-              log('Note: Could not reinitialize ViewModel ${notifier.runtimeType}: $e',
-                  level: 10);
+              log(
+                'Note: Could not reinitialize ViewModel ${notifier.runtimeType}: $e',
+                level: 10,
+              );
               return true;
             }());
           }

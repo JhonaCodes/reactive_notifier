@@ -90,8 +90,9 @@ Initial state hash: ${_data.hashCode}
   /// We remove the listeners registered in [setupListeners] to avoid memory problems.
   ///
   @mustCallSuper
-  Future<void> removeListeners(
-      {List<String> currentListeners = const []}) async {
+  Future<void> removeListeners({
+    List<String> currentListeners = const [],
+  }) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
         if (!ReactiveNotifier.debugLogging) return true;
@@ -105,8 +106,9 @@ Initial state hash: ${_data.hashCode}
   /// We register our listeners coming from the notifiers.
   ///
   @mustCallSuper
-  Future<void> setupListeners(
-      {List<String> currentListeners = const []}) async {
+  Future<void> setupListeners({
+    List<String> currentListeners = const [],
+  }) async {
     if (currentListeners.isNotEmpty) {
       assert(() {
         if (!ReactiveNotifier.debugLogging) return true;

@@ -10,10 +10,7 @@ import 'no_rebuild_wrapper.dart';
 /// Reactive Builder for simple state or direct model state.
 class ReactiveBuilder<T> extends StatefulWidget {
   final NotifierImpl<T> notifier;
-  final Widget Function(
-    T state,
-    Widget Function(Widget child) keep,
-  )? builder;
+  final Widget Function(T state, Widget Function(Widget child) keep)? builder;
 
   /// Builds the widget based on the current reactive state.
   ///
@@ -33,15 +30,18 @@ class ReactiveBuilder<T> extends StatefulWidget {
     /// A wrapper that helps prevent unnecessary rebuilds.
     /// Wrap any widget that should remain stable between state updates.
     Widget Function(Widget child) keep,
-  )? build;
+  )?
+  build;
 
-  const ReactiveBuilder(
-      {super.key,
-      required this.notifier,
-      @Deprecated(
-          "Use 'build' instead. 'builder' will be removed in version 3.0.0.")
-      this.builder,
-      this.build});
+  const ReactiveBuilder({
+    super.key,
+    required this.notifier,
+    @Deprecated(
+      "Use 'build' instead. 'builder' will be removed in version 3.0.0.",
+    )
+    this.builder,
+    this.build,
+  });
 
   @override
   State<ReactiveBuilder<T>> createState() => _ReactiveBuilderState<T>();
@@ -60,8 +60,10 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
     // Use unique identifier for each builder instance
     final notifierValue = widget.notifier.notifier;
     final uniqueBuilderType = 'ReactiveBuilder<$T>_$hashCode';
-    context.registerForViewModels(uniqueBuilderType,
-        notifierValue is ChangeNotifier ? notifierValue : null);
+    context.registerForViewModels(
+      uniqueBuilderType,
+      notifierValue is ChangeNotifier ? notifierValue : null,
+    );
 
     // Add reference for widget-aware lifecycle if notifier is ReactiveNotifier
     if (widget.notifier is ReactiveNotifier) {
@@ -115,8 +117,10 @@ class _ReactiveBuilderState<T> extends State<ReactiveBuilder<T>> {
     // Pass the actual notifier value if it's a ViewModel
     final notifierValue = widget.notifier.notifier;
     final uniqueBuilderType = 'ReactiveBuilder<$T>_$hashCode';
-    context.unregisterFromViewModels(uniqueBuilderType,
-        notifierValue is ChangeNotifier ? notifierValue : null);
+    context.unregisterFromViewModels(
+      uniqueBuilderType,
+      notifierValue is ChangeNotifier ? notifierValue : null,
+    );
 
     _noRebuildWidgets.clear();
 
