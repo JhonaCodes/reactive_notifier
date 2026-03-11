@@ -75,6 +75,9 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     hasInitializedListenerExecution = false;
 
     try {
+      // Setup dependencies BEFORE reload/init so they're available
+      await _setupDependencies();
+
       await reload();
 
       // Assert _state is properly initialized
@@ -411,6 +414,129 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     // Override in subclasses to react to async state changes
   }
 
+  // ─── Dependency tracking for onDependenciesStateChanged ───
+
+  /// Stores the last known snapshot for each dependency.
+  final Map<ReactiveNotifier, dynamic> _dependencySnapshots = {};
+
+  /// Stores the listener callback for each dependency (for cleanup).
+  final Map<ReactiveNotifier, VoidCallback> _dependencyListeners = {};
+
+  /// Tracks which dependencies have changed since last batch.
+  final Set<ReactiveNotifier> _pendingDependencyChanges = {};
+
+  /// Whether a microtask is already scheduled to process the batch.
+  bool _dependencyBatchScheduled = false;
+
+  /// Lifecycle hook called when any registered dependency's state changes.
+  ///
+  /// Override this method to declare dependencies and react to their changes.
+  /// Uses [DependencyState.on] to register typed callbacks per dependency.
+  ///
+  /// **Setup phase** (before `init()`): Registers dependencies, takes snapshots,
+  /// and calls each callback with `(current, current)`.
+  ///
+  /// **Reaction phase** (after dependencies fire): Only calls callbacks for
+  /// dependencies that actually changed, with `(previous, current)`.
+  /// Multiple dependency changes are batched into a single `notifyListeners()`.
+  ///
+  /// Example:
+  /// ```dart
+  /// @override
+  /// void onDependenciesStateChanged(DependencyState change) {
+  ///   change.on<UserModel>(UserService.userState, (previous, current) {
+  ///     if (previous.id != current.id) {
+  ///       reload(); // Re-fetch data for new user
+  ///     }
+  ///   });
+  /// }
+  /// ```
+  @protected
+  void onDependenciesStateChanged(DependencyState change) {
+    // Base implementation does nothing.
+    // Override in subclasses to declare and react to dependencies.
+  }
+
+  /// Sets up dependencies declared in [onDependenciesStateChanged].
+  /// Called before [init()] during async initialization.
+  Future<void> _setupDependencies() async {
+    final state = DependencyState.create(
+      isSetup: true,
+      changed: {},
+      snapshots: _dependencySnapshots,
+    );
+
+    // Call hook to register dependencies via change.on<T>()
+    onDependenciesStateChanged(state);
+
+    // If no dependencies were registered, nothing else to do
+    if (_dependencySnapshots.isEmpty) return;
+
+    // Guarantee initialization of async dependencies
+    for (final notifier in _dependencySnapshots.keys.toList()) {
+      final value = notifier.notifier;
+      if (value is AsyncViewModelImpl && value.data == null) {
+        await value.loadNotifier();
+        // Re-snapshot with initialized value
+        // Re-snapshot: extract value directly
+        final val = notifier.notifier;
+        if (val is ViewModel) {
+          _dependencySnapshots[notifier] = val.data;
+        } else if (val is AsyncViewModelImpl) {
+          _dependencySnapshots[notifier] = val.data;
+        } else {
+          _dependencySnapshots[notifier] = val;
+        }
+      }
+    }
+
+    // Subscribe to each registered dependency with batching
+    for (final notifier in _dependencySnapshots.keys.toList()) {
+      _subscribeToDependency(notifier);
+    }
+  }
+
+  /// Subscribes to a dependency's changes with microtask batching.
+  void _subscribeToDependency(ReactiveNotifier notifier) {
+    void listener() {
+      _pendingDependencyChanges.add(notifier);
+      if (!_dependencyBatchScheduled) {
+        _dependencyBatchScheduled = true;
+        scheduleMicrotask(_processDependencyBatch);
+      }
+    }
+
+    _dependencyListeners[notifier] = listener;
+    notifier.addListener(listener);
+  }
+
+  /// Processes batched dependency changes in a single microtask.
+  void _processDependencyBatch() {
+    _dependencyBatchScheduled = false;
+    if (_disposed || _pendingDependencyChanges.isEmpty) return;
+
+    final state = DependencyState.create(
+      isSetup: false,
+      changed: Set.from(_pendingDependencyChanges),
+      snapshots: _dependencySnapshots,
+    );
+    _pendingDependencyChanges.clear();
+
+    onDependenciesStateChanged(state);
+    notifyListeners(); // Single rebuild for all batched changes
+  }
+
+  /// Removes all dependency listeners and clears tracking state.
+  void _cleanupDependencies() {
+    for (final entry in _dependencyListeners.entries) {
+      entry.key.removeListener(entry.value);
+    }
+    _dependencyListeners.clear();
+    _dependencySnapshots.clear();
+    _pendingDependencyChanges.clear();
+    _dependencyBatchScheduled = false;
+  }
+
   /// Override this method to provide the async data loading logic
   @protected
   Future<T> init();
@@ -702,25 +828,28 @@ Active listeners: ${_listeners.length}
       return true;
     }());
 
-    // 1. Stop internal listenVM() connections to other ViewModels/AsyncViewModels
+    // 1. Cleanup dependency listeners from onDependenciesStateChanged
+    _cleanupDependencies();
+
+    // 2. Stop internal listenVM() connections to other ViewModels/AsyncViewModels
     stopListeningVM();
 
-    // 2. Remove all external listeners registered via setupListeners()
+    // 3. Remove all external listeners registered via setupListeners()
     removeListeners();
 
-    // 3. Clear async state to help GC
+    // 4. Clear async state to help GC
     _state = AsyncState.initial();
 
-    // 4. Reset initialization flags
+    // 5. Reset initialization flags
     hasInitializedListenerExecution = false;
     loadOnInit = true;
     _initialized = false;
     _initializedWithoutContext = false;
 
-    // 5. Mark as disposed
+    // 6. Mark as disposed
     _disposed = true;
 
-    // 6. Notify ReactiveNotifier to remove this AsyncViewModel from global registry
+    // 7. Notify ReactiveNotifier to remove this AsyncViewModel from global registry
     _notifyReactiveNotifierDisposal();
 
     assert(() {
@@ -736,7 +865,7 @@ ReactiveNotifier cleanup: Requested
       return true;
     }());
 
-    // 6. Call ChangeNotifier dispose to remove all Flutter listeners
+    // 8. Call ChangeNotifier dispose to remove all Flutter listeners
     super.dispose();
   }
 

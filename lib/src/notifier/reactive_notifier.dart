@@ -174,6 +174,26 @@ Location: $trace
     return instance;
   }
 
+  /// Shorthand accessor that returns the unwrapped data value directly.
+  ///
+  /// Uses Dart's `call()` syntax so you can write:
+  /// ```dart
+  /// final userData = UserService.userState(); // returns data directly
+  /// ```
+  ///
+  /// For `ReactiveNotifier<ViewModel<T>>`: returns `T` (the ViewModel's data).
+  /// For `ReactiveNotifier<AsyncViewModelImpl<T>>`: returns `T?` (the async data).
+  /// For `ReactiveNotifier<int>` (simple types): returns `T` directly.
+  ///
+  /// Note: Returns a snapshot — not reactive. For reactivity use builders,
+  /// `listenVM()`, or `onDependenciesStateChanged`.
+  dynamic call() {
+    final value = notifier;
+    if (value is ViewModel) return value.data;
+    if (value is AsyncViewModelImpl) return value.data;
+    return value;
+  }
+
   @override
   void updateState(T newState) {
     if (notifier != newState) {

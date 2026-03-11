@@ -1,3 +1,24 @@
+# 2.17.0-beta.1
+
+### New Features
+
+#### `onDependenciesStateChanged` Lifecycle Hook
+- New lifecycle method for declaring and reacting to external dependencies
+- Runs BEFORE `init()` — dependencies guaranteed available
+- Automatic batching: multiple dependency changes → single `notifyListeners()`
+- Typed `DependencyState.on<T>()` with previous/current values
+- Available in both `ViewModel<T>` and `AsyncViewModelImpl<T>`
+
+#### `call()` Syntax — Shorthand Data Access
+- New `call()` method on `ReactiveNotifier` and `ReactiveNotifierViewModel`
+- Dart call syntax: `UserService.userState()` returns data directly
+- Replaces verbose `.notifier.data` pattern
+
+### New Files
+- `lib/src/viewmodel/dependency_state.dart` — DependencyState class
+
+---
+
 # 2.16.1
 ## Version Sync & Documentation
 

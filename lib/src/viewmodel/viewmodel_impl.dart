@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/src/helper/helper_notifier.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
 import 'package:reactive_notifier/src/context/viewmodel_context_notifier.dart';
+import 'package:reactive_notifier/src/viewmodel/dependency_state.dart';
 
 /// Used in ViewModel classes where all business logic should reside.
 ///
@@ -190,6 +191,9 @@ Context now available: ✓
       if (!hasContext) {
         _initializedWithoutContext = true;
       }
+
+      // Setup dependencies BEFORE init() so they're available
+      _setupDependencies();
 
       init();
 
@@ -387,17 +391,20 @@ Active listeners: ${_listeners.length}
       return true;
     }());
 
-    // 1. Remove all external listeners registered via setupListeners()
+    // 1. Cleanup dependency listeners from onDependenciesStateChanged
+    _cleanupDependencies();
+
+    // 2. Remove all external listeners registered via setupListeners()
     removeListeners();
 
-    // 2. Stop internal listenVM() connections to other ViewModels
+    // 3. Stop internal listenVM() connections to other ViewModels
     stopListeningVM();
 
-    // 3. Mark as disposed BEFORE notifying ReactiveNotifier to prevent double disposal
+    // 4. Mark as disposed BEFORE notifying ReactiveNotifier to prevent double disposal
     _disposed = true;
     _disposeTime = DateTime.now();
 
-    // 4. Notify ReactiveNotifier to remove this ViewModel from global registry
+    // 5. Notify ReactiveNotifier to remove this ViewModel from global registry
     _notifyReactiveNotifierDisposal();
 
     assert(() {
@@ -418,7 +425,7 @@ ReactiveNotifier cleanup: Requested
       return true;
     }());
 
-    // 5. Call ChangeNotifier dispose to remove all Flutter listeners
+    // 6. Call ChangeNotifier dispose to remove all Flutter listeners
     super.dispose();
   }
 
@@ -708,6 +715,114 @@ Remaining listeners: ${_listeners.length}
   void onStateChanged(T previous, T next) {
     // Base implementation does nothing
     // Override in subclasses to react to state changes
+  }
+
+  // ─── Dependency tracking for onDependenciesStateChanged ───
+
+  /// Stores the last known snapshot for each dependency.
+  final Map<ReactiveNotifier, dynamic> _dependencySnapshots = {};
+
+  /// Stores the listener callback for each dependency (for cleanup).
+  final Map<ReactiveNotifier, VoidCallback> _dependencyListeners = {};
+
+  /// Tracks which dependencies have changed since last batch.
+  final Set<ReactiveNotifier> _pendingDependencyChanges = {};
+
+  /// Whether a microtask is already scheduled to process the batch.
+  bool _dependencyBatchScheduled = false;
+
+  /// Lifecycle hook called when any registered dependency's state changes.
+  ///
+  /// Override this method to declare dependencies and react to their changes.
+  /// Uses [DependencyState.on] to register typed callbacks per dependency.
+  ///
+  /// **Setup phase** (before `init()`): Registers dependencies, takes snapshots,
+  /// and calls each callback with `(current, current)`.
+  ///
+  /// **Reaction phase** (after dependencies fire): Only calls callbacks for
+  /// dependencies that actually changed, with `(previous, current)`.
+  /// Multiple dependency changes are batched into a single `notifyListeners()`.
+  ///
+  /// Example:
+  /// ```dart
+  /// @override
+  /// void onDependenciesStateChanged(DependencyState change) {
+  ///   change.on<UserModel>(UserService.userState, (previous, current) {
+  ///     if (previous.id != current.id) {
+  ///       // User changed — react
+  ///     }
+  ///   });
+  ///
+  ///   final userData = UserService.userState();
+  ///   updateState(data.copyWith(userName: userData.name));
+  /// }
+  /// ```
+  @protected
+  void onDependenciesStateChanged(DependencyState change) {
+    // Base implementation does nothing.
+    // Override in subclasses to declare and react to dependencies.
+  }
+
+  /// Sets up dependencies declared in [onDependenciesStateChanged].
+  /// Called before [init()] during ViewModel construction.
+  void _setupDependencies() {
+    final state = DependencyState.create(
+      isSetup: true,
+      changed: {},
+      snapshots: _dependencySnapshots,
+    );
+
+    // Call hook to register dependencies via change.on<T>()
+    onDependenciesStateChanged(state);
+
+    // If no dependencies were registered, nothing else to do
+    if (_dependencySnapshots.isEmpty) return;
+
+    // Subscribe to each registered dependency with batching
+    for (final notifier in _dependencySnapshots.keys.toList()) {
+      _subscribeToDependency(notifier);
+    }
+  }
+
+  /// Subscribes to a dependency's changes with microtask batching.
+  void _subscribeToDependency(ReactiveNotifier notifier) {
+    void listener() {
+      _pendingDependencyChanges.add(notifier);
+      if (!_dependencyBatchScheduled) {
+        _dependencyBatchScheduled = true;
+        scheduleMicrotask(_processDependencyBatch);
+      }
+    }
+
+    _dependencyListeners[notifier] = listener;
+    notifier.addListener(listener);
+  }
+
+  /// Processes batched dependency changes in a single microtask.
+  void _processDependencyBatch() {
+    _dependencyBatchScheduled = false;
+    if (_disposed || _pendingDependencyChanges.isEmpty) return;
+
+    final state = DependencyState.create(
+      isSetup: false,
+      changed: Set.from(_pendingDependencyChanges),
+      snapshots: _dependencySnapshots,
+    );
+    _pendingDependencyChanges.clear();
+
+    onDependenciesStateChanged(state);
+    notifyListeners(); // Single rebuild for all batched changes
+  }
+
+  /// Removes all dependency listeners and clears tracking state.
+  void _cleanupDependencies() {
+    for (final entry in _dependencyListeners.entries) {
+      entry.key.removeListener(entry.value);
+    }
+    _dependencyListeners.clear();
+    _dependencySnapshots.clear();
+    _pendingDependencyChanges.clear();
+    _dependencyBatchScheduled = false;
   }
 
   /// Called after the ViewModel's primary initialization logic (e.g., in `init(), setupListeners, etc`)

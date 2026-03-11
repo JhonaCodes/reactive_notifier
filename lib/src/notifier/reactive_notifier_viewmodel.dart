@@ -25,6 +25,19 @@ class ReactiveNotifierViewModel<VM extends ViewModel<T>, T> {
   /// Returns the current state of the `ViewModel` by accessing its `data`.
   T get state => notifier.data;
 
+  /// Shorthand accessor that returns the current data value directly.
+  ///
+  /// Uses Dart's `call()` syntax so you can write:
+  /// ```dart
+  /// final userData = UserService.userState(); // returns T directly
+  /// userData.name; // access properties immediately
+  /// ```
+  ///
+  /// This is equivalent to `notifier.data` but much shorter.
+  /// Note: Returns a snapshot — not reactive. For reactivity use builders,
+  /// `listenVM()`, or `onDependenciesStateChanged`.
+  T call() => notifier.data;
+
   /// Disposes the `notifier` and cleans up the current instance in the container.
   /// This method is called to release resources when no longer needed.
   void dispose() {
