@@ -23,9 +23,11 @@
 - **Async/Stream operations** - Built-in AsyncState handling (loading, success, error)
 - **BuildContext access** - Persistent global context for Theme, MediaQuery, or external state managers
 - **Cross-service communication** - Explicit reactive messaging between ViewModels
+- **Dependency management** - `onDependenciesStateChanged` with typed `DependencyState.on<T>()` and automatic batching
+- **Call syntax** - `UserService.userState()` shorthand for direct data access
 - **State change hooks** - Internal reactivity via onStateChanged/onAsyncStateChanged
 - **Widget preservation** - keep() function to prevent expensive rebuilds
-- **Memory management** - Automatic cleanup and leak prevention
+- **Memory management** - Automatic cleanup and leak prevention with lifecycle observer
 - **Testing utilities** - Simple mocking and state injection
 
 ---
@@ -85,7 +87,8 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Cleans unused auto-dispose notifiers when app is paused/detached
-  final observer = ReactiveNotifierLifecycleObserver()..start();
+  final observer = ReactiveNotifierLifecycleObserver();
+  observer.start();
 
   runApp(const MyApp());
 }
@@ -578,13 +581,13 @@ ReactiveNotifier supports explicit communication between different services usin
 ```dart
 // User Service
 mixin UserService {
-  static final ReactiveNotifierViewModel<UserViewModel, UserModel> currentUser = 
+  static final ReactiveNotifierViewModel<UserViewModel, UserModel> currentUser =
     ReactiveNotifierViewModel<UserViewModel, UserModel>(() => UserViewModel());
 }
 
-// Notification Service  
+// Notification Service
 mixin NotificationService {
-  static final ReactiveNotifierViewModel<NotificationViewModel, NotificationModel> notifications = 
+  static final ReactiveNotifierViewModel<NotificationViewModel, NotificationModel> notifications =
     ReactiveNotifierViewModel<NotificationViewModel, NotificationModel>(() => NotificationViewModel());
 }
 
@@ -631,14 +634,14 @@ class NotificationViewModel extends ViewModel<NotificationModel> {
 ```dart
 // Multiple instances of the same type in different services
 mixin UserService {
-  static final ReactiveNotifierViewModel<UserViewModel, UserState> mainUser = 
+  static final ReactiveNotifierViewModel<UserViewModel, UserState> mainUser =
     ReactiveNotifierViewModel<UserViewModel, UserState>(() => UserViewModel());
-  static final ReactiveNotifierViewModel<UserViewModel, UserState> guestUser = 
+  static final ReactiveNotifierViewModel<UserViewModel, UserState> guestUser =
     ReactiveNotifierViewModel<UserViewModel, UserState>(() => UserViewModel());
 }
 
 mixin AdminService {
-  static final ReactiveNotifierViewModel<UserViewModel, UserState> adminUser = 
+  static final ReactiveNotifierViewModel<UserViewModel, UserState> adminUser =
     ReactiveNotifierViewModel<UserViewModel, UserState>(() => UserViewModel());
 }
 
@@ -657,6 +660,135 @@ class DashboardViewModel extends ViewModel<DashboardModel> {
   }
 }
 ```
+
+---
+
+## Dependency Management with `onDependenciesStateChanged`
+
+Declare external dependencies that your ViewModel needs. Dependencies are registered **before** `init()`, so they're guaranteed available during initialization. Multiple dependency changes are batched into a single `notifyListeners()` call.
+
+### Basic Usage
+
+```dart
+class OrderViewModel extends ViewModel<OrderModel> {
+  OrderViewModel() : super(OrderModel.empty());
+
+  @override
+  void onDependenciesStateChanged(DependencyState change) {
+    // Register dependencies with typed callbacks
+    change.on<UserModel>(UserService.userState, (previous, current) {
+      // During setup: previous == current (initial snapshot)
+      // During reaction: previous is the old value, current is the new value
+      if (previous.id != current.id) {
+        _loadOrdersForUser(current.id);
+      }
+    });
+
+    change.on<CartModel>(CartService.cartState, (previous, current) {
+      if (current.items.length != previous.items.length) {
+        transformState((state) => state.copyWith(
+          itemCount: current.items.length,
+          total: current.total,
+        ));
+      }
+    });
+  }
+
+  @override
+  void init() {
+    // Dependencies are already available here
+    final user = UserService.userState();  // call() syntax
+    _loadOrdersForUser(user.id);
+  }
+
+  void _loadOrdersForUser(String userId) {
+    // Fetch orders...
+  }
+}
+```
+
+### With AsyncViewModelImpl
+
+```dart
+class ProductListViewModel extends AsyncViewModelImpl<List<Product>> {
+  ProductListViewModel() : super(AsyncState.initial());
+
+  @override
+  void onDependenciesStateChanged(DependencyState change) {
+    change.on<CategoryModel>(CategoryService.selected, (previous, current) {
+      if (previous.id != current.id) {
+        reload(); // Re-fetch products for new category
+      }
+    });
+
+    change.on<FilterModel>(FilterService.filters, (previous, current) {
+      if (previous != current) {
+        reload(); // Re-fetch with new filters
+      }
+    });
+  }
+
+  @override
+  Future<List<Product>> init() async {
+    final category = CategoryService.selected();
+    final filters = FilterService.filters();
+    return await _repository.getProducts(category.id, filters);
+  }
+}
+```
+
+### How It Works
+
+| Phase | When | `previous` | `current` | Purpose |
+|-------|------|-----------|---------|---------|
+| **Setup** | Before `init()` | Same as current | Current value | Register & snapshot |
+| **Reaction** | After dependency fires | Last snapshot | New value | React to changes |
+
+---
+
+## `call()` Syntax — Shorthand Data Access
+
+Access data directly from any `ReactiveNotifier` or `ReactiveNotifierViewModel` using Dart's call syntax:
+
+```dart
+// Services
+mixin UserService {
+  static final ReactiveNotifierViewModel<UserViewModel, UserModel> userState =
+    ReactiveNotifierViewModel<UserViewModel, UserModel>(() => UserViewModel());
+}
+
+mixin CounterService {
+  static final ReactiveNotifier<int> count = ReactiveNotifier<int>(() => 0);
+}
+
+// Before (verbose)
+final userName = UserService.userState.notifier.data.name;
+final count = CounterService.count.notifier;
+
+// After (call syntax)
+final userName = UserService.userState().name;  // Returns UserModel directly
+final count = CounterService.count();            // Returns int directly
+
+// Works with any type
+final isActive = UserService.userState().isActive;
+final items = CartService.cartState().items;
+
+// Inside ViewModels — great for reading dependencies
+class OrderViewModel extends ViewModel<OrderModel> {
+  @override
+  void init() {
+    final user = UserService.userState();     // UserModel
+    final cart = CartService.cartState();      // CartModel
+
+    updateSilently(OrderModel(
+      userId: user.id,
+      items: cart.items,
+    ));
+  }
+}
+```
+
+> **Note**: `call()` returns a snapshot — not reactive. For reactivity, use builders, `listenVM()`, or `onDependenciesStateChanged`.
 
 ---
 

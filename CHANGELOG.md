@@ -1,4 +1,5 @@
 # 2.17.0-beta.1
+## Lifecycle Hooks, Dependency Management & Performance
 
 ### New Features
 
@@ -14,8 +15,50 @@
 - Dart call syntax: `UserService.userState()` returns data directly
 - Replaces verbose `.notifier.data` pattern
 
+#### `ReactiveNotifierLifecycleObserver`
+- New opt-in lifecycle observer for background memory cleanup
+- Automatically runs garbage collection on `paused`/`detached` app states
+- Only cleans unused auto-dispose instances (safe, non-breaking)
+- Usage: `ReactiveNotifierLifecycleObserver()..start()`
+
+### Improvements
+
+#### Builder Enhancements
+- Improved `NoRebuildWrapper` with debug-only logging via `assert()`
+- Enhanced `ReactiveAsyncBuilder`, `ReactiveBuilder`, `ReactiveViewModelBuilder` and `ReactiveStreamBuilder` internal logic
+- Better reference counting and widget lifecycle tracking
+
+#### ViewModel & AsyncViewModel
+- Improved logger system across ViewModels
+- Enhanced lifecycle error handling and disposal safety
+- Better listener management and notification patterns
+- Optimized `HelperNotifier` methods
+
+#### Context System
+- Improved `ReactiveContextEnhanced`, `ReactiveContextPreservation` and `ReactiveInheritedContext`
+- Enhanced `ViewModelContextNotifier` stability
+- Better context extension methods
+
+### Bug Fixes
+- Fixed lifecycle disposal edge cases in ViewModels
+- Improved error handling for disposed instance access
+- Fixed stream state handler edge cases
+
+### Documentation
+- Renamed `docs/` → `doc/` folder (pub.dev convention)
+- New documentation: `call-syntax.md`, `on-dependencies-state-changed.md`
+- Updated architecture overview and feature docs
+
 ### New Files
 - `lib/src/viewmodel/dependency_state.dart` — DependencyState class
+- `lib/src/lifecycle/reactive_notifier_lifecycle_observer.dart` — Background cleanup observer
+- `doc/features/call-syntax.md` — Call syntax documentation
+- `doc/features/viewmodel/on-dependencies-state-changed.md` — Dependencies hook documentation
+
+### Testing
+- Comprehensive test updates across all test files
+- New `call_syntax_test.dart` and `dependency_state_test.dart`
+- Updated golden tests and mocks for new features
 
 ---
 

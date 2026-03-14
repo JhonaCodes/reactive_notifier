@@ -1,0 +1,28 @@
+# Build artifacts
+build/
+
+# Serena IDE files
+.serena/
+.serena/.gitignore
+.serena/project.yml
+
+# AI context files
+CLAUDE.md
+
+# Test golden files (large images)
+test/goldens/
+
+# Coverage
+coverage/
+
+# Development docs
+AGENTS.md
+REACTIVE_NOTIFIER_MASTER_GUIDE.md
+COMPREHENSIVE_TEST_PLAN.md
+TEST_ORGANIZATION_PLAN.md
+TEST_COVERAGE_ANALYSIS.md
+test_fixes.md
+test/failures/
+
+# Claude config
+.claude/
