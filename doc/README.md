@@ -4,7 +4,7 @@
 
 ReactiveNotifier is a lightweight, singleton-based state management solution for Flutter following the **"Create Once, Reuse Always"** philosophy.
 
-**Current Version**: 2.17.0-beta.1
+**Current Version**: 2.17.0-beta.2
 
 ## Core Components
 
