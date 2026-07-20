@@ -1,3 +1,38 @@
+# 2.18.0
+
+### New Features
+
+#### `DependencyState.onViewModel<VM, T>()` — Depend on a ViewModel-backed service
+- New method on `DependencyState`, usable inside `onDependenciesStateChanged`, that
+  declares a dependency on a `ReactiveNotifierViewModel<VM, T>` directly — instead of
+  passing the raw `ReactiveNotifier` container.
+- Reacts when the **inner ViewModel** mutates its state (e.g. via `updateState`), not
+  only when the container instance itself is replaced.
+- Mirrors the existing `on<T>()` API with typed `(previous, current)` values.
+
+```dart
+@override
+void onDependenciesStateChanged(DependencyState change) {
+  change.onViewModel<ProfileViewModel, ProfileModel>(
+    ProfileService.state,
+    (previous, current) {
+      if (previous.id != current.id) {
+        // Profile changed — react
+      }
+    },
+  );
+}
+```
+
+#### `ReactiveNotifierViewModel.reactiveNotifier` getter
+- Exposes the underlying `ReactiveNotifier<VM>` container so cross-VM coordination can
+  reference a ViewModel-backed service the same way it references a plain `ReactiveNotifier`.
+
+### Fixes
+- Dependency subscriptions now listen to the inner ViewModel of a VM-backed service, so
+  `onDependenciesStateChanged` reactions fire on `updateState` of the inner ViewModel
+  (previously only container replacement was observed).
+
 # 2.17.0-beta.2
 - Update Readme
 

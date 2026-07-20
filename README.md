@@ -23,7 +23,7 @@
 - **Async/Stream operations** - Built-in AsyncState handling (loading, success, error)
 - **BuildContext access** - Persistent global context for Theme, MediaQuery, or external state managers
 - **Cross-service communication** - Explicit reactive messaging between ViewModels
-- **Dependency management** - `onDependenciesStateChanged` with typed `DependencyState.on<T>()` and automatic batching
+- **Dependency management** - `onDependenciesStateChanged` with typed `DependencyState.on<T>()` / `onViewModel<VM, T>()` and automatic batching
 - **Call syntax** - `UserService.userState()` shorthand for direct data access
 - **State change hooks** - Internal reactivity via onStateChanged/onAsyncStateChanged
 - **Widget preservation** - keep() function to prevent expensive rebuilds
@@ -736,6 +736,47 @@ class ProductListViewModel extends AsyncViewModelImpl<List<Product>> {
   }
 }
 ```
+
+### Depending on a ViewModel-backed service — `onViewModel<VM, T>()`
+
+Use `change.on<T>()` when the dependency is a plain `ReactiveNotifier<T>`. When the
+dependency is a **ViewModel-backed service** (`ReactiveNotifierViewModel<VM, T>`), use
+`change.onViewModel<VM, T>()` — you pass the service directly instead of its container,
+and the reaction fires when the **inner ViewModel** mutates its state (e.g. via
+`updateState`), not only when the container instance itself is replaced.
+
+```dart
+mixin ProfileService {
+  static final ReactiveNotifierViewModel<ProfileViewModel, ProfileModel> state =
+      ReactiveNotifierViewModel<ProfileViewModel, ProfileModel>(() => ProfileViewModel());
+}
+
+class DashboardViewModel extends ViewModel<DashboardModel> {
+  DashboardViewModel() : super(DashboardModel.empty());
+
+  @override
+  void onDependenciesStateChanged(DependencyState change) {
+    // ViewModel-backed service → onViewModel (typed previous/current)
+    change.onViewModel<ProfileViewModel, ProfileModel>(
+      ProfileService.state,
+      (previous, current) {
+        if (previous.id != current.id) {
+          _refreshFor(current.id);
+        }
+      },
+    );
+  }
+
+  @override
+  void init() {}
+
+  void _refreshFor(String id) {/* ... */}
+}
+```
+
+`change.onViewModel<VM, T>(service, cb)` is equivalent to
+`change.on<T>(service.reactiveNotifier, cb)` — the new `reactiveNotifier` getter on
+`ReactiveNotifierViewModel` exposes the underlying container for the same purpose.
 
 ### How It Works
 

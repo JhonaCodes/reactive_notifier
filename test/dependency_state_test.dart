@@ -126,6 +126,37 @@ class ViewModelDependencyTracker extends ViewModel<String> {
   }
 }
 
+/// ViewModel that depends on a VM-backed service through `change.onViewModel`.
+/// Unlike [ViewModelDependencyTracker] (which takes a raw `ReactiveNotifier`),
+/// this consumes a [ReactiveNotifierViewModel] and must react when the inner
+/// ViewModel mutates its state via `updateState` — not just when the container
+/// itself is replaced.
+class OnViewModelDependencyTracker extends ViewModel<String> {
+  final ReactiveNotifierViewModel<SimpleUserViewModel, UserModel> userService;
+
+  final List<String> setupCalls = [];
+  final List<String> reactionCalls = [];
+
+  OnViewModelDependencyTracker(this.userService) : super('initial');
+
+  @override
+  void init() {}
+
+  @override
+  void onDependenciesStateChanged(DependencyState change) {
+    change.onViewModel<SimpleUserViewModel, UserModel>(userService, (
+      previous,
+      current,
+    ) {
+      if (change.isSetup) {
+        setupCalls.add('user:${current.name}');
+      } else {
+        reactionCalls.add('user:${previous.name}->${current.name}');
+      }
+    });
+  }
+}
+
 /// ViewModel without onDependenciesStateChanged override (base behavior)
 class NoDependencyViewModel extends ViewModel<int> {
   NoDependencyViewModel() : super(0);
@@ -481,6 +512,65 @@ void main() {
 
       expect(setupState.isSetup, isTrue);
       expect(reactionState.isSetup, isFalse);
+    });
+  });
+
+  group('DependencyState — onViewModel (VM-backed dependency)', () {
+    test('setup snapshots the ViewModel data via a ReactiveNotifierViewModel', () {
+      final userService =
+          ReactiveNotifierViewModel<SimpleUserViewModel, UserModel>(
+        () => SimpleUserViewModel(),
+      );
+
+      final vm = OnViewModelDependencyTracker(userService);
+
+      expect(
+        vm.setupCalls.first,
+        equals('user:guest'),
+        reason: 'onViewModel should snapshot the inner ViewModel data on setup',
+      );
+    });
+
+    test('reacts when the inner ViewModel mutates via updateState', () async {
+      final userService =
+          ReactiveNotifierViewModel<SimpleUserViewModel, UserModel>(
+        () => SimpleUserViewModel(),
+      );
+
+      final vm = OnViewModelDependencyTracker(userService);
+
+      // Mutate the INNER ViewModel — the container is not replaced.
+      userService.notifier.changeName('Alice');
+
+      await flushMicrotasks();
+
+      expect(
+        vm.reactionCalls,
+        contains('user:guest->Alice'),
+        reason:
+            'onViewModel must fire when the inner ViewModel notifies, not only '
+            'when the container itself changes',
+      );
+    });
+
+    test('onViewModel is equivalent to on(service.reactiveNotifier)', () async {
+      final userService =
+          ReactiveNotifierViewModel<SimpleUserViewModel, UserModel>(
+        () => SimpleUserViewModel(),
+      );
+
+      // The getter used internally by onViewModel is publicly available.
+      expect(
+        userService.reactiveNotifier,
+        isA<ReactiveNotifier<SimpleUserViewModel>>(),
+        reason: 'reactiveNotifier exposes the underlying container',
+      );
+
+      final vm = OnViewModelDependencyTracker(userService);
+      userService.notifier.changeName('Bob');
+      await flushMicrotasks();
+
+      expect(vm.reactionCalls.last, equals('user:guest->Bob'));
     });
   });
 }

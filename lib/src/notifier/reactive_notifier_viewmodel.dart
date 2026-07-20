@@ -22,6 +22,13 @@ class ReactiveNotifierViewModel<VM extends ViewModel<T>, T> {
   /// This allows you to interact with the `ViewModel` directly.
   VM get notifier => _container.notifier;
 
+  /// The underlying [ReactiveNotifier] container that holds the ViewModel.
+  ///
+  /// Exposed so cross-VM coordination (e.g. `DependencyState.onViewModel`) can
+  /// reference a ViewModel-backed service the same way it references a plain
+  /// `ReactiveNotifier`.
+  ReactiveNotifier<VM> get reactiveNotifier => _container;
+
   /// Returns the current state of the `ViewModel` by accessing its `data`.
   T get state => notifier.data;
 
