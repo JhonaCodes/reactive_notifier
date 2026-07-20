@@ -526,6 +526,15 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     }
   }
 
+  /// The notifier that actually fires when a dependency's state changes: the
+  /// inner ViewModel for VM-backed services, or the container for simple state.
+  /// (A `ReactiveNotifier<VM>` container does NOT notify on `vm.updateState`, so
+  /// a dependency declared via `onViewModel` must listen to the inner VM.)
+  ChangeNotifier _dependencyTarget(ReactiveNotifier notifier) {
+    final value = notifier.notifier;
+    return value is ChangeNotifier ? value : notifier;
+  }
+
   /// Subscribes to a dependency's changes with microtask batching.
   void _subscribeToDependency(ReactiveNotifier notifier) {
     void listener() {
@@ -537,7 +546,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
     }
 
     _dependencyListeners[notifier] = listener;
-    notifier.addListener(listener);
+    _dependencyTarget(notifier).addListener(listener);
   }
 
   /// Processes batched dependency changes in a single microtask.
@@ -559,7 +568,7 @@ abstract class AsyncViewModelImpl<T> extends ChangeNotifier
   /// Removes all dependency listeners and clears tracking state.
   void _cleanupDependencies() {
     for (final entry in _dependencyListeners.entries) {
-      entry.key.removeListener(entry.value);
+      _dependencyTarget(entry.key).removeListener(entry.value);
     }
     _dependencyListeners.clear();
     _dependencySnapshots.clear();

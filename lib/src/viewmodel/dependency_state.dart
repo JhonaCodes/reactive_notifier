@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:reactive_notifier/src/notifier/reactive_notifier.dart';
+import 'package:reactive_notifier/src/notifier/reactive_notifier_viewmodel.dart';
 import 'package:reactive_notifier/src/viewmodel/viewmodel_impl.dart';
 import 'package:reactive_notifier/src/viewmodel/async_viewmodel_impl.dart';
 
@@ -66,6 +67,33 @@ class DependencyState {
         callback(previous, current);
       }
     }
+  }
+
+  /// Same as [on], but for a ViewModel-backed service declared with
+  /// [ReactiveNotifierViewModel]. Lets a ViewModel depend on another
+  /// ViewModel's data without reaching for the underlying container:
+  ///
+  /// ```dart
+  /// @override
+  /// void onDependenciesStateChanged(DependencyState change) {
+  ///   change.onViewModel<ProfileViewModel, ProfileModel>(
+  ///     ProfileService.state,
+  ///     (previous, current) {
+  ///       if (previous.id != current.id) {
+  ///         // Profile changed — react
+  ///       }
+  ///     },
+  ///   );
+  /// }
+  /// ```
+  ///
+  /// Reacts when the inner ViewModel mutates its state (e.g. via `updateState`),
+  /// not only when the container instance itself is replaced.
+  void onViewModel<VM extends ViewModel<T>, T>(
+    ReactiveNotifierViewModel<VM, T> service,
+    void Function(T previous, T current) callback,
+  ) {
+    on<T>(service.reactiveNotifier, callback);
   }
 
   /// Whether this is the initial setup pass (true) or a reaction pass (false).
