@@ -192,6 +192,71 @@ class AsyncDependencyTrackingViewModel extends AsyncViewModelImpl<String> {
   }
 }
 
+/// AsyncViewModelImpl that depends on a VM-backed service via `onViewModel`.
+/// Verifies the async subscription path also listens to the inner ViewModel.
+class AsyncOnViewModelTracker extends AsyncViewModelImpl<String> {
+  final ReactiveNotifierViewModel<SimpleUserViewModel, UserModel> userService;
+
+  final List<String> setupCalls = [];
+  final List<String> reactionCalls = [];
+
+  AsyncOnViewModelTracker(this.userService)
+    : super(AsyncState.initial(), loadOnInit: true);
+
+  @override
+  Future<String> init() async => 'async-init';
+
+  @override
+  void onDependenciesStateChanged(DependencyState change) {
+    change.onViewModel<SimpleUserViewModel, UserModel>(userService, (
+      previous,
+      current,
+    ) {
+      if (change.isSetup) {
+        setupCalls.add('user:${current.name}');
+      } else {
+        reactionCalls.add('user:${previous.name}->${current.name}');
+      }
+    });
+  }
+}
+
+/// ViewModel that declares BOTH a plain `on<T>()` dependency (raw
+/// ReactiveNotifier) AND an `onViewModel` dependency (VM-backed service) in the
+/// same `onDependenciesStateChanged`. Used to assert each channel is detected
+/// independently and tagged by source (`on:` vs `onViewModel:`).
+class MixedDependencyTracker extends ViewModel<String> {
+  final ReactiveNotifier<int> countNotifier;
+  final ReactiveNotifierViewModel<SimpleUserViewModel, UserModel> userService;
+
+  final List<String> setupCalls = [];
+  final List<String> reactionCalls = [];
+
+  MixedDependencyTracker(this.countNotifier, this.userService)
+    : super('initial');
+
+  @override
+  void init() {}
+
+  @override
+  void onDependenciesStateChanged(DependencyState change) {
+    // Plain notifier via on<T>()
+    change.on<int>(countNotifier, (previous, current) {
+      final tag = change.isSetup ? setupCalls : reactionCalls;
+      tag.add('on:count:$previous->$current');
+    });
+
+    // VM-backed service via onViewModel<VM, T>()
+    change.onViewModel<SimpleUserViewModel, UserModel>(userService, (
+      previous,
+      current,
+    ) {
+      final tag = change.isSetup ? setupCalls : reactionCalls;
+      tag.add('onViewModel:user:${previous.name}->${current.name}');
+    });
+  }
+}
+
 // ─── Helpers ───
 
 /// Flush microtasks scheduled via scheduleMicrotask.
@@ -571,6 +636,88 @@ void main() {
       await flushMicrotasks();
 
       expect(vm.reactionCalls.last, equals('user:guest->Bob'));
+    });
+
+    test('AsyncViewModelImpl reacts to a VM-backed dependency via onViewModel',
+        () async {
+      final userService =
+          ReactiveNotifierViewModel<SimpleUserViewModel, UserModel>(
+        () => SimpleUserViewModel(),
+      );
+
+      final vm = AsyncOnViewModelTracker(userService);
+
+      // Async setup runs inside _initializeAsync — let it complete.
+      await flushMicrotasks();
+
+      expect(vm.setupCalls, contains('user:guest'));
+
+      userService.notifier.changeName('Carol');
+      await flushMicrotasks();
+
+      expect(
+        vm.reactionCalls,
+        contains('user:guest->Carol'),
+        reason: 'AsyncViewModelImpl must also listen to the inner ViewModel',
+      );
+    });
+
+    test('does not fire when an unrelated dependency changes', () async {
+      final userService =
+          ReactiveNotifierViewModel<SimpleUserViewModel, UserModel>(
+        () => SimpleUserViewModel(),
+      );
+      final otherService =
+          ReactiveNotifierViewModel<SimpleUserViewModel, UserModel>(
+        () => SimpleUserViewModel(),
+      );
+
+      final vm = OnViewModelDependencyTracker(userService);
+
+      // Mutate a DIFFERENT service the VM does not depend on.
+      otherService.notifier.changeName('Ignored');
+      await flushMicrotasks();
+
+      expect(
+        vm.reactionCalls,
+        isEmpty,
+        reason: 'Only the declared dependency should trigger reactions',
+      );
+    });
+
+    test('distinguishes on<T> and onViewModel dependencies in the same VM',
+        () async {
+      final countNotifier = ReactiveNotifier<int>(() => 0);
+      final userService =
+          ReactiveNotifierViewModel<SimpleUserViewModel, UserModel>(
+        () => SimpleUserViewModel(),
+      );
+
+      final vm = MixedDependencyTracker(countNotifier, userService);
+
+      // Both channels register on setup, each tagged by its source.
+      expect(vm.setupCalls, contains('on:count:0->0'));
+      expect(vm.setupCalls, contains('onViewModel:user:guest->guest'));
+
+      // Change the plain notifier → only the on<T> channel reacts.
+      countNotifier.updateState(7);
+      await flushMicrotasks();
+      expect(vm.reactionCalls, contains('on:count:0->7'));
+      expect(
+        vm.reactionCalls.where((c) => c.startsWith('onViewModel:')),
+        isEmpty,
+        reason: 'onViewModel channel must not fire when only the notifier changed',
+      );
+
+      // Change the VM-backed service → only the onViewModel channel reacts.
+      userService.notifier.changeName('Dora');
+      await flushMicrotasks();
+      expect(vm.reactionCalls, contains('onViewModel:user:guest->Dora'));
+      expect(
+        vm.reactionCalls.where((c) => c == 'on:count:7->7'),
+        isEmpty,
+        reason: 'on<T> channel must not re-fire when only the VM changed',
+      );
     });
   });
 }
