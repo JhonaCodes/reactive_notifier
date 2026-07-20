@@ -1,3 +1,10 @@
+# 2.18.1
+
+### Tests
+- Regenerated the macOS platform golden files for Flutter 3.44.x so the local
+  golden suite passes on current toolchains. The deterministic `ci` goldens
+  (used by CI) are unchanged; no library code changed.
+
 # 2.18.0
 
 ### New Features
